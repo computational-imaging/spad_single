@@ -1,0 +1,5 @@
+564_depth.png,564_rgb.png
+280_depth.png,280_rgb.png
+167_depth.png,167_rgb.png
+1288_depth.png,1288_rgb.png
+284_depth.png,284_rgb.png
