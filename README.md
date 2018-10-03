@@ -16,11 +16,8 @@ Depth map
 TODO:
 Download NYU Depth data. DONE
 Make U-net for NYU Depth.
-     - First try to replicate Zhang,Zhu et. al. architecture
-
+     - First try to replicate Zhang,Zhu et. al. architecture DONE ish
+     
 
 Figure out how to simulate SPAD for training.
      - For now, David says to just use regular (normalized?) histograms of depth data.
-
-Training:
-TODO
