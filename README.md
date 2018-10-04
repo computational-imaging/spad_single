@@ -17,6 +17,8 @@ TODO:
 Download NYU Depth data. DONE
 Make U-net for NYU Depth.
      - First try to replicate Zhang,Zhu et. al. architecture DONE ish
+     - Training doesn't look too successful... thoughts?
+
      
 
 Figure out how to simulate SPAD for training.
