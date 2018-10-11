@@ -18,6 +18,12 @@ Download NYU Depth data. DONE
 Make U-net for NYU Depth.
      - First try to replicate Zhang,Zhu et. al. architecture DONE ish
      - Training doesn't look too successful... thoughts?
+     - Things to try:
+         - NN Interpolation + Regular conv instead of transpose convolution (for checkerboard artifacts)
+	 - Don't backpropagate from regions with missing depth values.
+	 - Reduce number of layers/number of filters and retrain
+	 - Train on all of SUNRGBD instead of just on NYU Depth v2
+	 - 
 
      
 

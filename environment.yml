@@ -44,6 +44,7 @@ dependencies:
   - libgcc=7.2.0=h69d50b8_2
   - libgfortran=3.0.0=1
   - libgit2=0.27.4=h5ee2e84_0
+  - libprotobuf=3.6.0=hd28b015_0
   - libsodium=1.0.16=h470a237_1
   - libssh2=1.8.0=h5b517e9_2
   - markupsafe=1.0=py36h470a237_1
@@ -69,6 +70,7 @@ dependencies:
   - pip=18.0=py36_1
   - prometheus_client=0.3.1=py_1
   - prompt_toolkit=2.0.5=py_0
+  - protobuf=3.6.0=py36hfc679d8_0
   - ptyprocess=0.6.0=py36_1000
   - pyasn1=0.4.4=py_0
   - pyasn1-modules=0.2.1=py_0
@@ -91,6 +93,7 @@ dependencies:
   - six=1.11.0=py36_1
   - suitesparse=4.5.6=blas_openblash55dcaef_201
   - tbb=2019.0=h2d50403_0
+  - tensorboardx=1.4=py_0
   - terminado=0.8.1=py36_1
   - testpath=0.4.1=py36_0
   - torchfile=0.1.0=py_0
@@ -107,19 +110,30 @@ dependencies:
   - widgetsnbextension=3.4.2=py36_0
   - zeromq=4.2.5=hfc679d8_6
   - zope.interface=4.5.0=py36h470a237_1
+  - _tflow_select=2.3.0=mkl
+  - absl-py=0.5.0=py36_0
+  - astor=0.7.1=py36_0
   - cudatoolkit=9.0=h13b8566_0
   - cudnn=7.1.2=cuda9.0_0
+  - cycler=0.10.0=py36_0
   - dbus=1.13.2=h714fa37_1
   - expat=2.2.6=he6710b0_0
   - fontconfig=2.13.0=h9420a91_0
   - freetype=2.9.1=h8a8886c_1
+  - gast=0.2.0=py36_0
   - glib=2.56.2=hd408876_0
   - gmp=6.1.2=h6c8ec71_1
+  - grpcio=1.12.1=py36hdbcaa40_0
   - gst-plugins-base=1.14.0=hbbd80ab_1
   - gstreamer=1.14.0=hb453b48_1
+  - h5py=2.8.0=py36h989c5e5_3
+  - hdf5=1.10.2=hba1933b_1
   - icu=58.2=h9c2bf20_1
   - intel-openmp=2019.0=118
   - jpeg=9b=h024ee3a_2
+  - keras-applications=1.0.6=py36_0
+  - keras-preprocessing=1.0.5=py36_0
+  - kiwisolver=1.0.1=py36hf484d3e_0
   - libedit=3.1.20170329=h6b74fdf_2
   - libffi=3.2.1=hd88cf55_4
   - libgcc-ng=8.2.0=hdf63c60_1
@@ -131,6 +145,8 @@ dependencies:
   - libuuid=1.0.3=h1bed415_2
   - libxcb=1.13=h1bed415_1
   - libxml2=2.9.8=h26e45fe_1
+  - markdown=2.6.11=py36_0
+  - matplotlib=3.0.0=py36h5429711_0
   - mkl=2019.0=118
   - nccl=1.3.5=cuda9.0_0
   - ncurses=6.1=hf484d3e_0
@@ -138,17 +154,22 @@ dependencies:
   - pandoc=2.2.3.2=0
   - pcre=8.42=h439df22_0
   - pillow=5.2.0=py36heded4f4_0
+  - pyparsing=2.2.1=py36_0
   - pyqt=5.9.2=py36h05f1152_2
   - pytorch=0.4.0=py36hdf912b8_0
+  - pytz=2018.5=py36_0
   - qt=5.9.6=h8703b6f_2
   - readline=7.0=h7b6447c_5
   - sqlite=3.24.0=h84994c4_0
+  - tensorboard=1.11.0=py36hf484d3e_0
+  - tensorflow=1.11.0=mkl_py36ha6f0bda_0
+  - tensorflow-base=1.11.0=mkl_py36h3c3e929_0
+  - termcolor=1.1.0=py36_1
   - tk=8.6.8=hbc83047_0
+  - werkzeug=0.14.1=py36_0
   - xz=5.2.4=h14c3975_4
   - zlib=1.2.11=ha838bed_2
   - zope=1.0=py36_1
   - cuda92=1.0=0
-  - pip:
-    - torch==0.4.0
 prefix: /home/markn1/anaconda3/envs/depth-net
 

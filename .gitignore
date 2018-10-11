@@ -1,7 +1,11 @@
 # My stuff
 *.png
 *.zip
-checkpoints/*
+checkpoints*
+*nohup.out
+# Tensorboard
+runs/*
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
