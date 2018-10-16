@@ -31,18 +31,19 @@ def validate(loss, model, val_loader):
     
     it = None
     losses = []
-    for it, data in enumerate(val_loader):
-        input_ = {}
-        for key in data:
-            input_[key] = data[key].float()
-            if torch.cuda.is_available():
-                input_[key] = input_[key].cuda()
+    data = next(iter(val_loader))
+    input_ = {}
+    for key in data:
+        input_[key] = data[key].float()
+        if torch.cuda.is_available():
+            input_[key] = input_[key].cuda()
 
-        depth = input_["depth"]
-        output = model(input_)
-        losses.append(loss(output, depth).item())
-    nbatches = it+1
-    return sum(losses)/nbatches
+    depth = input_["depth"]
+    output = model(input_)
+#    losses.append(loss(output, depth).item())
+    
+#    nbatches = it+1
+    return loss(output, depth).item()
 
 ##################
 # Viewing Images #
