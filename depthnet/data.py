@@ -93,6 +93,7 @@ def load_data(trainFile, trainDir, valFile, valDir):
     train.transform = transforms.Compose([ToFloat(),
 #                                        RandomCrop((400, 320)),
                                          CenterCrop((320, 400)),
+                                         AddDepthHist(bins=800//3, range=(0,8)),
                                          NormalizeRGB(mean, var),
                                          ToTensor()
                                          ])
@@ -102,6 +103,7 @@ def load_data(trainFile, trainDir, valFile, valDir):
         val = DepthDataset(valFile, valDir, 
                            transform=transforms.Compose([ToFloat(),
                                                          CenterCrop((320, 400)),
+                                                         AddDepthHist(bins=800//3, range=(0,8)),
                                                          NormalizeRGB(mean, var),
                                                          ToTensor(),
                                                         ])
