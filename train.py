@@ -10,11 +10,9 @@ import depthnet.data as d
 import depthnet.train_utils as tu
 from depthnet.options import opt # Reads command line options
 
-if torch.cuda.is_available():
-    # Set Device
-    torch.cuda.set_device(opt.cuda_device)
-    print("Cuda enabled on device: {}".format(torch.cuda.current_device()))
-
+device = torch.device("cuda:{}".format(opt.cuda_device) if torch.cuda.is_available() else "cpu") 
+print(device)
+torch.cuda.set_device(opt.cuda_device)
 # Tensorboardx
 writer = SummaryWriter()
 # data_trainloss = "data/trainloss"
@@ -32,6 +30,8 @@ valLoader = None
 if val is not None:
     valLoader = DataLoader(val, batch_size=opt.val_batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
+print("device: {}".format(torch.cuda.current_device()))
+    
 # Load model, loss, and scheduler
 loss = None
 if opt.loss == "berhu":
@@ -46,9 +46,9 @@ elif opt.loss == "l1":
     if torch.cuda.is_available():
         loss.cuda()
 
-setup = tu.setup_training(opt, writer)
+setup = tu.setup_training(opt, device, writer)
 # Run Training
-tu.train(**setup, opt=opt, loss=loss, trainLoader=trainLoader, valLoader=valLoader, test_run=opt.test_run, writer=writer)
+tu.train(**setup, device=device, opt=opt, loss=loss, trainLoader=trainLoader, valLoader=valLoader, test_run=opt.test_run, writer=writer)
 
 
 writer.close()
