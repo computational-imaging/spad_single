@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 parser = ArgumentParser(description="Load command line options for depthnet.")
 
 # Model
-parser.add_argument("model", help="The model.", choices=["depth", "depth_hints"],
+parser.add_argument("model", help="The model.", choices=["depth", "depth_hints", "unet"],
                     type=str, default="depth")
 
 # Learning rates:

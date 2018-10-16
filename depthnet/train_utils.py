@@ -5,16 +5,24 @@ import torch.nn as nn
 from tensorboardX import SummaryWriter
 import torchvision.utils as vutils
 
-from depthnet.model import DepthNet
+from depthnet.model import DepthNet, DepthNetWithHints
+from depthnet.models.unet_model import UNet
 import depthnet.utils as u
 
-def setup_training(opt, writer=None):
+def setup_training(opt, device, writer=None):
     # Build model and loss
     # Hyperparameters
-
-    model = DepthNet(opt.input_nc, opt.output_nc)
+    model = None
+    if opt.model == "depth":
+        model = DepthNet(opt.input_nc, opt.output_nc)
+    elif opt.model == "depth_hints":
+        model = DepthNetWithHints(DepthNet(opt.input_nc, opt.output_nc), 800//3, 4)
+    elif opt.model == "unet":
+        model = UNet(opt.input_nc, opt.output_nc)
     if torch.cuda.is_available():
-        model.cuda()
+#        print("device: {}".format(torch.cuda.current_device()))
+        print(device)
+        model.to(device)
     # Split parameters into weight and bias terms (different regularization)
     params = [{"params": []}, {"params": [], "weight_decay": 0.0}]
     for name, param in model.named_parameters():
@@ -60,10 +68,16 @@ def setup_training(opt, writer=None):
         vallosses = []
         # Initialize weights:
         for name, param in model.named_parameters():
-            if "conv" in name and "weight" in name:
+#            print(param.shape)
+#            print(len(param.shape))
+#            print(name)
+            if "conv" in name and "weight" in name and len(param.shape) == 1:
+                nn.init.normal_(param)
+            elif "conv" in name and "weight" in name:
     #             print(name)
                 nn.init.xavier_normal_(param)
-            if "norm" in name and "weight" in name:
+                #nn.init.constant_(param, 1)
+            elif "norm" in name and "weight" in name:
     #             print(name)
                 nn.init.constant_(param, 1)
             elif "bias" in name:
@@ -103,7 +117,7 @@ def train(opt,
           start_epoch, num_epochs,
           trainlosses, vallosses,
           global_it, scheduler, trainLoader, valLoader=None,
-          test_run=False, writer=None):
+          test_run=False, writer=None, device=None):
     for epoch in range(start_epoch, start_epoch + num_epochs):
         print("epoch: {}".format(epoch))
         data = None
@@ -112,8 +126,8 @@ def train(opt,
             input_ = {}
             for key in data:
                 input_[key] = data[key].float()
-                if torch.cuda.is_available():
-                    input_[key] = input_[key].cuda()
+#                if torch.cuda.is_available():
+                input_[key] = input_[key].to(device)
 
             depth = input_["depth"]
             # New batch
