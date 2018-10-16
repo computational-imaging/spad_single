@@ -3,8 +3,12 @@
 *.zip
 checkpoints*
 *nohup.out
+
 # Tensorboard
 runs/*
+
+# Emacs
+*~
 
 
 # Byte-compiled / optimized / DLL files

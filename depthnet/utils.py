@@ -10,7 +10,7 @@ import os.path
 #################
 # Checkpointing #
 #################
-def save_checkpoint(state, is_best, filename='/output/checkpoint.pth.tar', always_save=False):
+def save_checkpoint(state, is_best=False, filename='/output/checkpoint.pth.tar', always_save=False):
     """Save checkpoint if a new best is achieved"""
     if is_best or always_save:
         print ("=> Saving checkpoint to: {}".format(filename))
@@ -32,20 +32,14 @@ def validate(loss, model, val_loader):
     it = None
     losses = []
     for it, data in enumerate(val_loader):
-        depth = data["depth"].float()
-        rgb = data["rgb"].float()
-        if torch.cuda.is_available():
-            depth = depth.cuda()
-            rgb = rgb.cuda()
-        if "hist" in data:
-#             print(data)
-            hist = data["hist"].float()
+        input_ = {}
+        for key in data:
+            input_[key] = data[key].float()
             if torch.cuda.is_available():
-                hist = hist.cuda()
-#             print(hist)
-            output = model(rgb, hist)
-        else:
-            output = model(rgb)
+                input_[key] = input_[key].cuda()
+
+        depth = input_["depth"]
+        output = model(input_)
         losses.append(loss(output, depth).item())
     nbatches = it+1
     return sum(losses)/nbatches
