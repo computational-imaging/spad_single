@@ -12,8 +12,8 @@ import depthnet.utils as u
 ####################
 def train(setup,
           metadata,
-          trainLoader,
-          valLoader,
+          train_loader,
+          val_loader,
           device,
           test_run=False,
           writer=None):
@@ -49,7 +49,7 @@ def train(setup,
         print("epoch: {}".format(epoch))
         data = None
         output = None
-        for it, data in enumerate(trainLoader):
+        for it, data in enumerate(train_loader):
             input_ = {}
             for key in data:
                 input_[key] = data[key].float()
@@ -65,17 +65,17 @@ def train(setup,
             scheduler.optimizer.step()
             global_it += 1
 
-            if not (it % 10):
+            if not it % 10:
                 print("\titeration: {}\ttrain loss: {}".format(it, trainloss.item()))
             trainlosses.append(trainloss.item())
             if writer is not None:
                 writer.add_scalar("data/trainloss", trainloss.item(), global_it)
             if test_run: # Stop after 5 batches
-                if not ((it + 1) % 5):
+                if not (it + 1) % 5:
                     break
         # Checkpointing
-        if valLoader is not None:
-            valloss = u.validate(loss, model, valLoader)
+        if val_loader is not None:
+            valloss = u.validate(loss, model, val_loader)
             print("End epoch {}\tval loss: {}".format(epoch, valloss))
             vallosses.append(valloss)
             if writer is not None:
@@ -83,13 +83,13 @@ def train(setup,
 
         # Save the last batch output of every epoch
         if writer is not None:
-            rgb_input = vutils.make_grid(data["rgb"], nrow=opt.batch_size, normalize=True, scale_each=True)
+            rgb_input = vutils.make_grid(data["rgb"], nrow=2, normalize=True, scale_each=True)
             writer.add_image('image/rgb_input', rgb_input, epoch)
 
-            depth_truth = vutils.make_grid(data["depth"], nrow=opt.batch_size, normalize=True, scale_each=True)
+            depth_truth = vutils.make_grid(data["depth"], nrow=2, normalize=True, scale_each=True)
             writer.add_image('image/depth_truth', depth_truth, epoch)
 
-            depth_output = vutils.make_grid(output, nrow=opt.batch_size, normalize=True, scale_each=True)
+            depth_output = vutils.make_grid(output, nrow=2, normalize=True, scale_each=True)
             writer.add_image('image/depth_output', depth_output, epoch)
 
             for name, param in model.named_parameters():
