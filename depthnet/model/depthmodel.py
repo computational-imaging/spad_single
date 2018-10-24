@@ -191,15 +191,3 @@ class DepthNetWithHints(nn.Module):
             conv10_2 = self.depthnet.model10(conv10_up)
             out_reg = self.depthnet.model_out(conv10_2)
             return out_reg
-    
-##################
-# Loss functions #
-##################
-
-def berhu(prediction, target):
-    diff = prediction - target
-    threshold = 0.2*torch.max(torch.abs(prediction - target))
-    c = threshold.detach()
-    l2_part = torch.sum((diff**2 + c**2))/(2*c)
-    l1_part = torch.sum(torch.abs(diff))
-    return l1_part+l2_part

@@ -1,15 +1,13 @@
-###########
-# Dataset #
-###########
-from PIL import Image
-import torch
-from torch.utils.data import Dataset
-import csv, numpy as np
 import os
 from collections import defaultdict
+
+import numpy as np
+from PIL import Image
+import torch
+from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
-class DepthDataset(Dataset):
+class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
     """Class for reading and storing image and depth data together.
     """
     def __init__(self, splitfile, dataDir, transform=None):
@@ -24,59 +22,77 @@ class DepthDataset(Dataset):
             the function for loading this particular kind of image.
         """
         super(DepthDataset, self).__init__()
-        self.dataDir = dataDir
+        self.data_dir = dataDir
         self.transform = transform
         self.data = []
         with open(splitfile, "r") as f:
             for line in f.readlines():
                 self.data.append(line.strip().split(","))
 #         print(self.data)
-    
-    def get_global_stats(self, outFile=None, writeFile=False):
+
+    def get_global_stats(self, cache="stats_cache.txt"):
         """Calculate mean and variance of each rgb channel.
-        
-        Optionally caches the result of this calculation in outfile so it doesn't need to be done each
-        time the dataset is loaded.
+        Optionally caches the result of this calculation in outfile so
+        it doesn't need to be done each time the dataset is loaded.
+
+        Does everything in numpy.
         """
+        if cache is not None:
+            try:
+                with open(cache, "r") as f:
+                    mean = np.array([float(a) for a in f.readline().strip().split(",")])
+                    var = np.array([float(a) for a in f.readline().strip().split(",")])
+                    print(mean)
+                    print(var)
+                    return mean, var
+            except IOError:
+                print("failed to load cache at {}".format(cache))
+
         S = np.zeros(3)
         S_sq = np.zeros(3)
         npixels = 0.
-        for depthFile, rgbFile in self.data:
-            rgbImg = Image.open(os.path.join(self.dataDir, rgbFile))
-            rgbImg = np.asarray(rgbImg, dtype=np.uint16)
-#             print(rgbImg[0:10, 0:10, :])
-            
-            npixels += rgbImg.shape[0]*rgbImg.shape[1]
-            for channel in range(rgbImg.shape[2]):
-                S[channel] += np.sum(rgbImg[:,:,channel])
-                S_sq[channel] += np.sum((rgbImg[:,:,channel])**2)
+        for _, rgb_file in self.data:
+            rgb_img = Image.open(os.path.join(self.data_dir, rgb_file))
+            rgb_img = np.asarray(rgb_img, dtype=np.uint16)
+#             print(rgb_img[0:10, 0:10, :])
+
+            npixels += rgb_img.shape[0]*rgb_img.shape[1]
+            for channel in range(rgb_img.shape[2]):
+                S[channel] += np.sum(rgb_img[:, :, channel])
+                S_sq[channel] += np.sum((rgb_img[:, :, channel])**2)
         mean = S/npixels
         var = S_sq/npixels - mean**2
-        
+
         # Load full dataset (memory-intensive)
 #         full = []
 #         for depthFile, rgbFile in self.data:
-#             rgbImg = Image.open(os.path.join(self.dataDir, rgbFile))
-#             rgbImg = np.asarray(rgbImg, dtype=np.uint16)
-#             full.append(rgbImg)
-            
+#             rgb_img = Image.open(os.path.join(self.dataDir, rgbFile))
+#             rgb_img = np.asarray(rgb_img, dtype=np.uint16)
+#             full.append(rgb_img)
+
 #         a = np.array(full)
 #         mean_true = np.mean(a, axis=(0, 1, 2))
 #         var_true = np.var(a, axis=(0, 1, 2))
 #         print("actual mean and variance: {} {}".format(mean_true, var_true))
 #         print(a.shape)
+        try:
+            with open(cache, "w") as f:
+                f.write(",".join(str(m) for m in mean)+"\n")
+                f.write(",".join(str(v) for v in var)+"\n")
+        except IOError:
+            print("failed to write cache to {}".format(cache))
         return mean, var
-                
-        
-        
+
+
+
     def __len__(self):
         return len(self.data)
-    
+
     def __getitem__(self, idx):
-        depthFile, rgbFile = self.data[idx]
-        depthImg = Image.open(os.path.join(self.dataDir, depthFile))
-        rgbImg = Image.open(os.path.join(self.dataDir, rgbFile))
-        sample = {"depth": depthImg, "rgb": rgbImg}
+        depth_file, rgb_file = self.data[idx]
+        depth_img = Image.open(os.path.join(self.data_dir, depth_file))
+        rgb_img = Image.open(os.path.join(self.data_dir, rgb_file))
+        sample = {"depth": depth_img, "rgb": rgb_img}
         if self.transform:
             sample = self.transform(sample)
         return sample
@@ -85,38 +101,60 @@ class DepthDataset(Dataset):
 # Load data #
 #############
 
-def load_data(trainFile, trainDir, valFile, valDir):
+def load_data(train_file, train_dir, val_file, val_dir):
     """Generates training and validation datasets from
     text files and directories. Sets up datasets with transforms."""
-    train = DepthDataset(trainFile, trainDir)
-    mean, var = train.get_global_stats()
+    train = DepthDataset(train_file, train_dir)
+    mean, var = train.get_global_stats(os.path.join(train_dir, "stats_cache.txt"))
     train.transform = transforms.Compose([ToFloat(),
-#                                        RandomCrop((400, 320)),
-                                         CenterCrop((320, 400)),
-                                         AddDepthHist(bins=800//3, range=(0,8)),
-                                         NormalizeRGB(mean, var),
-                                         ToTensor()
+#                                           RandomCrop((400, 320)),
+                                          CenterCrop((320, 400)),
+                                          AddDepthHist(bins=800//3, range=(0, 8)),
+                                          NormalizeRGB(mean, var),
+                                          ToTensor()
                                          ])
-    print("Loaded training dataset from {} with size {}.".format(trainFile, len(train)))
+    print("Loaded training dataset from {} with size {}.".format(train_file, len(train)))
     val = None
-    if valFile is not None:
-        val = DepthDataset(valFile, valDir, 
+    if val_file is not None:
+        val = DepthDataset(val_file, val_dir,
                            transform=transforms.Compose([ToFloat(),
                                                          CenterCrop((320, 400)),
-                                                         AddDepthHist(bins=800//3, range=(0,8)),
+                                                         AddDepthHist(bins=800//3, range=(0, 8)),
                                                          NormalizeRGB(mean, var),
                                                          ToTensor(),
                                                         ])
                           )
 
-        print("Loaded val dataset from {} with size {}.".format(valFile, len(val)))
+        print("Loaded val dataset from {} with size {}.".format(val_file, len(val)))
     return train, val
-    
+
+def get_loaders(train_file, train_dir, val_file, val_dir, batch_size):
+    """Wrapper for getting the loaders at training time."""
+    train, val = load_data(train_file,
+                           train_dir,
+                           val_file,
+                           val_dir)
+
+    train_loader = DataLoader(train,
+                              batch_size=batch_size,
+                              shuffle=True,
+                              num_workers=4,
+                              pin_memory=True)
+    val_loader = None
+    if val is not None:
+        val_loader = DataLoader(val,
+                                batch_size=batch_size,
+                                shuffle=True,
+                                num_workers=4,
+                                pin_memory=True)
+    return train_loader, val_loader
+
+
 ##############
 # Transforms #
 ##############
 # for data augmentation
-class RandomCrop(object):
+class RandomCrop(): # pylint: disable=too-few-public-methods
     """Crop randomly the image in a sample.
 
     Args:
@@ -143,20 +181,20 @@ class RandomCrop(object):
 
         depth = depth[top: top + new_h,
                       left: left + new_w]
-        
+
         rgb = rgb[top: top + new_h,
                   left: left + new_w]
 
         return {'depth': depth, 'rgb': rgb}
 
-class CenterCrop(object):
+class CenterCrop(): # pylint: disable=too-few-public-methods
     """Center crop the image
-    
+
     Args:
         output_size (tuple or int): Desired output size. If int, square crop
             is made.
     """
-    
+
     def __init__(self, output_size):
         assert isinstance(output_size, (int, tuple))
         if isinstance(output_size, int):
@@ -164,7 +202,7 @@ class CenterCrop(object):
         else:
             assert len(output_size) == 2
             self.output_size = output_size
-            
+
     def __call__(self, sample):
         depth, rgb = sample['depth'], sample['rgb']
         h, w = depth.shape
@@ -174,20 +212,20 @@ class CenterCrop(object):
         bottom = h//2 + new_h//2 + (1 if new_h % 2 else 0)
         left = w//2 - new_w//2
         right = w//2 + new_w//2 + (1 if new_w % 2 else 0)
-        
+
         return {"depth": depth[top:bottom, left:right],
                 "rgb": rgb[top:bottom, left:right, :]}
-    
-class Crop_8(object):
+
+class Crop_8(): # pylint: disable=too-few-public-methods
     """Crop to a size where both dimensions are divisible by 8"""
-    
     def __call__(self, sample):
         depth, rgb = sample['depth'], sample['rgb']
         new_h, new_w = (depth.shape[0]//8)*8, (depth.shape[1]//8)*8
         return {"depth": depth[:new_h, :new_w],
                 "rgb": rgb[:new_h, :new_w, :]}
-        
-class Crop_small(object):
+
+class Crop_small(): # pylint: disable=too-few-public-methods
+    """Make a small patch for testing purposes"""
     def __call__(self, sample):
         depth, rgb = sample['depth'], sample['rgb']
         h, w = depth.shape[:2]
@@ -195,18 +233,18 @@ class Crop_small(object):
         return {"depth": depth[h//2-x:h//2+x, w//2-x:w//2+x],
                 "rgb": rgb[h//2-x:h//2+x, w//2-x:w//2+x, :]}
 
-class ToFloat(object):
+class ToFloat(): # pylint: disable=too-few-public-methods
     """Also parses the depth info for sunrgbd."""
     def __call__(self, sample):
         depth = sample['depth']
         x = np.asarray(depth, dtype=np.uint16)
         y = (x >> 3) | (x << 16-3)
         z = y.astype(np.float32)/1000
-        z[z>8.] = 8. # Clip to maximum depth of 8m.
+        z[z > 8.] = 8. # Clip to maximum depth of 8m.
         return {"depth": z,
                 "rgb": np.asarray(sample['rgb']).astype(np.float32)}
-    
-class ToTensor(object):
+
+class ToTensor(): # pylint: disable=too-few-public-methods
     """Convert ndarrays in sample to Tensors."""
 
     def __call__(self, sample):
@@ -215,24 +253,24 @@ class ToTensor(object):
         # numpy image: H x W x C
         # torch image: C X H X W
 #         depth = depth.transpose((2, 0, 1))
-        rgb = rgb.transpose((2, 0, 1))            
+        rgb = rgb.transpose((2, 0, 1))
         output = {}
         if 'hist' in sample:
             output['hist'] = torch.from_numpy(sample['hist']).unsqueeze(-1).unsqueeze(-1)
 
 #         print(output)
         output.update({'depth': torch.from_numpy(depth).unsqueeze(0),
-                'rgb': torch.from_numpy(rgb)})
+                       'rgb': torch.from_numpy(rgb)})
         return output
-    
-class AddDepthHist(object):
+
+class AddDepthHist(): # pylint: disable=too-few-public-methods
     """Takes a depth map and computes a histogram of depths as well"""
     def __init__(self, **kwargs):
         """
         kwargs - passthrough to np.histogram
         """
         self.hist_kwargs = kwargs
-        
+
     def __call__(self, sample):
         depth = sample["depth"]
         hist, _ = np.histogram(depth, **self.hist_kwargs)
@@ -242,11 +280,12 @@ class AddDepthHist(object):
                 "rgb": sample["rgb"],
                 "hist": hist}
 
-class NormalizeRGB(object):
+class NormalizeRGB(object): # pylint: disable=too-few-public-methods
+    """Subtract the mean and divide by the variance of the dataset."""
     def __init__(self, mean, var):
         """
-        mean - np.array of size 3 - the means of the three color channels over the whole (training) dataset
-        var - np.array of size 3 - the variances of the three color channels over the whole (training) dataset
+        mean - np.array of size 3 - the means of the three color channels over the train set
+        var - np.array of size 3 - the variances of the three color channels over the train set
         """
         self.mean = mean
         self.var = var
@@ -255,4 +294,3 @@ class NormalizeRGB(object):
         sample["rgb"] /= np.sqrt(self.var)
 #         print(sample["rgb"][0:10, 0:10, 0])
         return sample
-
