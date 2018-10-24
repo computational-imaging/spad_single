@@ -84,6 +84,8 @@ def main(train_setup,
          test_run):
     """Run stuff"""
     # Set up cuda
+    # print("vd: {}".format(os.environ["CUDA_VISIBLE_DEVICES"]))
+    # print("do: {}".format(os.environ["CUDA_DEVICE_ORDER"]))
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if torch.cuda.is_available():
         # Set cuda device
