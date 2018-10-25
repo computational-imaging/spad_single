@@ -20,7 +20,7 @@ def create_sublayer_dict(input_nc, output_nc, layer_index, nconvs, norm_layer, *
     return sublayer
 
 class DepthNet(nn.Module):
-    def __init__(self, input_nc, output_nc, norm_layer=nn.BatchNorm2d, use_bias=True):
+    def __init__(self, input_nc, output_nc, norm_layer=nn.BatchNorm2d, use_bias=True, **kwargs):
         super(DepthNet, self).__init__()
         self.input_nc = input_nc
         self.output_nc = output_nc
@@ -140,7 +140,7 @@ class DepthNet(nn.Module):
         return out_reg
 
 class DepthNetWithHints(nn.Module):
-    def __init__(self, depthnet, hist_len, num_hints_layers):
+    def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, **kwargs):
         """Takes an existing DepthNet, along with the size of the
         histogram and the size of its bins"""
         super(DepthNetWithHints, self).__init__()

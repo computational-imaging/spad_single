@@ -94,6 +94,9 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
         rgb_img = Image.open(os.path.join(self.data_dir, rgb_file))
         sample = {"depth": depth_img, "rgb": rgb_img}
         if self.transform:
+            resize = transforms.Resize((224, 256), Image.NEAREST)
+            sample["depth"] = resize(sample["depth"])
+            sample["rgb"] = resize(sample["rgb"])
             sample = self.transform(sample)
         return sample
 
@@ -107,8 +110,8 @@ def load_data(train_file, train_dir, val_file, val_dir):
     train = DepthDataset(train_file, train_dir)
     mean, var = train.get_global_stats(os.path.join(train_dir, "stats_cache.txt"))
     train.transform = transforms.Compose([ToFloat(),
-#                                           RandomCrop((400, 320)),
-                                          CenterCrop((320, 400)),
+                                          # RandomCrop((400, 320)),
+                                          # CenterCrop((320, 400)),
                                           AddDepthHist(bins=800//3, range=(0, 8)),
                                           NormalizeRGB(mean, var),
                                           ToTensor()
@@ -118,7 +121,7 @@ def load_data(train_file, train_dir, val_file, val_dir):
     if val_file is not None:
         val = DepthDataset(val_file, val_dir,
                            transform=transforms.Compose([ToFloat(),
-                                                         CenterCrop((320, 400)),
+                                                         # CenterCrop((320, 400)),
                                                          AddDepthHist(bins=800//3, range=(0, 8)),
                                                          NormalizeRGB(mean, var),
                                                          ToTensor(),
@@ -216,7 +219,7 @@ class CenterCrop(): # pylint: disable=too-few-public-methods
         return {"depth": depth[top:bottom, left:right],
                 "rgb": rgb[top:bottom, left:right, :]}
 
-class Crop_8(): # pylint: disable=too-few-public-methods
+class Crop8(): # pylint: disable=too-few-public-methods
     """Crop to a size where both dimensions are divisible by 8"""
     def __call__(self, sample):
         depth, rgb = sample['depth'], sample['rgb']
@@ -224,7 +227,7 @@ class Crop_8(): # pylint: disable=too-few-public-methods
         return {"depth": depth[:new_h, :new_w],
                 "rgb": rgb[:new_h, :new_w, :]}
 
-class Crop_small(): # pylint: disable=too-few-public-methods
+class CropSmall(): # pylint: disable=too-few-public-methods
     """Make a small patch for testing purposes"""
     def __call__(self, sample):
         depth, rgb = sample['depth'], sample['rgb']

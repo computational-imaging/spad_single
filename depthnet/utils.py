@@ -42,7 +42,7 @@ def save_checkpoint(model,
     torch.save(checkpoint, filename)  # save checkpoint
 
 
-def load_checkpoint(checkpointfile):
+def load_checkpoint(checkpointfile, device):
     """Loads a checkpoint from a checkpointfile.
     Checkpoint is a dict consisting of:
 
@@ -78,9 +78,9 @@ def load_checkpoint(checkpointfile):
         checkpoint = torch.load(checkpointfile,
                                 map_location=lambda storage,
                                                     loc: storage)
-    return make_training(checkpoint)
+    return make_training(checkpoint, device)
 
-def make_training(train_dict):
+def make_training(train_dict, device):
     """
     Create a training instance, consisting of a (setup, metadata) tuple.
 
@@ -112,7 +112,7 @@ def make_training(train_dict):
     else: # New model - apply initialization
         # m.initialize(model)
         pass # Use default pytorch initialization
-
+    model.to(device)
     # loss_fn (string)
     loss = m.get_loss(trd["loss_fn"])
 
@@ -152,7 +152,6 @@ def make_training(train_dict):
         "loss": loss,
         "scheduler": scheduler,
         "start_epoch": start_epoch,
-        "num_epochs": trd["num_epochs"],
         "global_it": global_it,
         "trainlosses": trainlosses,
         "vallosses": vallosses

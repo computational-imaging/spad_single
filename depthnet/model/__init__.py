@@ -1,7 +1,7 @@
 # depthnet.model init file
 import torch.nn as nn
 from .depthmodel import DepthNet, DepthNetWithHints
-from .unet_model import UNet
+from .unet_model import UNet, UNetWithHints
 from .loss import berhu, get_loss
 
 def split_params_weight_bias(model):
