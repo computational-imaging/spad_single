@@ -1,3 +1,5 @@
+import os
+
 import torch
 import torch.optim as optim
 import torch.nn as nn
@@ -44,6 +46,7 @@ def train(setup,
     global_it = setup["global_it"]
     trainlosses = setup["trainlosses"]
     vallosses = setup["vallosses"]
+    checkpoint_dir = setup["checkpoint_dir"]
 
     for epoch in range(start_epoch, start_epoch + num_epochs):
         print("epoch: {}".format(epoch))
@@ -106,4 +109,5 @@ def train(setup,
                           scheduler,
                           metadata,
                           state,
-                          filename="checkpoints/checkpoint_epoch_{}.pth.tar".format(epoch))
+                          filename=os.path.join(checkpoint_dir,
+                                                "checkpoint_epoch_{}.pth.tar".format(epoch)))

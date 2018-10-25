@@ -3,6 +3,7 @@
 *.zip
 checkpoints*
 *nohup.out
+experiments*
 
 # Tensorboard
 runs/*
