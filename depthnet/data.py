@@ -7,10 +7,22 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
+from sacred import Ingredient
+
+data_ingredient = Ingredient('data_config')
+
+@data_ingredient.config
+def cfg():
+    train_file = os.path.join("data", "sunrgbd_all", "train.txt")
+    train_dir = os.path.join("data", "sunrgbd_all")
+    val_file = os.path.join("data", "sunrgbd_all", "val.txt")
+    val_dir = os.path.join("data", "sunrgbd_all")
+    batch_size = 20             # Number of training examples per iteration
+
 class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
     """Class for reading and storing image and depth data together.
     """
-    def __init__(self, splitfile, dataDir, transform=None):
+    def __init__(self, splitfile, data_dir, transform=None):
         """
         Parameters
         ----------
@@ -22,7 +34,7 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
             the function for loading this particular kind of image.
         """
         super(DepthDataset, self).__init__()
-        self.data_dir = dataDir
+        self.data_dir = data_dir
         self.transform = transform
         self.data = []
         with open(splitfile, "r") as f:
@@ -103,7 +115,6 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
 #############
 # Load data #
 #############
-
 def load_data(train_file, train_dir, val_file, val_dir):
     """Generates training and validation datasets from
     text files and directories. Sets up datasets with transforms."""
@@ -131,6 +142,7 @@ def load_data(train_file, train_dir, val_file, val_dir):
         print("Loaded val dataset from {} with size {}.".format(val_file, len(val)))
     return train, val
 
+@data_ingredient.capture
 def get_loaders(train_file, train_dir, val_file, val_dir, batch_size):
     """Wrapper for getting the loaders at training time."""
     train, val = load_data(train_file,
@@ -147,7 +159,7 @@ def get_loaders(train_file, train_dir, val_file, val_dir, batch_size):
     if val is not None:
         val_loader = DataLoader(val,
                                 batch_size=batch_size,
-                                shuffle=True,
+                                shuffle=False,
                                 num_workers=4,
                                 pin_memory=True)
     return train_loader, val_loader

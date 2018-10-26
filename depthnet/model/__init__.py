@@ -1,8 +1,20 @@
-# depthnet.model init file
+"""depthnet.model"""
 import torch.nn as nn
 from .depthmodel import DepthNet, DepthNetWithHints
 from .unet_model import UNet, UNetWithHints
 from .loss import berhu, get_loss
+
+def make_model(model_name, model_params, model_state_dict_fn):
+    # model
+    model_class = globals()[model_name]
+    model = model_class(**model_params)
+    if model_state_dict_fn is not None:
+        model.load_state_dict(model_state_dict_fn())
+    else: # New model - apply initialization
+        # m.initialize(model)
+        pass # Use default pytorch initialization
+    return model
+
 
 def split_params_weight_bias(model):
     """Split parameters into weight and bias terms,
