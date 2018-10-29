@@ -1,8 +1,9 @@
 """depthnet.model"""
 import torch.nn as nn
 from .depthmodel import DepthNet, DepthNetWithHints
-from .unet_model import UNet, UNetWithHints
-from .loss import berhu, get_loss
+from .unet_model import UNet, UNetWithHints, UNetMultiScaleHints
+from .loss import (get_loss, berhu, delta, rmse, rel_abs_diff,
+                   rel_sqr_diff)
 
 def make_model(model_name, model_params, model_state_dict_fn):
     # model

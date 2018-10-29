@@ -53,7 +53,7 @@ class up(nn.Module):
         #  would be a nice idea if the upsampling could be learned too,
         #  but my machine do not have enough memory to handle all those weights
         if bilinear:
-            self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
+            self.up = F.interpolate(scale_factor=2, mode='bilinear', align_corners=True)
         else:
             self.up = nn.ConvTranspose2d(in_ch//2, in_ch//2, 2, stride=2)
 
@@ -65,9 +65,9 @@ class up(nn.Module):
         diffY = x1.size()[3] - x2.size()[3]
         x2 = F.pad(x2, (diffX // 2, int(diffX / 2),
                         diffY // 2, int(diffY / 2)))
-        x = torch.cat([x2, x1], dim=1)
-        x = self.conv(x)
-        return x
+        x1 = torch.cat([x2, x1], dim=1)
+        x1 = self.conv(x1)
+        return x1
 
 
 class outconv(nn.Module):
@@ -78,3 +78,7 @@ class outconv(nn.Module):
     def forward(self, x):
         x = self.conv(x)
         return x
+
+def expand_and_cat(ex, cat_to):
+    return torch.cat([ex.expand(-1, -1, cat_to.size()[2], cat_to.size()[3]), cat_to], 1)
+    

@@ -6,8 +6,9 @@ import torch.nn as nn
 from tensorboardX import SummaryWriter
 import torchvision.utils as vutils
 
-from depthnet.model import make_model, split_params_weight_bias, get_loss
-from depthnet.checkpoint import load_checkpoint, save_checkpoint
+from depthnet.model import (make_model, split_params_weight_bias, get_loss,
+                            delta, rmse, rel_abs_diff, rel_sqr_diff)
+from depthnet.checkpoint import save_checkpoint
 
 
 def make_optimizer(model, optim_name, optim_params, optim_state_dict_fn):
@@ -27,7 +28,6 @@ def make_scheduler(optimizer, scheduler_name, scheduler_params, last_epoch):
 
 def make_training(model_config,
                   train_config,
-                  ckpt_config,
                   device):
     """
     Create a training instance, consisting of a (setup, metadata) tuple.
@@ -71,39 +71,43 @@ def make_training(model_config,
                                train_config["scheduler_params"],
                                train_config["last_epoch"])
 
-    return model, scheduler, loss 
+    return model, scheduler, loss
 
 ##############
 # Validation #
 ##############
-def validate(loss, model, val_loader, epoch, writer=None):
-    """Computes the validation error of the model on the validation set.
-    val_loader should be a DataLoader.
+def evaluate(loss, model, data, it, device, tag, writer=None, write_images=False):
+    """Computes the error of the model on the data set.
     Returns an ordinary number (i.e. not a tensor)
     """
-    data = next(iter(val_loader))
     input_ = {}
     for key in data:
-        input_[key] = data[key].float()
-        if torch.cuda.is_available():
-            input_[key] = input_[key].cuda()
+        input_[key] = data[key].float().to(device)
 
     depth = input_["depth"]
     output = model(input_)
-    valloss = loss(output, depth).item()
+    loss_value = loss(output, depth)
     if writer is not None:
-        mseloss = nn.MSELoss()
-        writer.add_scalar("data/val_mseloss", mseloss(output, depth).item(), epoch)
-        writer.add_scalar("data/valloss", valloss, epoch)
-        rgb_input = vutils.make_grid(data["rgb"], nrow=2, normalize=True, scale_each=True)
-        writer.add_image('image/rgb_input', rgb_input, epoch)
+        writer.add_scalar("data/{}_d1".format(tag), delta(output, depth, 1.25).item(), it)
+        writer.add_scalar("data/{}_d2".format(tag), delta(output, depth, 1.25**2).item(), it)
+        writer.add_scalar("data/{}_d3".format(tag), delta(output, depth, 1.25**3).item(), it)
+        writer.add_scalar("data/{}_rmse".format(tag),
+                          rmse(output, depth).item(), it)
+        writer.add_scalar("data/{}_logrmse".format(tag),
+                          rmse(torch.log(output), torch.log(depth)), it)
+        writer.add_scalar("data/{}_rel_abs_diff".format(tag), rel_abs_diff(output, depth), it)
+        writer.add_scalar("data/{}_rel_sqr_diff".format(tag), rel_sqr_diff(output, depth), it)
+        writer.add_scalar("data/{}_loss".format(tag), loss_value.item(), it)
+        if write_images:
+            rgb_input = vutils.make_grid(data["rgb"], nrow=2, normalize=True, scale_each=True)
+            writer.add_image('image/rgb_input', rgb_input, it)
 
-        depth_truth = vutils.make_grid(data["depth"], nrow=2, normalize=True, scale_each=True)
-        writer.add_image('image/depth_truth', depth_truth, epoch)
+            depth_truth = vutils.make_grid(data["depth"], nrow=2, normalize=True, scale_each=True)
+            writer.add_image('image/depth_truth', depth_truth, it)
 
-        depth_output = vutils.make_grid(output, nrow=2, normalize=True, scale_each=True)
-        writer.add_image('image/depth_output', depth_output, epoch)
-    return loss(output, depth).item()
+            depth_output = vutils.make_grid(output, nrow=2, normalize=True, scale_each=True)
+            writer.add_image('image/depth_output', depth_output, it)
+    return loss_value
 
 
 ####################
@@ -119,7 +123,6 @@ def train(model,
           writer=None,
           test_run=False):
     # unpack
-    model_config = config["model_config"]
     train_config = config["train_config"]
     ckpt_config = config["ckpt_config"]
 
@@ -127,41 +130,30 @@ def train(model,
     num_epochs = train_config["num_epochs"]
     global_it = train_config["global_it"]
 
-    # Other scalars
-    mseloss = nn.MSELoss()
-
     for epoch in range(start_epoch, start_epoch + num_epochs):
         print("epoch: {}".format(epoch))
         data = None
-        output = None
         for it, data in enumerate(train_loader):
-            input_ = {}
-            for key in data:
-                input_[key] = data[key].float()
-#                if torch.cuda.is_available():
-                input_[key] = input_[key].to(device)
-
-            depth = input_["depth"]
-            # New batch
+            trainloss = evaluate(loss, model, data, global_it, device, "train", writer)
             scheduler.optimizer.zero_grad()
-            output = model(input_)
-            trainloss = loss(output, depth)
             trainloss.backward()
             scheduler.optimizer.step()
             global_it += 1
 
             if not it % 10:
                 print("\titeration: {}\ttrain loss: {}".format(it, trainloss.item()))
-            if writer is not None:
-                writer.add_scalar("data/train_mseloss", mseloss(output, depth).item(), global_it)
-                writer.add_scalar("data/trainloss", trainloss.item(), global_it)
 
             if test_run: # Stop after 5 batches
                 if not (it + 1) % 5:
                     break
         # Checkpointing
         if val_loader is not None:
-            valloss = validate(loss, model, val_loader, epoch, writer)
+            # One sample from validation set
+            for it, data in enumerate(val_loader):
+                if it == (global_it % len(val_loader)):
+                    with torch.set_grad_enabled(False):
+                        valloss = evaluate(loss, model, data, epoch, device, "val", writer, True)
+                        break
             print("End epoch {}\tval loss: {}".format(epoch, valloss))
 
         # Save the last batch output of every epoch

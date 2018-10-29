@@ -37,3 +37,40 @@ def get_loss(loss_fn):
         if torch.cuda.is_available():
             loss.cuda()
     return loss
+
+#################
+# Other Metrics #
+#################
+def delta(prediction, target, threshold):
+    """
+    Given prediction and target, compute the fraction of indices i
+    such that
+    max(prediction[i]/target[i], target[i]/prediction[i]) < threshold
+    """
+    c = torch.max(prediction/target, target/prediction)
+    return torch.sum((c > threshold).float())/c.numel()
+
+def rmse(prediction, target):
+    """
+    Return the RMSE of prediction and target
+    """
+    sum_squares = torch.sum((prediction - target).pow(2))
+    return torch.sqrt((1./sum_squares.numel())*sum_squares)
+
+def rel_abs_diff(prediction, target):
+    """
+    The average relative absolute difference:
+
+    1/N*sum(|prediction - target|/target)
+    """
+    sum_abs_rel = torch.sum(torch.abs(prediction - target)/target)
+    return (1./sum_abs_rel.numel())*sum_abs_rel
+
+def rel_sqr_diff(prediction, target):
+    """
+    The average relative squared difference:
+
+    1/N*sum(||prediction - target||**2/target)
+    """
+    sum_sqr_rel = torch.sum((prediction - target).pow(2)/target)
+    return (1./sum_sqr_rel.numel())*sum_sqr_rel
