@@ -9,11 +9,6 @@ from pprint import PrettyPrinter
 import torch
 from tensorboardX import SummaryWriter
 
-# Load training options from file
-# import depthnet.utils as u
-# import depthnet.data as d
-from depthnet.model import make_model
-# from depthnet.utils import utils_ingredient, safe_makedir
 from depthnet.data import data_ingredient, get_loaders
 from depthnet.train_utils import make_training, train
 from depthnet.checkpoint import load_checkpoint, safe_makedir
@@ -42,7 +37,6 @@ def cfg():
         "model_state_dict_fn": None,            # Function for getting the state dict
     }
 
-
     train_config = {
         "loss_fn": "berhu",
         "optim_name": "Adam",
@@ -57,7 +51,7 @@ def cfg():
             "gamma": 0.1,                       # Gamma of MultistepLR decay
         },
         "last_epoch": -1,
-        "global_it": -1,
+        "global_it": 0,
         "num_epochs": 10,
     }
     comment = ""
@@ -110,6 +104,17 @@ def hints_80():
     }
 
 @ex.named_config
+def multi_hints_80():
+    comment = "_multihints"
+    model_config = {"model_name": "UNetMultiScaleHints"}
+    train_config = {
+        "num_epochs": 80,
+        "scheduler_params": {
+            "milestones": [40]
+        }
+    }
+
+@ex.named_config
 def overfit_small():
     train_config = {
         "num_epochs": 100,
@@ -123,7 +128,6 @@ def overfit_small():
     }
 
 
-# Arguments are configurations from other modules
 # To see the full configuration, run $ python train.py print_config
 @ex.automain
 def main(model_config,
@@ -136,26 +140,21 @@ def main(model_config,
     train_loader, val_loader = get_loaders()
     model, scheduler, loss = make_training(model_config,
                                            train_config,
-                                           ckpt_config,
                                            device)
     config = {
         "model_config": model_config,
         "train_config": train_config,
         "ckpt_config": ckpt_config,
     }
-    # setup["num_epochs"] = train_setup["num_epochs"]
-    # setup["checkpoint_dir"] = checkpoint_dir
-    # Print summary of setup
-    # print("Setup:")
-    # pprint(setup)
-    # pprint(setup["scheduler"].state_dict())
-    # pprint(setup["scheduler"].optimizer.state_dict())
-    # print("Metadata:")
-    # pprint(metadata)
-    writer = SummaryWriter(log_dir=os.path.join(ckpt_config["log_dir"],
-                                                ckpt_config["run_id"]))
+    writer = None
+
+    # Create checkpoint directory
     safe_makedir(os.path.join(ckpt_config["ckpt_dir"],
                               ckpt_config["run_id"]))
+    # Initialize tensorboardX writer
+    writer = SummaryWriter(log_dir=os.path.join(ckpt_config["log_dir"],
+                                                ckpt_config["run_id"]))
+
     # Run Training
     train(model,
           scheduler,

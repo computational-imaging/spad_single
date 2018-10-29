@@ -17,7 +17,7 @@ def cfg():
     train_dir = os.path.join("data", "sunrgbd_all")
     val_file = os.path.join("data", "sunrgbd_all", "val.txt")
     val_dir = os.path.join("data", "sunrgbd_all")
-    batch_size = 20             # Number of training examples per iteration
+    batch_size = 10             # Number of training examples per iteration
 
 class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
     """Class for reading and storing image and depth data together.
@@ -160,7 +160,7 @@ def get_loaders(train_file, train_dir, val_file, val_dir, batch_size):
         val_loader = DataLoader(val,
                                 batch_size=batch_size,
                                 shuffle=False,
-                                num_workers=4,
+                                num_workers=1,
                                 pin_memory=True)
     return train_loader, val_loader
 

@@ -6,13 +6,37 @@ channels:
 dependencies:
   - ca-certificates=2018.10.15=ha4d7672_0
   - certifi=2018.10.15=py36_1000
+  - cycler=0.10.0=py_1
+  - expat=2.2.5=hfc679d8_2
+  - fontconfig=2.13.1=h65d0f4c_0
+  - gettext=0.19.8.1=h5e8e0c9_1
+  - glib=2.56.2=h464dc38_0
+  - icu=58.2=hfc679d8_0
+  - kiwisolver=1.0.1=py36h2d50403_2
+  - libiconv=1.15=h470a237_3
+  - libuuid=2.32.1=h470a237_2
+  - libxcb=1.13=h470a237_2
+  - libxml2=2.9.8=h422b904_5
+  - matplotlib=3.0.0=2
+  - matplotlib-base=3.0.0=py36hc039c98_2
   - openssl=1.0.2p=h470a237_1
   - pip=18.1=py36_1000
+  - pthread-stubs=0.4=h470a237_1
+  - pyparsing=2.2.2=py_0
+  - pyqt=5.6.0=py36h8210e8a_7
+  - python-dateutil=2.7.3=py_0
+  - sip=4.18.1=py36hfc679d8_0
+  - tornado=5.1.1=py36h470a237_0
+  - xorg-libxau=1.0.8=h470a237_6
+  - xorg-libxdmcp=1.1.2=h470a237_7
   - blas=1.0=mkl
   - cffi=1.11.5=py36he75722e_1
   - cudatoolkit=9.0=h13b8566_0
   - cudnn=7.1.2=cuda9.0_0
+  - dbus=1.13.2=h714fa37_1
   - freetype=2.9.1=h8a8886c_1
+  - gst-plugins-base=1.14.0=hbbd80ab_1
+  - gstreamer=1.14.0=hb453b48_1
   - intel-openmp=2019.0=118
   - jpeg=9b=h024ee3a_2
   - libedit=3.1.20170329=h6b74fdf_2
@@ -31,10 +55,12 @@ dependencies:
   - numpy=1.15.2=py36h1d66e8a_1
   - numpy-base=1.15.2=py36h81de0dd_1
   - olefile=0.46=py36_0
+  - pcre=8.42=h439df22_0
   - pillow=5.3.0=py36h34e0f95_0
   - pycparser=2.19=py36_0
   - python=3.6.6=h6e4f718_2
   - pytorch=0.4.1=py36ha74772b_0
+  - qt=5.6.3=h39df351_1
   - readline=7.0=h7b6447c_5
   - setuptools=40.4.3=py36_0
   - six=1.11.0=py36_1
@@ -61,6 +87,7 @@ dependencies:
     - py-cpuinfo==4.0.0
     - sacred==0.7.4
     - tensorboard==1.11.0
+    - tensorboardx==1.4
     - tensorflow==1.11.0
     - termcolor==1.1.0
     - torch==0.4.1
