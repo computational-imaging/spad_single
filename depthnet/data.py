@@ -17,7 +17,9 @@ def cfg():
     train_dir = os.path.join("data", "sunrgbd_all")
     val_file = os.path.join("data", "sunrgbd_all", "val.txt")
     val_dir = os.path.join("data", "sunrgbd_all")
-    batch_size = 10             # Number of training examples per iteration
+    test_file = os.path.join("data", "sunrgbd_all", "test.txt")
+    test_dir = os.path.join("data", "sunrgbd_all")
+    batch_size = 20             # Number of training examples per iteration
 
 class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
     """Class for reading and storing image and depth data together.
@@ -115,7 +117,7 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
 #############
 # Load data #
 #############
-def load_data(train_file, train_dir, val_file, val_dir):
+def load_depth_data(train_file, train_dir, val_file, val_dir, test_file, test_dir):
     """Generates training and validation datasets from
     text files and directories. Sets up datasets with transforms."""
     train = DepthDataset(train_file, train_dir)
@@ -140,15 +142,32 @@ def load_data(train_file, train_dir, val_file, val_dir):
                           )
 
         print("Loaded val dataset from {} with size {}.".format(val_file, len(val)))
-    return train, val
+    test = None
+    if test_file is not None:
+        test = DepthDataset(test_file, test_dir,
+                            transform=transforms.Compose([ToFloat(),
+                                                          # CenterCrop((320, 400)),
+                                                          AddDepthHist(bins=800//3, range=(0, 8)),
+                                                          NormalizeRGB(mean, var),
+                                                          ToTensor(),
+                                                         ])
+                           )
+
+        print("Loaded test dataset from {} with size {}.".format(test_file, len(test)))
+    return train, val, test
 
 @data_ingredient.capture
-def get_loaders(train_file, train_dir, val_file, val_dir, batch_size):
+def get_depth_loaders(train_file, train_dir,
+                      val_file, val_dir,
+                      test_file, test_dir,
+                      batch_size):
     """Wrapper for getting the loaders at training time."""
-    train, val = load_data(train_file,
-                           train_dir,
-                           val_file,
-                           val_dir)
+    train, val, test = load_depth_data(train_file,
+                                       train_dir,
+                                       val_file,
+                                       val_dir,
+                                       test_file,
+                                       test_dir)
 
     train_loader = DataLoader(train,
                               batch_size=batch_size,
@@ -162,7 +181,13 @@ def get_loaders(train_file, train_dir, val_file, val_dir, batch_size):
                                 shuffle=False,
                                 num_workers=1,
                                 pin_memory=True)
-    return train_loader, val_loader
+    if test is not None:
+        test_loader = DataLoader(test,
+                                 batch_size=batch_size,
+                                 shuffle=False,
+                                 num_workers=1,
+                                 pin_memory=True)
+    return train_loader, val_loader, test_loader
 
 
 ##############
