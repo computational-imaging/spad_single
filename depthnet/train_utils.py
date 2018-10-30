@@ -9,6 +9,7 @@ import torchvision.utils as vutils
 from depthnet.model import (make_model, split_params_weight_bias, get_loss,
                             delta, rmse, rel_abs_diff, rel_sqr_diff)
 from depthnet.checkpoint import save_checkpoint
+from depthnet.utils import log_depth_data
 
 
 def make_optimizer(model, optim_name, optim_params, optim_state_dict_fn):
@@ -76,43 +77,29 @@ def make_training(model_config,
 ##############
 # Validation #
 ##############
-def evaluate(loss, model, data, it, device, tag, writer=None, write_images=False):
+def evaluate(loss, model, input_, target, device="cpu", log_fn=None, log_kwargs=None):
     """Computes the error of the model on the data set.
     Returns an ordinary number (i.e. not a tensor)
+    loss - callable - loss(prediction, target) should give the loss on the particular image or
+    batch of images.
+
+    target should be the tensor such that loss(output, data[target_key]
+    is the correct thing to do.
     """
-    input_ = {}
-    for key in data:
-        input_[key] = data[key].float().to(device)
-
-    depth = input_["depth"]
+    for key in input_:
+        input_[key] = input_[key].to(device)
+    target = target.to(device)
     output = model(input_)
-    loss_value = loss(output, depth)
-    if writer is not None:
-        writer.add_scalar("data/{}_d1".format(tag), delta(output, depth, 1.25).item(), it)
-        writer.add_scalar("data/{}_d2".format(tag), delta(output, depth, 1.25**2).item(), it)
-        writer.add_scalar("data/{}_d3".format(tag), delta(output, depth, 1.25**3).item(), it)
-        writer.add_scalar("data/{}_rmse".format(tag),
-                          rmse(output, depth).item(), it)
-        writer.add_scalar("data/{}_logrmse".format(tag),
-                          rmse(torch.log(output), torch.log(depth)), it)
-        writer.add_scalar("data/{}_rel_abs_diff".format(tag), rel_abs_diff(output, depth), it)
-        writer.add_scalar("data/{}_rel_sqr_diff".format(tag), rel_sqr_diff(output, depth), it)
-        writer.add_scalar("data/{}_loss".format(tag), loss_value.item(), it)
-        if write_images:
-            rgb_input = vutils.make_grid(data["rgb"], nrow=2, normalize=True, scale_each=True)
-            writer.add_image('image/rgb_input', rgb_input, it)
-
-            depth_truth = vutils.make_grid(data["depth"], nrow=2, normalize=True, scale_each=True)
-            writer.add_image('image/depth_truth', depth_truth, it)
-
-            depth_output = vutils.make_grid(output, nrow=2, normalize=True, scale_each=True)
-            writer.add_image('image/depth_output', depth_output, it)
+    loss_value = loss(output, target)
+    if log_fn is not None:
+        log_fn(loss, model, input_, output, target, device, **log_kwargs)
     return loss_value
 
 
 ####################
 # Run the training #
 ####################
+# Customize this function depending on your train needs
 def train(model,
           scheduler,
           loss,
@@ -134,7 +121,11 @@ def train(model,
         print("epoch: {}".format(epoch))
         data = None
         for it, data in enumerate(train_loader):
-            trainloss = evaluate(loss, model, data, global_it, device, "train", writer)
+            trainloss = evaluate(loss, model, data, data["depth"], device,
+                                 log_fn=log_depth_data, log_kwargs={"writer": writer,
+                                                                    "tag": "train",
+                                                                    "it": global_it,
+                                                                    "write_images": False})
             scheduler.optimizer.zero_grad()
             trainloss.backward()
             scheduler.optimizer.step()
@@ -152,7 +143,11 @@ def train(model,
             for it, data in enumerate(val_loader):
                 if it == (global_it % len(val_loader)):
                     with torch.set_grad_enabled(False):
-                        valloss = evaluate(loss, model, data, epoch, device, "val", writer, True)
+                        valloss = evaluate(loss, model, data, data["depth"], device,
+                                           log_fn=log_depth_data, log_kwargs={"writer": writer,
+                                                                              "tag": "val",
+                                                                              "it": epoch,
+                                                                              "write_images": True})
                         break
             print("End epoch {}\tval loss: {}".format(epoch, valloss))
 

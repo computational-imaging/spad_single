@@ -33,7 +33,6 @@ def split_params_weight_bias(model):
     return split_params
 
 
-
 def initialize(model):
     """Initialize a model.
     Conv weights: Xavier initialization

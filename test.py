@@ -7,23 +7,18 @@ from datetime import datetime
 from pprint import PrettyPrinter
 
 import torch
-import torchvision.utils as vutils
 from tensorboardX import SummaryWriter
 
-### Project-specific loaders ###
-from depthnet.model import (make_model, split_params_weight_bias, get_loss,
-                            delta, rmse, rel_abs_diff, rel_sqr_diff)
-from depthnet.data import data_ingredient, get_depth_loaders
-from depthnet.train_utils import make_training, train
+from depthnet.data import data_ingredient, load_depth_data
+from depthnet.train_utils import evaluate
 from depthnet.checkpoint import load_checkpoint, safe_makedir
-### end ###
 
 from sacred import Experiment
 
 pp = PrettyPrinter(indent=4)
 pprint = pp.pprint
 
-ex = Experiment('train', ingredients=[data_ingredient])
+ex = Experiment('test', ingredients=[data_ingredient])
 
 
 # Tensorboardx
@@ -42,23 +37,11 @@ def cfg():
         "model_state_dict_fn": None,            # Function for getting the state dict
     }
 
-    train_config = {
-        "loss_fn": "berhu",
-        "optim_name": "Adam",
-        "optim_params": {
-            "lr": 1e-3,                         # Learning rate (initial)
-            "weight_decay": 1e-8,               # Strength of L2 regularization (weights only)
-        },
-        "optim_state_dict_fn": None,            # Function for getting the state dict
-        "scheduler_name": "MultiStepLR",
-        "scheduler_params": {
-            "milestones": [10, 20],             # Learning rate milestone epochs
-            "gamma": 0.1,                       # Gamma of MultistepLR decay
-        },
-        "last_epoch": -1,
-        "global_it": 0,
-        "num_epochs": 10,
+    test_config = {
+        "dataset": "val",                       # {train, val, test}
+        "loss_fn": "rmse"
     }
+
     comment = ""
 
     ckpt_config = {
@@ -78,7 +61,6 @@ def cfg():
     if ckpt_config["ckpt_file"] is not None:
         model_update, train_update, ckpt_update = load_checkpoint(ckpt_config["ckpt_file"], device)
         model_config.update(model_update)
-        train_config.update(train_update)
         ckpt_config.update(ckpt_update)
 
         del model_update, train_update, ckpt_update
@@ -86,66 +68,38 @@ def cfg():
     # torch.manual_seed(seed)
     # torch.cuda.manual_seed(seed)
 
-@ex.named_config
-def no_hints_80():
-    comment = "_nohints"
-    model_config = {"model_name": "UNet"}
-    train_config = {
-        "num_epochs": 80,
-        "scheduler_params": {
-            "milestones": [40]
-        }
-    }
+def test_avg(model,
+             dataset,
+             device,
+             loss):
+    total = 0.
+    for i in range(len(dataset)):
+        with torch.set_grad_enabled(False):
+            data = dataset[i]
+            for key in data:
+                data[key] = data[key].unsqueeze(0) # Batch size 1
+            test_loss = evaluate(loss, model, data, device=device, tag="test")
+            total += test_loss.item()
+    return total/len(dataset)
 
-@ex.named_config
-def hints_80():
-    comment = "_hints"
-    model_config = {"model_name": "UNetWithHints"}
-    train_config = {
-        "num_epochs": 80,
-        "scheduler_params": {
-            "milestones": [40]
-        }
-    }
 
-@ex.named_config
-def multi_hints_80():
-    comment = "_multihints"
-    model_config = {"model_name": "UNetMultiScaleHints"}
-    train_config = {
-        "num_epochs": 80,
-        "scheduler_params": {
-            "milestones": [40]
-        }
-    }
-
-@ex.named_config
-def overfit_small():
-    train_config = {
-        "num_epochs": 100,
-        "scheduler_params": {
-            "milestones": [50]
-        }
-    }
-    data_config = {
-        "train_file": "data/sunrgbd_all/small.txt",
-        "val_file": "data/sunrgbd_all/small.txt"
-    }
 
 
 # To see the full configuration, run $ python train.py print_config
 @ex.automain
 def main(model_config,
-         train_config,
+         test_config,
          ckpt_config,
          device,
          test_run):
     """Run stuff"""
     # Load data
-    train_loader, val_loader, _ = get_depth_loaders()
-    model, scheduler, loss = make_training(model_config,
-                                           train_config,
-                                           device)
+    _, _, test_dataset = load_depth_data()
+    model = make_model(**model_config)
+    model.to(device)
+    loss = get_loss(train_config["loss_fn"])
+
+
     config = {
         "model_config": model_config,
         "train_config": train_config,
