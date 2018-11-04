@@ -20,6 +20,7 @@ class UNet(nn.Module):
 
     def forward(self, input_):
         x = input_["rgb"]
+        mask = input_["mask"] # For masking away unknown depth values.
         x1 = self.inc(x)
         x2 = self.down1(x1)
         x3 = self.down2(x2)
@@ -30,7 +31,7 @@ class UNet(nn.Module):
         x = self.up3(x, x2)
         x = self.up4(x, x1)
         x = self.outc(x)
-        return x
+        return x * mask
 
 class UNetWithHints(nn.Module):
     def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, **kwargs):
@@ -57,6 +58,7 @@ class UNetWithHints(nn.Module):
     def forward(self, input_):
         rgb = input_["rgb"]
         hist = input_["hist"]
+        mask = input_["mask"] # For masking away unknown depth values
 
         x1 = self.unet.inc(rgb)
         x2 = self.unet.down1(x1)
@@ -72,7 +74,7 @@ class UNetWithHints(nn.Module):
         x = self.unet.up3(x, x2)
         x = self.unet.up4(x, x1)
         x = self.unet.outc(x)
-        return x
+        return x * mask
 
 
 class UNetMultiScaleHints(nn.Module):
@@ -105,6 +107,7 @@ class UNetMultiScaleHints(nn.Module):
     def forward(self, input_):
         rgb = input_["rgb"]
         hist = input_["hist"]
+        mask = input_["mask"] # For masking away unknown depth values
 
         x1 = self.unet.inc(rgb)
         x2 = self.unet.down1(x1)
@@ -123,4 +126,4 @@ class UNetMultiScaleHints(nn.Module):
         x = self.unet.up3(x, x2)
         x = self.unet.up4(x, x1)
         x = self.unet.outc(x)
-        return x
+        return x * mask

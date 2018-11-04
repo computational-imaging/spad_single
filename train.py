@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 import os
 
+import random
 import socket
 from datetime import datetime
 
 from pprint import PrettyPrinter
 
 import torch
+import torch.backends.cudnn as cudnn
 import torchvision.utils as vutils
 from tensorboardX import SummaryWriter
+
+import numpy as np
 
 ### Project-specific loaders ###
 from depthnet.model import (make_model, split_params_weight_bias, get_loss,
@@ -68,6 +72,7 @@ def cfg():
         "log_dir": "runs",
     }
 
+    seed = 2018
     cuda_device = "0"                       # The gpu index to run on. Should be a string
     test_run = False                        # Whether or not to truncate epochs for testing
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
@@ -132,6 +137,12 @@ def overfit_small():
         "val_file": "data/sunrgbd_all/small.txt"
     }
 
+def init_randomness(seed):
+    cudnn.deterministic = True
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
 
 # To see the full configuration, run $ python train.py print_config
 @ex.automain
@@ -139,8 +150,10 @@ def main(model_config,
          train_config,
          ckpt_config,
          device,
-         test_run):
+         test_run,
+         seed):
     """Run stuff"""
+    init_randomness(seed)
     # Load data
     train_loader, val_loader, _ = get_depth_loaders()
     model, scheduler, loss = make_training(model_config,

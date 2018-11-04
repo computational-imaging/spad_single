@@ -48,7 +48,7 @@ def delta(prediction, target, threshold):
     max(prediction[i]/target[i], target[i]/prediction[i]) < threshold
     """
     c = torch.max(prediction/target, target/prediction)
-    return torch.sum((c > threshold).float())/c.numel()
+    return torch.sum((c < threshold).float())/c.numel()
 
 def rmse(prediction, target):
     """
