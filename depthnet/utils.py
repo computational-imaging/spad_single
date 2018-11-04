@@ -38,6 +38,9 @@ def log_depth_data(loss, model, input_, output, target, device,
         depth_output = vutils.make_grid(output, nrow=2, normalize=True, scale_each=True)
         writer.add_image('image/depth_output', depth_output, it)
 
+        depth_mask = vutils.make_grid(input_["mask"], nrow=2, normalize=False, scale_each=True)
+        writer.add_image('image/depth_mask', depth_mask, it)
+
 ##################
 # Viewing Images #
 ##################
