@@ -23,6 +23,7 @@ def log_depth_data(loss, model, input_, output, target, device,
     writer.add_scalar("data/{}_d3".format(tag), delta(output, depth, 1.25**3).item(), it)
     writer.add_scalar("data/{}_rmse".format(tag),
                       rmse(output, depth).item(), it)
+    print(rmse(output, depth).item())
     writer.add_scalar("data/{}_logrmse".format(tag),
                       rmse(torch.log(output), torch.log(depth)), it)
     writer.add_scalar("data/{}_rel_abs_diff".format(tag), rel_abs_diff(output, depth), it)
@@ -38,8 +39,8 @@ def log_depth_data(loss, model, input_, output, target, device,
         depth_output = vutils.make_grid(output, nrow=2, normalize=True, scale_each=True)
         writer.add_image('image/depth_output', depth_output, it)
 
-        depth_mask = vutils.make_grid(input_["mask"], nrow=2, normalize=False, scale_each=True)
-        writer.add_image('image/depth_mask', depth_mask, it)
+        # depth_mask = vutils.make_grid(input_["mask"], nrow=2, normalize=False, scale_each=True)
+        # writer.add_image('image/depth_mask', depth_mask, it)
 
 ##################
 # Viewing Images #
