@@ -57,20 +57,26 @@ def rmse(prediction, target):
     sum_squares = torch.sum((prediction - target).pow(2))
     return torch.sqrt((1./sum_squares.numel())*sum_squares)
 
-def rel_abs_diff(prediction, target):
+def test_rmse():
+    prediction = ones(4, 4)
+    target = zeros(4, 4)
+    err = rmse(prediction, target)
+
+
+def rel_abs_diff(prediction, target, eps=1e-6):
     """
     The average relative absolute difference:
 
     1/N*sum(|prediction - target|/target)
     """
-    sum_abs_rel = torch.sum(torch.abs(prediction - target)/target)
+    sum_abs_rel = torch.sum(torch.abs(prediction - target)/(target + eps))
     return (1./sum_abs_rel.numel())*sum_abs_rel
 
-def rel_sqr_diff(prediction, target):
+def rel_sqr_diff(prediction, target, eps=1e-6):
     """
     The average relative squared difference:
 
     1/N*sum(||prediction - target||**2/target)
     """
-    sum_sqr_rel = torch.sum((prediction - target).pow(2)/target)
+    sum_sqr_rel = torch.sum((prediction - target).pow(2)/(target + eps))
     return (1./sum_sqr_rel.numel())*sum_sqr_rel

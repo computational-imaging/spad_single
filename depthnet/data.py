@@ -240,7 +240,9 @@ class ResizeAll():
         self.resize = transforms.Resize((224, 256), Image.NEAREST)
 
     def __call__(self, sample):
+        seed = np.random.randint(2**32-1)
         for key in sample:
+            random.seed(seed)
             sample[key] = self.resize(sample[key])
         return sample
 
@@ -262,7 +264,9 @@ class RandomCropAll(): # pylint: disable=too-few-public-methods
         self.random_crop = transforms.RandomCrop(self.output_size)
 
     def __call__(self, sample):
+        seed = np.random.randint(2**32-1)
         for key in sample:
+            random.seed(seed)
             sample[key] = self.random_crop(sample[key])
         return sample
 
@@ -274,7 +278,9 @@ class RandomHorizontalFlipAll(): # pylint: disable=too-few-public-methods
         self.random_horiz_flip = transforms.RandomHorizontalFlip(self.flip_prob)
 
     def __call__(self, sample):
+        seed = np.random.randint(2**32-1)
         for key in sample:
+            random.seed(seed)
             sample[key] = self.random_horiz_flip(sample[key])
         return sample
 
