@@ -1,16 +1,25 @@
 # My stuff
 *.png
 *.zip
-checkpoints*
 *nohup.out
+checkpoints*
 experiments*
 
 # Tensorboard
 runs/*
 
+# C
+*.o
+*.a
+
+# MATLAB
+*.mex*
+
 # Emacs
 *~
 
+# SUNRGBD
+*SUNRGBD*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

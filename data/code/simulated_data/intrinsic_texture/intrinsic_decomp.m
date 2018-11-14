@@ -48,6 +48,7 @@ function [ res_r, res_s ] = intrinsic_decomp( I, S, depth, sigma_c, sigma_i, sig
     
     % Normal Map Estimation
     [nx, ny, nz]=surfnorm(Points(:,:,1),Points(:,:,2),Points(:,:,3));
+
     nMap=cat(3,nx,ny,nz);
 %     Points = Points(7:h-6, 9:w-8, :);           % cropping the image
     [Points, nMap] = DenoisePoints(Points, nMap); % Bilateral Mesh Denoising
@@ -56,6 +57,14 @@ function [ res_r, res_s ] = intrinsic_decomp( I, S, depth, sigma_c, sigma_i, sig
     % Cropping (Kinect RGB image has a white padding)
 %     S = S(7:h-6, 9:w-8, :);
 %     I = I(7:h-6, 9:w-8, :);
+    nNaNs = sum(isnan(Points), 'all');
+    % disp(strcat("num nan points: ", int2str(sum(isnan(Points), 'all'))));
+    if nNaNs > 0 % We broke stuff, abort and return -1.
+        res_r = -1;
+        res_s = -1;
+        return
+    end
+
 
     [h, w, ~] = size(I);
     N = h*w;

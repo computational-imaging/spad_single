@@ -26,6 +26,8 @@
 
 #include <ANN/ANNperf.h>				// performance evaluation
 
+#include <cstdio>						// Debugging
+
 //----------------------------------------------------------------------
 // The following routines are utility functions for manipulating
 // points sets, used in determining splitting planes for kd-tree
@@ -159,11 +161,14 @@ ANNcoord annSpread(				// compute point spread along dimension
 {
 	ANNcoord min = PA(0,d);				// compute max and min coords
 	ANNcoord max = PA(0,d);
+
 	for (int i = 1; i < n; i++) {
 		ANNcoord c = PA(i,d);
 		if (c < min) min = c;
 		else if (c > max) max = c;
 	}
+	// fprintf(stderr, "min: %f\n", min);
+	// fprintf(stderr, "max: %f\n", max);
 	return (max - min);					// total spread is difference
 }
 

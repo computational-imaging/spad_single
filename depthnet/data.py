@@ -23,6 +23,10 @@ def cfg():
     val_dir = os.path.join("data", "sunrgbd_all")
     test_file = os.path.join("data", "sunrgbd_all", "test.txt")
     test_dir = os.path.join("data", "sunrgbd_all")
+
+    # Indices of images to exclude from the dataset.
+    blacklist_file = os.path.join("data", "sunrgbd_all", "blacklist.txt")
+
     batch_size = 20             # Number of training examples per iteration
     keywords = {                # Words that should be in the keywords set of dict
         "train": ["SUNRGBD"],
@@ -41,7 +45,9 @@ def worker_init(worker_id):
 class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
     """Class for reading and storing image and depth data together.
     """
-    def __init__(self, splitfile, data_dir, keywords, transform=None):
+    def __init__(self, splitfile, data_dir, keywords,
+                 file_types=["rgb", "depth", "rawdepth", "albedo"],
+                 info_file="info.json", blacklist_file="blacklist.txt", transform=None):
         """
         Parameters
         ----------
@@ -55,24 +61,40 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
         super(DepthDataset, self).__init__()
         self.data_dir = data_dir
         self.transform = transform
+        self.file_types = file_types
         self.data = []
         self.info = {}
-        with open(os.path.join(data_dir, "info.json"), "r") as f:
-            info = json.load(f)
+        self.blacklist = []
+        info = {}
+        if info_file is not None:
+            print("Loading info file from {}".format(os.path.join(data_dir, info_file)))
+            with open(os.path.join(data_dir, info_file), "r") as f:
+                info = json.load(f)
+
+        if blacklist_file is not None:
+            print("Loading blacklist from {}".format(os.path.join(data_dir, blacklist_file)))
+            with open(os.path.join(data_dir, blacklist_file), "r") as f:
+                self.blacklist = [line.strip() for line in f.readlines()]
 
         with open(splitfile, "r") as f:
             local_index = 0
             for line in f.readlines():
                 counter, rawdepth, depth, rgb = line.strip().split(",")
-                for word in keywords:
-                    # If we specified a keyword that matches a keyword for this entry, include it.
-                    if word in info[counter]["keywords"]:
-                        self.data.append((rawdepth, depth, rgb))
-                        # Add some extra metadata
-                        self.info[local_index] = info[counter]
-                        self.info[local_index]["global_index"] = int(counter)
-                        local_index += 1
-                        break
+                if counter in self.blacklist:
+                    continue # Exclude this line.
+                if info_file is not None:
+                    for word in keywords:
+                        # Keyword match obtained
+                        if word in info[counter]["keywords"]:
+                            self.data.append(counter)
+                            # Add some extra metadata
+                            self.info[local_index] = info[counter]
+                            self.info[local_index]["global_index"] = int(counter)
+                            local_index += 1
+                            break
+                else:
+                    self.data.append((rawdepth, depth, rgb))
+
 
 #         print(self.data)
 
@@ -133,12 +155,13 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
         return len(self.data)
 
     def __getitem__(self, idx):
-        rawdepth_file, depth_file, rgb_file = self.data[idx]
-        rawdepth_img = Image.open(os.path.join(self.data_dir, rawdepth_file))
-        depth_img = Image.open(os.path.join(self.data_dir, depth_file))
-        rgb_img = Image.open(os.path.join(self.data_dir, rgb_file))
-        sample = {"rawdepth": rawdepth_img, "depth": depth_img, "rgb": rgb_img}
+        sample = {}
+        for file_type in self.file_types:
+            filename = self.data[idx] + "_" + file_type + ".png"
+            sample[file_type] = Image.open(os.path.join(self.data_dir, filename))
+
         if self.transform:
+            # print(self.data[idx])
             sample = self.transform(sample)
         return sample
 
@@ -149,7 +172,12 @@ def load_depth_data(train_file, train_dir, train_keywords,
                     val_file=None, val_dir=None, val_keywords=None,
                     test_file=None, test_dir=None, test_keywords=None):
     """Generates training and validation datasets from
-    text files and directories. Sets up datasets with transforms."""
+    text files and directories. Sets up datasets with transforms.
+    *_file - string - a text file containing info for DepthDataset to load the images
+    *_dir - string - the folder containing the images to load
+    *_keywords - string - a collection of strings used to decide which subset of the
+                          data to load.
+    """
     train = DepthDataset(train_file, train_dir, train_keywords)
     mean, var = train.get_global_stats(os.path.join(train_dir, "stats_cache.txt"))
     augment = [RandomCropAll(300),
@@ -159,9 +187,10 @@ def load_depth_data(train_file, train_dir, train_keywords,
     PIL_transforms = [SUNRGBDDepthProcessing("depth"),
                       SUNRGBDDepthProcessing("rawdepth"),
                       AddDepthMask(),
-                      ToFloat("rgb")
+                      ToFloat("rgb"),
+                      ToFloat("albedo"),
                      ]
-    float_transforms = [AddDepthHist(bins=800//3, range=(0, 8)),
+    float_transforms = [AddDepthHist(bins=800//3, range=(0, 8), density=True),
                         NormalizeRGB(mean, var),
                         ToTensor(),
                        ]
@@ -379,15 +408,32 @@ class ToTensor(): # pylint: disable=too-few-public-methods
 
 class AddDepthHist(): # pylint: disable=too-few-public-methods
     """Takes a depth map and computes a histogram of depths as well"""
-    def __init__(self, **kwargs):
+    def __init__(self, use_albedo=True, use_squared_falloff=False, **kwargs):
         """
         kwargs - passthrough to np.histogram
         """
+        self.use_albedo = use_albedo
+        self.use_squared_falloff = use_squared_falloff
         self.hist_kwargs = kwargs
 
     def __call__(self, sample):
         depth = sample["depth"]
-        sample["hist"], _ = np.histogram(depth, **self.hist_kwargs)
+        weights = np.ones(depth.shape)
+        if self.use_albedo:
+            weights = weights * np.mean(sample["albedo"]) # Attenuate by the average albedo TODO
+        if self.use_squared_falloff:
+            weights[depth == 0] = 0.
+            weights[depth != 0] = weights[depth != 0] / (depth[depth != 0]**2)
+        # print(weights/np.sum(weights))
+        # print(np.sum(weights))
+        # if (np.sum(sample["albedo"]) < 1e-6):
+        #     print("bad")
+        sample["hist"], _ = np.histogram(depth, weights=weights, **self.hist_kwargs)
+        # sample["hist"] = (raw_hist - np.mean(raw_hist))/np.std(raw_hist) # Instance norm
+        # print(self.hist_kwargs)
+        # print(self.use_albedo)
+        # print(self.use_squared_falloff)
+        # print("histogram sum: {}".format(np.sum(sample["hist"])))
 #         print(hist)
 #         print(sample["depth"])
         return sample
@@ -420,3 +466,8 @@ class NormalizeRGB(object): # pylint: disable=too-few-public-methods
         sample["rgb"] /= np.sqrt(self.var)
 #         print(sample["rgb"][0:10, 0:10, 0])
         return sample
+
+if __name__ == '__main__':
+    train, _, _ = load_depth_data("data/sunrgbd_all/train.txt", "data/sunrgbd_all", ["data"])
+    a = train[0]
+

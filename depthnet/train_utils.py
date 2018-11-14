@@ -154,7 +154,10 @@ def train(model,
         # Save the last batch output of every epoch
         if writer is not None:
             for name, param in model.named_parameters():
-                writer.add_histogram(name, param.clone().cpu().data.numpy(), global_it)
+                if torch.isnan(param).any():
+                    print("NaN detected.")
+                else:
+                    writer.add_histogram(name, param.clone().cpu().data.numpy(), global_it)
 
         # Save checkpoint
         state = {

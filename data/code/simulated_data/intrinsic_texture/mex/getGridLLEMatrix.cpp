@@ -1,5 +1,7 @@
 #include "mexBase.h"
 #include "LLE.h"
+#include <cstdio> // Debugging
+#include <cmath>  // Debugging
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
@@ -34,14 +36,20 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 					}
 				}
 			}
-			for(int k=0;k<feature_dim;k++)
+			for(int k=0;k<feature_dim;k++) {
 				X(n, k) = nMap[k*img_h*img_w+x_pos[n]*img_h+y_pos[n]];
+				if (std::isnan(X(n, k))) {
+					fprintf(stderr, "isnan: X(%d, %d)\n", n, k);
+					return;
+				}
+			}
 			n++;
 		}
 	}
 
 	cv::Mat1f W(Ngrid, K);
 	cv::Mat1i neighbors(Ngrid, K);
+	// printf("Using LLE3\n");
 	LLE3(X, W, neighbors, Ngrid, feature_dim, K);
 	
 	//plhs[0] = mxCreateDoubleMatrix(img_w, img_h, mxREAL);

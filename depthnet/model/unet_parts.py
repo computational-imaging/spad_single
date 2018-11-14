@@ -47,13 +47,15 @@ class down(nn.Module):
 
 
 class up(nn.Module):
-    def __init__(self, in_ch, out_ch, bilinear=True):
+    def __init__(self, in_ch, out_ch, upsampling='nearest'):
         super(up, self).__init__()
 
         #  would be a nice idea if the upsampling could be learned too,
         #  but my machine do not have enough memory to handle all those weights
-        if bilinear:
+        if upsampling == 'bilinear':
             self.up = lambda input_: F.interpolate(input_, scale_factor=2, mode='bilinear', align_corners=True)
+        elif upsampling == 'nearest':
+            self.up = lambda input_: F.interpolate(input_, scale_factor=2, mode='nearest')
         else:
             self.up = nn.ConvTranspose2d(in_ch//2, in_ch//2, 2, stride=2)
 

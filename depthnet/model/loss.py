@@ -58,9 +58,10 @@ def rmse(prediction, target):
     return torch.sqrt((1./sum_squares.numel())*sum_squares)
 
 def test_rmse():
-    prediction = ones(4, 4)
-    target = zeros(4, 4)
+    prediction = 2*torch.ones(3, 3, 3)
+    target = torch.zeros(3, 3, 3)
     err = rmse(prediction, target)
+    return err
 
 
 def rel_abs_diff(prediction, target, eps=1e-6):
@@ -80,3 +81,6 @@ def rel_sqr_diff(prediction, target, eps=1e-6):
     """
     sum_sqr_rel = torch.sum((prediction - target).pow(2)/(target + eps))
     return (1./sum_sqr_rel.numel())*sum_sqr_rel
+
+if __name__ == '__main__':
+    print(test_rmse())

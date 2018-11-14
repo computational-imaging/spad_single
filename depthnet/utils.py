@@ -16,19 +16,21 @@ from depthnet.model import delta, rmse, rel_abs_diff, rel_sqr_diff
 ###########
 
 def log_depth_data(loss, model, input_, output, target, device,
-                   writer, tag, it, write_images):
+                   writer, tag, it, write_images=False, save_output=False):
     depth = target
     writer.add_scalar("data/{}_d1".format(tag), delta(output, depth, 1.25).item(), it)
     writer.add_scalar("data/{}_d2".format(tag), delta(output, depth, 1.25**2).item(), it)
     writer.add_scalar("data/{}_d3".format(tag), delta(output, depth, 1.25**3).item(), it)
     writer.add_scalar("data/{}_rmse".format(tag),
                       rmse(output, depth).item(), it)
-    print(rmse(output, depth).item())
+    # print(rmse(output, depth).item())
     writer.add_scalar("data/{}_logrmse".format(tag),
                       rmse(torch.log(output), torch.log(depth)), it)
     writer.add_scalar("data/{}_rel_abs_diff".format(tag), rel_abs_diff(output, depth), it)
     writer.add_scalar("data/{}_rel_sqr_diff".format(tag), rel_sqr_diff(output, depth), it)
     writer.add_scalar("data/{}_loss".format(tag), loss(output, target).item(), it)
+    writer.add_scalar("data/{}_depth_min".format(tag), torch.min(output).item(), it)
+    writer.add_scalar("data/{}_depth_max".format(tag), torch.max(output).item(), it)
     if write_images:
         rgb_input = vutils.make_grid(input_["rgb"], nrow=2, normalize=True, scale_each=True)
         writer.add_image('image/rgb_input', rgb_input, it)
@@ -41,6 +43,8 @@ def log_depth_data(loss, model, input_, output, target, device,
 
         # depth_mask = vutils.make_grid(input_["mask"], nrow=2, normalize=False, scale_each=True)
         # writer.add_image('image/depth_mask', depth_mask, it)
+    if save_output:
+        vutils.save_image(output, "output.png")
 
 ##################
 # Viewing Images #

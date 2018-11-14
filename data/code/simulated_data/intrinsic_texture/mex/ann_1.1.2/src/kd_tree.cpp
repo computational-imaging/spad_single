@@ -33,6 +33,8 @@
 #include "kd_util.h"					// kd-tree utilities
 #include <ANN/ANNperf.h>				// performance evaluation
 
+#include <cstdio>						// Debugging
+
 //----------------------------------------------------------------------
 //	Global data
 //
@@ -248,33 +250,50 @@ void ANNkd_tree::SkeletonTree(			// construct skeleton tree
 		ANNpointArray pa,				// point array
 		ANNidxArray pi)					// point indices
 {
+	// printf("1\n");
 	dim = dd;							// initialize basic elements
+	// printf("2\n");
 	n_pts = n;
+	// printf("3\n");
 	bkt_size = bs;
+	// printf("4\n");
 	pts = pa;							// initialize points array
+	// printf("5\n");
+
 
 	root = NULL;						// no associated tree yet
+	// printf("6\n");
 
 	if (pi == NULL) {					// point indices provided?
+		// printf("7\n");
 		pidx = new ANNidx[n];			// no, allocate space for point indices
+		// printf("8\n");
 		for (int i = 0; i < n; i++) {
+			// printf("9\n");
 			pidx[i] = i;				// initially identity
 		}
 	}
 	else {
+		// printf("10\n");
 		pidx = pi;						// yes, use them
 	}
-
+	// printf("11\n");
 	bnd_box_lo = bnd_box_hi = NULL;		// bounding box is nonexistent
+	// printf("12\n");
 	if (KD_TRIVIAL == NULL)				// no trivial leaf node yet?
+		// printf("13\n");
 		KD_TRIVIAL = new ANNkd_leaf(0, IDX_TRIVIAL);	// allocate it
+	// fprintf(stderr, "made skeleton tree1\n");
 }
 
 ANNkd_tree::ANNkd_tree(					// basic constructor
 		int n,							// number of points
 		int dd,							// dimension
 		int bs)							// bucket size
-{  SkeletonTree(n, dd, bs);  }			// construct skeleton tree
+{  
+	// printf("constructor 1\n");
+	SkeletonTree(n, dd, bs);			// construct skeleton tree
+}
 
 //----------------------------------------------------------------------
 //	rkd_tree - recursive procedure to build a kd-tree
@@ -320,6 +339,7 @@ ANNkd_ptr rkd_tree(				// recursive construction of kd-tree
 	ANNorthRect			&bnd_box,		// bounding box for current node
 	ANNkd_splitter		splitter)		// splitting routine
 {
+	// fprintf(stderr, "1\n");
 	if (n <= bsp) {						// n small, make a leaf node
 		if (n == 0)						// empty leaf node
 			return KD_TRIVIAL;			// return (canonical) empty leaf
@@ -327,17 +347,24 @@ ANNkd_ptr rkd_tree(				// recursive construction of kd-tree
 			return new ANNkd_leaf(n, pidx); 
 	}
 	else {								// n large, make a splitting node
+		// fprintf(stderr, "1\n");
+		// fprintf(stderr, "splitting\n");
+
 		int cd;							// cutting dimension
 		ANNcoord cv;					// cutting value
 		int n_lo;						// number on low side of cut
 		ANNkd_node *lo, *hi;			// low and high children
 
 										// invoke splitting procedure
+		// fprintf(stderr, "0\n");
 		(*splitter)(pa, pidx, bnd_box, n, dim, cd, cv, n_lo);
+		// fprintf(stderr, "1\n");
 
+		// fprintf(stderr, "2\n");
 		ANNcoord lv = bnd_box.lo[cd];	// save bounds for cutting dimension
 		ANNcoord hv = bnd_box.hi[cd];
 
+		// fprintf(stderr, "3\n");
 		bnd_box.hi[cd] = cv;			// modify bounds for left subtree
 		lo = rkd_tree(					// build left subtree
 				pa, pidx, n_lo,			// ...from pidx[0..n_lo-1]
@@ -351,8 +378,9 @@ ANNkd_ptr rkd_tree(				// recursive construction of kd-tree
 		bnd_box.lo[cd] = lv;			// restore bounds
 
 										// create the splitting node
+		// fprintf(stderr, "new splitting node\n");
 		ANNkd_split *ptr = new ANNkd_split(cd, cv, lv, hv, lo, hi);
-
+		// fprintf(stderr, "done splitting\n");
 		return ptr;						// return pointer to this node
 	}
 } 
@@ -372,6 +400,7 @@ ANNkd_tree::ANNkd_tree(					// construct from point array
 	int					bs,				// bucket size
 	ANNsplitRule		split)			// splitting method
 {
+	// printf("constructor 2\n");
 	SkeletonTree(n, dd, bs);			// set up the basic stuff
 	pts = pa;							// where the points are
 	if (n == 0) return;					// no points--no sweat
