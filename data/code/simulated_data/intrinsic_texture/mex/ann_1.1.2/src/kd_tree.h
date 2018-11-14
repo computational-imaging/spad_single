@@ -28,6 +28,7 @@
 #define ANN_kd_tree_H
 
 #include <ANN/ANNx.h>					// all ANN includes
+#include <cstdio>						// Debugging
 
 using namespace std;					// make std:: available
 
@@ -97,8 +98,10 @@ public:
 		int				n,				// number of points
 		ANNidxArray		b)				// bucket
 		{
+			// printf("15\n");
 			n_pts		= n;			// number of points in bucket
 			bkt			= b;			// the bucket
+			// printf("16\n");
 		}
 
 	~ANNkd_leaf() { }					// destructor (none)

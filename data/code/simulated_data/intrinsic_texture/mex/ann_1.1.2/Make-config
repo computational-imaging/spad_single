@@ -72,7 +72,7 @@ linux-g++:
 	$(MAKE) targets \
 	"ANNLIB = libANN.a" \
 	"C++ = g++" \
-	"CFLAGS = -O3" \
+	"CFLAGS = -O0 -fPIC -fstack-protector-all" \
 	"MAKELIB = ar ruv" \
 	"RANLIB = true"
 
@@ -81,7 +81,7 @@ macosx-g++:
 	$(MAKE) targets \
 	"ANNLIB = libANN.a" \
 	"C++ = g++" \
-	"CFLAGS = -O3 -arch x86_64" \
+	"CFLAGS = -O3" \
 	"MAKELIB = libtool -static -o " \
 	"RANLIB = true"
 

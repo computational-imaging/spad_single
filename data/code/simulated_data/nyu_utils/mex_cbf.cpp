@@ -90,8 +90,8 @@ void mexFunction(int nlhs, mxArray* plhs[],
   validate_types(prhs);
   validate_sizes(prhs);
 
-  mwSize H = mxGetM(prhs[ARG_DEPTH]);
-  mwSize W = mxGetN(prhs[ARG_INTENSITY]);
+  int H = mxGetM(prhs[ARG_DEPTH]);
+  int W = mxGetN(prhs[ARG_INTENSITY]);
   int num_scales = mxGetM(prhs[ARG_SIG_S]);
 
   if (LOG_LEVEL >= 1) {

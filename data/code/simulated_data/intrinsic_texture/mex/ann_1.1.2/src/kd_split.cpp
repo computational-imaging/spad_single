@@ -27,6 +27,8 @@
 #include "kd_util.h"					// kd-tree utilities
 #include "kd_split.h"					// splitting functions
 
+#include <cstdio>						// Debugging
+
 //----------------------------------------------------------------------
 //	Constants
 //----------------------------------------------------------------------
@@ -155,6 +157,7 @@ void sl_midpt_split(
 {
 	int d;
 
+	// fprintf(stderr, "starting sl_midpt_split\n");
 	ANNcoord max_length = bnds.hi[0] - bnds.lo[0];
 	for (d = 1; d < dim; d++) {			// find length of longest box side
 		ANNcoord length = bnds.hi[d] - bnds.lo[d];
@@ -162,20 +165,28 @@ void sl_midpt_split(
 			max_length = length;
 		}
 	}
+	fprintf(stderr, "0\n");
 	ANNcoord max_spread = -1;			// find long side with most spread
 	for (d = 0; d < dim; d++) {
 										// is it among longest?
 		if ((bnds.hi[d] - bnds.lo[d]) >= (1-ERR)*max_length) {
 										// compute its spread
 			ANNcoord spr = annSpread(pa, pidx, n, d);
+			// fprintf(stderr, "spread: %f\n", spr);
 			if (spr > max_spread) {		// is it max so far?
+				fprintf(stderr, "0.75\n");
 				max_spread = spr;
 				cut_dim = d;
 			}
 		}
 	}
+	// fprintf(stderr, "1\n");
+
 										// ideal split at midpoint
+	// fprintf(stderr, "d: %d\n", dim);
+	// fprintf(stderr, "cut_dim: %d\n", cut_dim);
 	ANNcoord ideal_cut_val = (bnds.lo[cut_dim] + bnds.hi[cut_dim])/2;
+	// fprintf(stderr, "2\n");
 
 	ANNcoord min, max;
 	annMinMax(pa, pidx, n, cut_dim, min, max);	// find min/max coordinates

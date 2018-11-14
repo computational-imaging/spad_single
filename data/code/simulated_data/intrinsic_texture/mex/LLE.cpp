@@ -288,9 +288,10 @@ void LLE3(cv::Mat1f &X, cv::Mat1f &W, cv::Mat1i &neighbors, int N, int D, int K 
 			dataPts[nPts][d] = X(nPts, d);
 	}
 
-	printf("---->kd_tree building...");
+	printf("---->kd_tree building...\n");
+	// printf("is this it?\n");
 	kdTree = new ANNkd_tree(dataPts, nPts, D);
-	printf("done.\n");
+	fprintf(stderr, "done.\n");
 
 	double eps;
 	for(int n=0;n<N;n++) {
