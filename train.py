@@ -42,6 +42,7 @@ def cfg():
             "output_nc": 1,                     # Number of output channels
             "hist_len": 800//3,                 # Length of the histogram (hints only)
             "num_hints_layers": 4,              # Number of 1x1 conv layers for hints (hints only)
+            "upsampling": "bilinear",
         },
         "model_state_dict_fn": None,            # Function for getting the state dict
     }
@@ -50,7 +51,7 @@ def cfg():
         "loss_fn": "berhu",
         "optim_name": "Adam",
         "optim_params": {
-            "lr": 1e-3,                         # Learning rate (initial)
+            "lr": 1e-2,                         # Learning rate (initial)
             "weight_decay": 1e-8,               # Strength of L2 regularization (weights only)
         },
         "optim_state_dict_fn": None,            # Function for getting the state dict

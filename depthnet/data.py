@@ -156,6 +156,7 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
 
     def __getitem__(self, idx):
         sample = {}
+        sample["id"] = self.data[idx]
         for file_type in self.file_types:
             filename = self.data[idx] + "_" + file_type + ".png"
             sample[file_type] = Image.open(os.path.join(self.data_dir, filename))
@@ -271,8 +272,9 @@ class ResizeAll():
     def __call__(self, sample):
         seed = np.random.randint(2**32-1)
         for key in sample:
-            random.seed(seed)
-            sample[key] = self.resize(sample[key])
+            if key != "id":
+                random.seed(seed)
+                sample[key] = self.resize(sample[key])
         return sample
 
 # for data augmentation
@@ -295,8 +297,9 @@ class RandomCropAll(): # pylint: disable=too-few-public-methods
     def __call__(self, sample):
         seed = np.random.randint(2**32-1)
         for key in sample:
-            random.seed(seed)
-            sample[key] = self.random_crop(sample[key])
+            if key != "id":
+                random.seed(seed)
+                sample[key] = self.random_crop(sample[key])
         return sample
 
 class RandomHorizontalFlipAll(): # pylint: disable=too-few-public-methods
@@ -309,8 +312,9 @@ class RandomHorizontalFlipAll(): # pylint: disable=too-few-public-methods
     def __call__(self, sample):
         seed = np.random.randint(2**32-1)
         for key in sample:
-            random.seed(seed)
-            sample[key] = self.random_horiz_flip(sample[key])
+            if key != "id":
+                random.seed(seed)
+                sample[key] = self.random_horiz_flip(sample[key])
         return sample
 
 class CenterCrop(): # pylint: disable=too-few-public-methods
@@ -426,8 +430,8 @@ class AddDepthHist(): # pylint: disable=too-few-public-methods
             weights[depth != 0] = weights[depth != 0] / (depth[depth != 0]**2)
         # print(weights/np.sum(weights))
         # print(np.sum(weights))
-        # if (np.sum(sample["albedo"]) < 1e-6):
-        #     print("bad")
+        if np.sum(weights) < 1e-6:
+            print("bad: {}".format(sample["id"]))
         sample["hist"], _ = np.histogram(depth, weights=weights, **self.hist_kwargs)
         # sample["hist"] = (raw_hist - np.mean(raw_hist))/np.std(raw_hist) # Instance norm
         # print(self.hist_kwargs)

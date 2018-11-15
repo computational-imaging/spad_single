@@ -47,7 +47,7 @@ class down(nn.Module):
 
 
 class up(nn.Module):
-    def __init__(self, in_ch, out_ch, upsampling='nearest'):
+    def __init__(self, in_ch, out_ch, upsampling='bilinear'):
         super(up, self).__init__()
 
         #  would be a nice idea if the upsampling could be learned too,
