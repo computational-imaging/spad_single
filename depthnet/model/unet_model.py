@@ -5,17 +5,17 @@ from collections import OrderedDict
 from .unet_parts import *
 
 class UNet(nn.Module):
-    def __init__(self, input_nc, output_nc, **kwargs):
+    def __init__(self, input_nc, output_nc, upsampling="bilinear", **kwargs):
         super(UNet, self).__init__()
         self.inc = inconv(input_nc, 64)
         self.down1 = down(64, 128)
         self.down2 = down(128, 256)
         self.down3 = down(256, 512)
         self.down4 = down(512, 512)
-        self.up1 = up(1024, 256)
-        self.up2 = up(512, 128)
-        self.up3 = up(256, 64)
-        self.up4 = up(128, 64)
+        self.up1 = up(1024, 256, upsampling)
+        self.up2 = up(512, 128, upsampling)
+        self.up3 = up(256, 64, upsampling)
+        self.up4 = up(128, 64, upsampling)
         self.outc = outconv(64, output_nc)
 
     def forward(self, input_):
@@ -34,9 +34,10 @@ class UNet(nn.Module):
         return x * mask
 
 class UNetWithHints(nn.Module):
-    def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, **kwargs):
+    def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, upsampling="bilinear",
+                 **kwargs):
         super(UNetWithHints, self).__init__()
-        self.unet = UNet(input_nc, output_nc)
+        self.unet = UNet(input_nc, output_nc, upsampling)
         self.hist_len = hist_len
         self.num_hints_layers = num_hints_layers
 
@@ -52,7 +53,7 @@ class UNetWithHints(nn.Module):
             hints.update({"hints_relu_{}".format(j): nn.ReLU(True)})
             j += 1
 
-        self.unet.up1 = up(1024+hist_len, 256) # Concatenate the output of the global hints
+        self.unet.up1 = up(1024+hist_len, 256, upsampling) # Concatenate the output of the global hints
         self.global_hints = nn.Sequential(hints)
 
     def forward(self, input_):
@@ -78,9 +79,10 @@ class UNetWithHints(nn.Module):
 
 
 class UNetMultiScaleHints(nn.Module):
-    def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, **kwargs):
+    def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, upsampling="bilinear",
+                 **kwargs):
         super(UNetMultiScaleHints, self).__init__()
-        self.unet = UNet(input_nc, output_nc)
+        self.unet = UNet(input_nc, output_nc, upsampling)
         self.hist_len = hist_len
         self.num_hints_layers = num_hints_layers
 
@@ -98,10 +100,10 @@ class UNetMultiScaleHints(nn.Module):
         self.global_hints = nn.Sequential(hints)
 
 
-        self.unet.up1 = up(1024+hist_len, 256) # Concatenate the output of the global hints
-        self.unet.up2 = up(512+hist_len, 128) # Concatenate the output of the global hints
-        self.unet.up3 = up(256+hist_len, 64) # Concatenate the output of the global hints
-        self.unet.up4 = up(128+hist_len, 64) # Concatenate the output of the global hints
+        self.unet.up1 = up(1024+hist_len, 256, upsampling) # Concatenate the output of the global hints
+        self.unet.up2 = up(512+hist_len, 128, upsampling) # Concatenate the output of the global hints
+        self.unet.up3 = up(256+hist_len, 64, upsampling) # Concatenate the output of the global hints
+        self.unet.up4 = up(128+hist_len, 64, upsampling) # Concatenate the output of the global hints
 
 
     def forward(self, input_):
