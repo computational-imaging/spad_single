@@ -33,6 +33,8 @@ def cfg():
         "val": ["SUNRGBD"],
         "test": ["SUNRGBD"],
     }
+    hist_use_albedo = True
+    hist_use_squared_falloff = True
 
 def worker_init(worker_id):
     cudnn.deterministic = True
@@ -169,9 +171,11 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
 #############
 # Load data #
 #############
+@data_ingredient.capture
 def load_depth_data(train_file, train_dir, train_keywords,
                     val_file=None, val_dir=None, val_keywords=None,
-                    test_file=None, test_dir=None, test_keywords=None):
+                    test_file=None, test_dir=None, test_keywords=None,
+                    hist_use_albedo=True, hist_use_squared_falloff=True):
     """Generates training and validation datasets from
     text files and directories. Sets up datasets with transforms.
     *_file - string - a text file containing info for DepthDataset to load the images
@@ -191,7 +195,9 @@ def load_depth_data(train_file, train_dir, train_keywords,
                       ToFloat("rgb"),
                       ToFloat("albedo"),
                      ]
-    float_transforms = [AddDepthHist(bins=800//3, range=(0, 8), density=True),
+    float_transforms = [AddDepthHist(use_albedo=hist_use_albedo,
+                                     use_squared_falloff=hist_use_squared_falloff,
+                                     bins=800//3, range=(0, 8), density=True),
                         NormalizeRGB(mean, var),
                         ToTensor(),
                        ]
@@ -412,7 +418,7 @@ class ToTensor(): # pylint: disable=too-few-public-methods
 
 class AddDepthHist(): # pylint: disable=too-few-public-methods
     """Takes a depth map and computes a histogram of depths as well"""
-    def __init__(self, use_albedo=True, use_squared_falloff=False, **kwargs):
+    def __init__(self, use_albedo=True, use_squared_falloff=True, **kwargs):
         """
         kwargs - passthrough to np.histogram
         """
