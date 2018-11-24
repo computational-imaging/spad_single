@@ -4,6 +4,7 @@
 *nohup.out
 checkpoints*
 experiments*
+*processed*
 
 # Tensorboard
 runs/*
