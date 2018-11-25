@@ -87,7 +87,10 @@ def evaluate(loss, model, input_, target, device="cpu", log_fn=None, log_kwargs=
     is the correct thing to do.
     """
     for key in input_:
-        input_[key] = input_[key].to(device)
+        if isinstance(input_[key], torch.Tensor):
+            # print(key)
+            input_[key] = input_[key].to(device)
+    # print(input_["eps"].shape)
     target = target.to(device)
     output = model(input_)
     loss_value = loss(output, target)
@@ -135,7 +138,7 @@ def train(model,
                 print("\titeration: {}\ttrain loss: {}".format(it, trainloss.item()))
 
             if test_run: # Stop after 5 batches
-                if not (it + 1) % 5:
+                if it == 5:
                     break
         # Checkpointing
         if val_loader is not None:

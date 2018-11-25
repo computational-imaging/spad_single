@@ -9,11 +9,11 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import torch.backends.cudnn as cudnn
 
-from torchvision import transforms
+from torchvision import transforms, utils
 
-from sacred import Ingredient
+from sacred import Ingredient, Experiment
 
-data_ingredient = Ingredient('data_config')
+data_ingredient = Experiment('data_config')
 
 @data_ingredient.config
 def cfg():
@@ -35,6 +35,8 @@ def cfg():
     }
     hist_use_albedo = True
     hist_use_squared_falloff = True
+    # For testing how data loads. Turns off normalization.
+    test_loader = False
 
 def worker_init(worker_id):
     cudnn.deterministic = True
@@ -81,26 +83,26 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
         with open(splitfile, "r") as f:
             local_index = 0
             for line in f.readlines():
-                counter, rawdepth, depth, rgb = line.strip().split(",")
-                if counter in self.blacklist:
+                image_id, rawdepth, depth, rgb = line.strip().split(",")
+                if image_id in self.blacklist:
                     continue # Exclude this line.
                 if info_file is not None:
                     for word in keywords:
                         # Keyword match obtained
-                        if word in info[counter]["keywords"]:
-                            self.data.append(counter)
+                        if word in info[image_id]["keywords"]:
+                            self.data.append(image_id)
                             # Add some extra metadata
-                            self.info[local_index] = info[counter]
-                            self.info[local_index]["global_index"] = int(counter)
+                            self.info[local_index] = info[image_id]
+                            self.info[local_index]["global_index"] = int(image_id)
                             local_index += 1
                             break
                 else:
-                    self.data.append((rawdepth, depth, rgb))
+                    self.data.append(image_id)
 
 
 #         print(self.data)
 
-    def get_global_stats(self, cache="stats_cache.txt"):
+    def get_global_stats(self, cache="stats_cache.txt", rgb_suffix="_rgb.png"):
         """Calculate mean and variance of each rgb channel.
         Optionally caches the result of this calculation in outfile so
         it doesn't need to be done each time the dataset is loaded.
@@ -115,13 +117,16 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
                     print(mean)
                     print(var)
                     return mean, var
+                print("loaded stats cache at {}".format(cache))
             except IOError:
-                print("failed to load cache at {}".format(cache))
+                print("failed to load stats cache at {}".format(cache))
 
+        print("creating new stats cache (this may take a while...) at {} ".format(cache))
         S = np.zeros(3)
         S_sq = np.zeros(3)
         npixels = 0.
-        for _, rgb_file in self.data:
+        for image_id in self.data:
+            rgb_file = str(image_id) + rgb_suffix
             rgb_img = Image.open(os.path.join(self.data_dir, rgb_file))
             rgb_img = np.asarray(rgb_img, dtype=np.uint16)
 #             print(rgb_img[0:10, 0:10, :])
@@ -149,8 +154,9 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
             with open(cache, "w") as f:
                 f.write(",".join(str(m) for m in mean)+"\n")
                 f.write(",".join(str(v) for v in var)+"\n")
+            print("wrote stats cache to {}".format(cache))
         except IOError:
-            print("failed to write cache to {}".format(cache))
+            print("failed to write stats cache to {}".format(cache))
         return mean, var
 
     def __len__(self):
@@ -165,8 +171,12 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
 
         if self.transform:
             # print(self.data[idx])
+            # print(sample["id"])
             sample = self.transform(sample)
+            # print(sample["id"])
         return sample
+
+
 
 #############
 # Load data #
@@ -175,7 +185,8 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
 def load_depth_data(train_file, train_dir, train_keywords,
                     val_file=None, val_dir=None, val_keywords=None,
                     test_file=None, test_dir=None, test_keywords=None,
-                    hist_use_albedo=True, hist_use_squared_falloff=True):
+                    hist_use_albedo=True, hist_use_squared_falloff=True,
+                    test_loader=False):
     """Generates training and validation datasets from
     text files and directories. Sets up datasets with transforms.
     *_file - string - a text file containing info for DepthDataset to load the images
@@ -184,7 +195,10 @@ def load_depth_data(train_file, train_dir, train_keywords,
                           data to load.
     """
     train = DepthDataset(train_file, train_dir, train_keywords)
-    mean, var = train.get_global_stats(os.path.join(train_dir, "stats_cache.txt"))
+    if test_loader:
+        mean, var = (0., 1.) # Don't normalize
+    else:
+        mean, var = train.get_global_stats(os.path.join(train_dir, "stats_cache.txt"))
     augment = [RandomCropAll(300),
                RandomHorizontalFlipAll(0.5),
               ]
@@ -222,7 +236,10 @@ def load_depth_data(train_file, train_dir, train_keywords,
 def get_depth_loaders(train_file, train_dir,
                       val_file, val_dir,
                       test_file, test_dir,
-                      batch_size, keywords):
+                      batch_size, keywords,
+                      hist_use_albedo,
+                      hist_use_squared_falloff,
+                      test_loader):
     """Wrapper for getting the loaders at training time."""
     train, val, test = load_depth_data(train_file,
                                        train_dir,
@@ -232,7 +249,10 @@ def get_depth_loaders(train_file, train_dir,
                                        keywords["val"],
                                        test_file,
                                        test_dir,
-                                       keywords["test"])
+                                       keywords["test"],
+                                       hist_use_albedo,
+                                       hist_use_squared_falloff,
+                                       test_loader)
 
     train_loader = DataLoader(train,
                               batch_size=batch_size,
@@ -260,6 +280,9 @@ def get_depth_loaders(train_file, train_dir,
                                 )
     return train_loader, val_loader, test_loader
 
+
+# if __name__ == '__main__':
+#     test_load_data()
 
 ##############
 # Transforms #
@@ -323,6 +346,120 @@ class RandomHorizontalFlipAll(): # pylint: disable=too-few-public-methods
                 sample[key] = self.random_horiz_flip(sample[key])
         return sample
 
+
+
+class ToFloat(): # pylint: disable=too-few-public-methods
+    def __init__(self, key):
+        self.key = key
+    def __call__(self, sample):
+        sample[self.key] = np.asarray(sample[self.key]).astype(np.float32)
+        return sample
+
+
+class SUNRGBDDepthProcessing(): # pylint: disable=too-few-public-methods
+    """Performs the necessary transform to convert SUNRGBD
+    depth maps to floats."""
+    def __init__(self, depthkey):
+        self.key = depthkey
+
+    def __call__(self, sample):
+        depth = sample[self.key]
+        x = np.asarray(depth, dtype=np.uint16)
+        y = (x >> 3) | (x << 16-3)
+        z = y.astype(np.float32)/1000
+        z[z > 8.] = 8. # Clip to maximum depth of 8m.
+        sample[self.key] = z
+        return sample
+
+class ToTensor(): # pylint: disable=too-few-public-methods
+    """Convert ndarrays in sample to Tensors."""
+
+    def __call__(self, sample):
+        depth, rgb = sample['depth'], sample['rgb']
+        # swap color axis because
+        # numpy image: H x W x C
+        # torch image: C X H X W
+#         depth = depth.transpose((2, 0, 1))
+        rgb = rgb.transpose((2, 0, 1))
+        # depth = depth.transpose((1, 0))
+        # output = {}
+        if 'hist' in sample:
+            sample['hist'] = torch.from_numpy(sample['hist']).unsqueeze(-1).unsqueeze(-1).float()
+        if 'mask' in sample:
+            sample['mask'] = torch.from_numpy(sample['mask']).unsqueeze(0).float()
+            sample['eps'] = torch.from_numpy(sample['eps']).unsqueeze(-1).unsqueeze(-1).float()
+#         print(output)
+        sample.update({'depth': torch.from_numpy(depth).unsqueeze(0).float(),
+                       'rgb': torch.from_numpy(rgb).float()})
+        return sample
+
+class AddDepthHist(): # pylint: disable=too-few-public-methods
+    """Takes a depth map and computes a histogram of depths as well"""
+    def __init__(self, use_albedo=True, use_squared_falloff=True, **kwargs):
+        """
+        kwargs - passthrough to np.histogram
+        """
+        self.use_albedo = use_albedo
+        self.use_squared_falloff = use_squared_falloff
+        self.hist_kwargs = kwargs
+
+    def __call__(self, sample):
+        depth = sample["depth"]
+        weights = np.ones(depth.shape)
+        if self.use_albedo:
+            weights = weights * np.mean(sample["albedo"]) # Attenuate by the average albedo TODO
+        if self.use_squared_falloff:
+            weights[depth == 0] = 0.
+            weights[depth != 0] = weights[depth != 0] / (depth[depth != 0]**2)
+        # print(weights/np.sum(weights))
+        # print(np.sum(weights))
+        if np.sum(weights) < 1e-6:
+            print("bad: {}".format(sample["id"]))
+        sample["hist"], _ = np.histogram(depth, weights=weights, **self.hist_kwargs)
+        # sample["hist"] = (raw_hist - np.mean(raw_hist))/np.std(raw_hist) # Instance norm
+        # print(self.hist_kwargs)
+        # print(self.use_albedo)
+        # print(self.use_squared_falloff)
+        # print("histogram sum: {}".format(np.sum(sample["hist"])))
+#         print(hist)
+#         print(sample["depth"])
+        return sample
+
+class AddDepthMask(): # pylint: disable=too-few-public-methods
+    """Creates a mask that is 1 where actual depth values were recorded and 0 where
+    the inpainting algorithm failed to inpaint depth.
+
+    eps - small positive number to assign to places with missing depth.
+    """
+    def __call__(self, sample, eps=1e-6):
+        closest = (sample["depth"] == np.min(sample["depth"]))
+        zero_depth = (sample["rawdepth"] == 0.)
+
+        mask = (zero_depth & closest)
+        sample["mask"] = 1 - mask.astype(np.float32) # Logical NOT
+        # Set all unknown depths to be a small positive number.
+        sample["depth"] = sample["depth"]*sample["mask"] + (1 - sample["mask"])*eps
+        sample["eps"] = np.array([eps])
+        return sample
+
+
+class NormalizeRGB(object): # pylint: disable=too-few-public-methods
+    """Subtract the mean and divide by the variance of the dataset."""
+    def __init__(self, mean, var):
+        """
+        mean - np.array of size 3 - the means of the three color channels over the train set
+        var - np.array of size 3 - the variances of the three color channels over the train set
+        """
+        self.mean = mean
+        self.var = var
+    def __call__(self, sample):
+        sample["rgb"] -= self.mean
+        sample["rgb"] /= np.sqrt(self.var)
+#         print(sample["rgb"][0:10, 0:10, 0])
+        return sample
+
+### Old ###
+
 class CenterCrop(): # pylint: disable=too-few-public-methods
     """Center crop the image
 
@@ -373,111 +510,20 @@ class CropSmall(): # pylint: disable=too-few-public-methods
         return {"depth": depth[h//2-x:h//2+x, w//2-x:w//2+x],
                 "rgb": rgb[h//2-x:h//2+x, w//2-x:w//2+x, :]}
 
-class ToFloat(): # pylint: disable=too-few-public-methods
-    def __init__(self, key):
-        self.key = key
-    def __call__(self, sample):
-        sample[self.key] = np.asarray(sample[self.key]).astype(np.float32)
-        return sample
-
-
-class SUNRGBDDepthProcessing(): # pylint: disable=too-few-public-methods
-    """Performs the necessary transform to convert SUNRGBD
-    depth maps to floats."""
-    def __init__(self, depthkey):
-        self.key = depthkey
-
-    def __call__(self, sample):
-        depth = sample[self.key]
-        x = np.asarray(depth, dtype=np.uint16)
-        y = (x >> 3) | (x << 16-3)
-        z = y.astype(np.float32)/1000
-        z[z > 8.] = 8. # Clip to maximum depth of 8m.
-        sample[self.key] = z
-        return sample
-
-class ToTensor(): # pylint: disable=too-few-public-methods
-    """Convert ndarrays in sample to Tensors."""
-
-    def __call__(self, sample):
-        depth, rgb = sample['depth'], sample['rgb']
-        # swap color axis because
-        # numpy image: H x W x C
-        # torch image: C X H X W
-#         depth = depth.transpose((2, 0, 1))
-        rgb = rgb.transpose((2, 0, 1))
-        output = {}
-        if 'hist' in sample:
-            output['hist'] = torch.from_numpy(sample['hist']).unsqueeze(-1).unsqueeze(-1).float()
-        if 'mask' in sample:
-            output['mask'] = torch.from_numpy(sample['mask']).unsqueeze(0).float()
-#         print(output)
-        output.update({'depth': torch.from_numpy(depth).unsqueeze(0).float(),
-                       'rgb': torch.from_numpy(rgb).float()})
-        return output
-
-class AddDepthHist(): # pylint: disable=too-few-public-methods
-    """Takes a depth map and computes a histogram of depths as well"""
-    def __init__(self, use_albedo=True, use_squared_falloff=True, **kwargs):
-        """
-        kwargs - passthrough to np.histogram
-        """
-        self.use_albedo = use_albedo
-        self.use_squared_falloff = use_squared_falloff
-        self.hist_kwargs = kwargs
-
-    def __call__(self, sample):
-        depth = sample["depth"]
-        weights = np.ones(depth.shape)
-        if self.use_albedo:
-            weights = weights * np.mean(sample["albedo"]) # Attenuate by the average albedo TODO
-        if self.use_squared_falloff:
-            weights[depth == 0] = 0.
-            weights[depth != 0] = weights[depth != 0] / (depth[depth != 0]**2)
-        # print(weights/np.sum(weights))
-        # print(np.sum(weights))
-        if np.sum(weights) < 1e-6:
-            print("bad: {}".format(sample["id"]))
-        sample["hist"], _ = np.histogram(depth, weights=weights, **self.hist_kwargs)
-        # sample["hist"] = (raw_hist - np.mean(raw_hist))/np.std(raw_hist) # Instance norm
-        # print(self.hist_kwargs)
-        # print(self.use_albedo)
-        # print(self.use_squared_falloff)
-        # print("histogram sum: {}".format(np.sum(sample["hist"])))
-#         print(hist)
-#         print(sample["depth"])
-        return sample
-
-class AddDepthMask(): # pylint: disable=too-few-public-methods
-    """Creates a mask that is 1 where actual depth values were recorded and 0 where
-    the inpainting algorithm failed to inpaint depth.
-    """
-    def __call__(self, sample):
-        closest = (sample["depth"] == np.min(sample["depth"]))
-        zero_depth = (sample["rawdepth"] == 0.)
-
-        mask = (zero_depth & closest)
-        sample["mask"] = 1 - mask.astype(np.float32) # Logical NOT
-        sample["depth"] = sample["depth"]*sample["mask"] # Set all unknown depths to 0.
-        return sample
-
-
-class NormalizeRGB(object): # pylint: disable=too-few-public-methods
-    """Subtract the mean and divide by the variance of the dataset."""
-    def __init__(self, mean, var):
-        """
-        mean - np.array of size 3 - the means of the three color channels over the train set
-        var - np.array of size 3 - the variances of the three color channels over the train set
-        """
-        self.mean = mean
-        self.var = var
-    def __call__(self, sample):
-        sample["rgb"] -= self.mean
-        sample["rgb"] /= np.sqrt(self.var)
-#         print(sample["rgb"][0:10, 0:10, 0])
-        return sample
-
-if __name__ == '__main__':
-    train, _, _ = load_depth_data("data/sunrgbd_all/train.txt", "data/sunrgbd_all", ["data"])
-    a = train[0]
-
+###########
+# Testing #
+###########
+@data_ingredient.automain
+def test_load_data():
+    train_loader, _, _ = get_depth_loaders(test_loader=True)
+    batch = next(iter(train_loader))
+    print(batch["rgb"][0, :, :, :])
+    print(batch["depth"][0, :, :, :])
+    # Save a histogram
+    # with open("test_hist.pkl", "w") as f:
+    # Save RGB
+    utils.save_image(batch["rgb"][0, :, :, :]/256., "test_rgb.png")
+    # Save Depth
+    utils.save_image(batch["depth"][0, :, :, :]/8., "test_depth.png")
+    # Save Albedo
+    # utils.save_image(batch["albedo"][0, :, :, :], "test_albedo.png")

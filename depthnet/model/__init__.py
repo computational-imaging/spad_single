@@ -13,7 +13,7 @@ def make_model(model_name, model_params, model_state_dict_fn):
         model.load_state_dict(model_state_dict_fn())
     else: # New model - apply initialization
         # m.initialize(model)
-        pass # Use default pytorch initialization
+        pass # Use default pytorch initialization (He initialization)
     return model
 
 
