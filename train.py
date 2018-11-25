@@ -28,6 +28,8 @@ pp = PrettyPrinter(indent=4)
 pprint = pp.pprint
 
 ex = Experiment('train', ingredients=[data_ingredient])
+ex.add_source_file(os.path.join("depthnet", "model", "unet_model.py"))
+ex.add_source_file(os.path.join("depthnet", "model", "unet_parts.py"))
 
 
 # Tensorboardx
@@ -73,7 +75,7 @@ def cfg():
         "log_dir": "runs",
     }
 
-    seed = 2018
+    seed = 95290421
     cuda_device = "0"                       # The gpu index to run on. Should be a string
     test_run = False                        # Whether or not to truncate epochs for testing
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device

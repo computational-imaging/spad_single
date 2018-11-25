@@ -17,20 +17,25 @@ from depthnet.model import delta, rmse, rel_abs_diff, rel_sqr_diff
 
 def log_depth_data(loss, model, input_, output, target, device,
                    writer, tag, it, write_images=False, save_output=False):
-    depth = target
-    writer.add_scalar("data/{}_d1".format(tag), delta(output, depth, 1.25).item(), it)
-    writer.add_scalar("data/{}_d2".format(tag), delta(output, depth, 1.25**2).item(), it)
-    writer.add_scalar("data/{}_d3".format(tag), delta(output, depth, 1.25**3).item(), it)
-    writer.add_scalar("data/{}_rmse".format(tag),
-                      rmse(output, depth).item(), it)
+    # depth = target
+
+    writer.add_scalar("data/{}_d1".format(tag), delta(output, target, 1.25).item(), it)
+    writer.add_scalar("data/{}_d2".format(tag), delta(output, target, 1.25**2).item(), it)
+    writer.add_scalar("data/{}_d3".format(tag), delta(output, target, 1.25**3).item(), it)
+    writer.add_scalar("data/{}_rmse".format(tag), rmse(output, target).item(), it)
     # print(rmse(output, depth).item())
-    writer.add_scalar("data/{}_logrmse".format(tag),
-                      rmse(torch.log(output), torch.log(depth)), it)
-    writer.add_scalar("data/{}_rel_abs_diff".format(tag), rel_abs_diff(output, depth), it)
-    writer.add_scalar("data/{}_rel_sqr_diff".format(tag), rel_sqr_diff(output, depth), it)
+    log_output = torch.log(output)
+    log_target = torch.log(target)
+    # print("log output nans: {}".format(torch.isnan(log_output).any()))
+    # print("log output infs: {}".format(torch.sum(log_output == float('-inf'))))
+    # print("log target nans: {}".format(torch.isnan(log_target).any()))
+    # log_target[torch.isnan(log_target)] = 0
+    # writer.add_scalar("data/{}_logrmse".format(tag), rmse(log_output, log_target), it)
+    writer.add_scalar("data/{}_rel_abs_diff".format(tag), rel_abs_diff(output, target), it)
+    writer.add_scalar("data/{}_rel_sqr_diff".format(tag), rel_sqr_diff(output, target), it)
     writer.add_scalar("data/{}_loss".format(tag), loss(output, target).item(), it)
-    writer.add_scalar("data/{}_depth_min".format(tag), torch.min(output).item(), it)
-    writer.add_scalar("data/{}_depth_max".format(tag), torch.max(output).item(), it)
+    # writer.add_scalar("data/{}_depth_min".format(tag), torch.min(output).item(), it)
+    # writer.add_scalar("data/{}_depth_max".format(tag), torch.max(output).item(), it)
     if write_images:
         rgb_input = vutils.make_grid(input_["rgb"], nrow=2, normalize=True, scale_each=True)
         writer.add_image('image/rgb_input', rgb_input, it)

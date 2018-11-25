@@ -31,7 +31,8 @@ class UNet(nn.Module):
         x = self.up3(x, x2)
         x = self.up4(x, x1)
         x = self.outc(x)
-        return x * mask
+        x = F.relu(x, True) # Map depth to [0, inf)
+        return x * mask + (1 - mask) * input_["eps"] # Set masked out regions to be a small positive number.
 
 class UNetWithHints(nn.Module):
     def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, upsampling="bilinear",
@@ -55,6 +56,7 @@ class UNetWithHints(nn.Module):
 
         self.unet.up1 = up(1024+hist_len, 256, upsampling) # Concatenate the output of the global hints
         self.global_hints = nn.Sequential(hints)
+        self.bottleneck_conv = double_conv(512+hist_len, 512+hist_len)
 
     def forward(self, input_):
         rgb = input_["rgb"]
@@ -68,14 +70,16 @@ class UNetWithHints(nn.Module):
         x5 = self.unet.down4(x4)
 
         y = self.global_hints(hist)
-        z = torch.cat([y.expand(-1, -1, x4.size()[2], x4.size()[3]), x4], 1)
+        z = torch.cat([y.expand(-1, -1, x5.size()[2], x5.size()[3]), x5], 1)
+        z = self.bottleneck_conv(z)
 
-        x = self.unet.up1(x5, z)
+        x = self.unet.up1(z, x4)
         x = self.unet.up2(x, x3)
         x = self.unet.up3(x, x2)
         x = self.unet.up4(x, x1)
         x = self.unet.outc(x)
-        return x * mask
+        x = F.relu(x, True) # Map depth to [0, inf)
+        return x * mask + (1 - mask) * input_["eps"] # Set masked out regions to be a small positive number.
 
 
 class UNetMultiScaleHints(nn.Module):
@@ -128,4 +132,5 @@ class UNetMultiScaleHints(nn.Module):
         x = self.unet.up3(x, x2)
         x = self.unet.up4(x, x1)
         x = self.unet.outc(x)
-        return x * mask
+        x = F.relu(x, True) # Map depth to [0, inf)
+        return x * mask + (1 - mask) * input_["eps"] # Set masked out regions to be a small positive number.

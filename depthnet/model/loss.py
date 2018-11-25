@@ -13,6 +13,8 @@ def berhu(prediction, target, size_average=True):
     Returns a single tensor
 
     """
+    # print("prediction nans: {}".format(torch.isnan(prediction).any()))
+    # print("target nans: {}".format(torch.isnan(target).any()))
     diff = torch.abs(prediction - target)
     threshold = 0.2*torch.max(diff)
     c = threshold.detach()
@@ -54,7 +56,23 @@ def rmse(prediction, target):
     """
     Return the RMSE of prediction and target
     """
-    sum_squares = torch.sum((prediction - target).pow(2))
+    # print("prediction nans (rmse): {}".format(torch.isnan(prediction).any()))
+    # print("target nans (rmse): {}".format(torch.isnan(target).any()))
+    squares = (prediction - target).pow(2)
+    rawmaxidx = squares.view(-1).max(0)[1]
+    idx = []
+    for adim in list(squares.size())[::-1]:
+        idx.append((rawmaxidx%adim).item())
+        rawmaxidx = rawmaxidx / adim
+    # print(idx)
+    idx.reverse()
+    idx = tuple(idx)
+    # print(idx)
+    # print(torch.max(squares))
+    # print(squares[idx])
+    # print(prediction[idx])
+    # print(target[idx])
+    sum_squares = torch.sum(squares)
     return torch.sqrt((1./sum_squares.numel())*sum_squares)
 
 def test_rmse():
@@ -62,7 +80,6 @@ def test_rmse():
     target = torch.zeros(3, 3, 3)
     err = rmse(prediction, target)
     return err
-
 
 def rel_abs_diff(prediction, target, eps=1e-6):
     """
