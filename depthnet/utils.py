@@ -11,18 +11,28 @@ import torchvision.transforms as transforms
 
 from depthnet.model import delta, rmse, rel_abs_diff, rel_sqr_diff
 
+NYU_MIN = 1e-3
+NYU_MAX = 8.0
+
+def clip_min_max(depth, min_depth, max_depth):
+    depth[depth < min_depth] = min_depth
+    depth[depth > max_depth] = max_depth
+    return depth
+
+
 ###########
 # Logging #
 ###########
 
-def log_depth_data(loss, model, input_, output, target, device,
+def log_depth_data(loss, model, input_, output, target, mask, device,
                    writer, tag, it, write_images=False, save_output=False):
-    # depth = target
+    # print("clipping min and max to [{}, {}]".format(NYU_MIN, NYU_MAX))
+    output = clip_min_max(output, NYU_MIN, NYU_MAX)
 
-    writer.add_scalar("data/{}_d1".format(tag), delta(output, target, 1.25).item(), it)
-    writer.add_scalar("data/{}_d2".format(tag), delta(output, target, 1.25**2).item(), it)
-    writer.add_scalar("data/{}_d3".format(tag), delta(output, target, 1.25**3).item(), it)
-    writer.add_scalar("data/{}_rmse".format(tag), rmse(output, target).item(), it)
+    writer.add_scalar("data/{}_d1".format(tag), delta(output, target, mask, 1.25).item(), it)
+    writer.add_scalar("data/{}_d2".format(tag), delta(output, target, mask, 1.25**2).item(), it)
+    writer.add_scalar("data/{}_d3".format(tag), delta(output, target, mask, 1.25**3).item(), it)
+    writer.add_scalar("data/{}_rmse".format(tag), rmse(output, target, mask).item(), it)
     # print(rmse(output, depth).item())
     log_output = torch.log(output)
     log_target = torch.log(target)
@@ -31,9 +41,9 @@ def log_depth_data(loss, model, input_, output, target, device,
     # print("log target nans: {}".format(torch.isnan(log_target).any()))
     # log_target[torch.isnan(log_target)] = 0
     # writer.add_scalar("data/{}_logrmse".format(tag), rmse(log_output, log_target), it)
-    writer.add_scalar("data/{}_rel_abs_diff".format(tag), rel_abs_diff(output, target), it)
-    writer.add_scalar("data/{}_rel_sqr_diff".format(tag), rel_sqr_diff(output, target), it)
-    writer.add_scalar("data/{}_loss".format(tag), loss(output, target).item(), it)
+    writer.add_scalar("data/{}_rel_abs_diff".format(tag), rel_abs_diff(output, target, mask), it)
+    writer.add_scalar("data/{}_rel_sqr_diff".format(tag), rel_sqr_diff(output, target, mask), it)
+    writer.add_scalar("data/{}_loss".format(tag), loss(output, target, mask).item(), it)
     # writer.add_scalar("data/{}_depth_min".format(tag), torch.min(output).item(), it)
     # writer.add_scalar("data/{}_depth_max".format(tag), torch.max(output).item(), it)
     if write_images:

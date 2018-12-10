@@ -12,6 +12,11 @@ addpath(genpath('./intrinsic_texture'));
 addpath('./nyu_utils');
 camera_params;
 
+% TESTING
+% disp(scenes)
+% scenes = scenes(1);
+% exit;
+
 p = parpool(28)
 parfor ss = 1:length(scenes)
     sceneName = scenes{ss};
@@ -19,7 +24,7 @@ parfor ss = 1:length(scenes)
     disp('starting!');
 
     % The name of the scene to demo.
-    outdir = ['./processed/' sceneName];
+    outdir = ['../../nyu_depth_v2_processed/' sceneName];
     mkdir(outdir);
 
     % The absolute directory of the 
@@ -29,23 +34,33 @@ parfor ss = 1:length(scenes)
     frameList = get_synched_frames(sceneDir);
 
     % Displays each pair of synchronized RGB and Depth frames.
-    idx = 1 : 10 : numel(frameList);
-    
+    % Take one out of every 10 frames.
+    idx = 1 : 20 : numel(frameList);
+    % idx = 1 : 100 : numel(frameList);
+
     for ii = 1:length(idx)
         % check if already exists
-        depth_out = sprintf('%s/depth_%04d.mat', outdir, idx(ii));
-        albedo_out = sprintf('%s/albedo_%04d.mat', outdir, idx(ii));
-        intensity_out = sprintf('%s/intensity_%04d.mat', outdir, idx(ii));
-        dist_out = sprintf('%s/dist_%04d.mat',outdir, idx(ii));
-        dist_out_hr = sprintf('%s/dist_hr_%04d.mat',outdir, idx(ii));
+        rgb_out = sprintf('%s/%04d_rgb.png', outdir, idx(ii))
+        rawdepth_out = sprintf('%s/%04d_rawdepth.png', outdir, idx(ii))
+        depth_out = sprintf('%s/%04d_depth.png', outdir, idx(ii));
+        albedo_out = sprintf('%s/%04d_albedo.png', outdir, idx(ii));
+        % intensity_out = sprintf('%s/intensity_%04d.mat', outdir, idx(ii));
+        % dist_out = sprintf('%s/dist_%04d.mat',outdir, idx(ii));
+        % dist_out_hr = sprintf('%s/dist_hr_%04d.mat',outdir, idx(ii));
 
-        if exist(depth_out,'file') && exist(albedo_out,'file') ...
-                && exist(intensity_out,'file') && exist(dist_out,'file') ...
-                && exist(dist_out_hr,'file')
-                disp('continuing');
-                continue;
+        % rawDepthFile = strcat(outdir, imageID, '_rawdepth.png');
+        % rawDepthFile = rawDepthFile{1};
+        % depthFile = strcat(outidr, imageID, '_depth.png');
+        % depthFile = depthFile{1};
+        % rgbFile = strcat(outdir, imageID, '_rgb.png');
+        % rgbFile = rgbFile{1};
+
+        if exist(rgb_out, 'file') && exist(rawdepth_out,'file') ...
+                && exist(depth_out, 'file') && exist(albedo_out,'file')
+            disp('continuing');
+            continue;
         end
-        
+
         
         try
             imgRgb = imread([sceneDir '/' frameList(idx(ii)).rawRgbFilename]);
@@ -58,31 +73,38 @@ parfor ss = 1:length(scenes)
             imgDepthFilled = fill_depth_cross_bf(imgRgb, double(imgDepthAbs));
           
             % get distance from the depth image
-            cx = cx_d - 41 + 1;
-            cy = cy_d - 45 + 1;
-            [xx,yy] = meshgrid(1:561, 1:427);
-            X = (xx - cx) .* imgDepthFilled / fx_d;
-            Y = (yy - cy) .* imgDepthFilled / fy_d;
-            Z = imgDepthFilled;
-            imgDist_hr = sqrt(X.^2 + Y.^2 + Z.^2);
+            % cx = cx_d - 41 + 1;
+            % cy = cy_d - 45 + 1;
+            % [xx,yy] = meshgrid(1:561, 1:427);
+            % X = (xx - cx) .* imgDepthFilled / fx_d;
+            % Y = (yy - cy) .* imgDepthFilled / fy_d;
+            % Z = imgDepthFilled;
+            % imgDist_hr = sqrt(X.^2 + Y.^2 + Z.^2);
            
             % estimate the albedo image and save the outputs
             I = im2double(imgRgb);
-            I = imresize(I, [512, 512], 'bilinear');
-            imgDepthFilled = imresize(imgDepthFilled, [512,512], 'bilinear');
-            imgDist = imresize(imgDist_hr, [256,256], 'bilinear');
-            imgDist_hr = imresize(imgDist_hr, [512,512], 'bilinear');
+            % I = imresize(I, [512, 512], 'bilinear');
+            % imgDepthFilled = imresize(imgDepthFilled, [512,512], 'bilinear');
+            % imgDist = imresize(imgDist_hr, [256,256], 'bilinear');
+            % imgDist_hr = imresize(imgDist_hr, [512,512], 'bilinear');
             S = RollingGuidanceFilter(I, 3, 0.1, 4);
             [albedo, ~] = intrinsic_decomp(I, S, imgDepthFilled, 0.0001, 0.8, 0.5);
             if albedo == -1
                 continue;
             end
-            intensity = rgb2gray(I);
+            % Save rgb (I), rawdepth (imgDepthAbs), depth (imgDepthFilled), and albedo (albedo)
+            % (all at the same resolution)
+            imwrite(I, rgb_out);
+            imwrite(uint16(imgDepthAbs*1000), rawdepth_out);
+            imwrite(uint16(imgDepthFilled*1000), depth_out);
+            imwrite(albedo, albedo_out);
 
-            dist = imgDist;
-            intensity = im2uint8(intensity);
-            dist_hr = imgDist_hr;
-            ConvertRGBDParsave(albedo_out, dist_out, intensity_out, dist_out_hr, albedo, dist, intensity, dist_hr)
+            % intensity = rgb2gray(I);
+
+            % dist = imgDist;
+            % intensity = im2uint8(intensity);
+            % dist_hr = imgDist_hr;
+            % ConvertRGBDParsave(albedo_out, dist_out, intensity_out, dist_out_hr, albedo, dist, intensity, dist_hr)
              
         catch e
             fprintf(1,'ERROR: %s\n',e.identifier);
@@ -91,3 +113,4 @@ parfor ss = 1:length(scenes)
         end
     end
 end
+exit;

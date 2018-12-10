@@ -28,11 +28,9 @@ def cfg():
     blacklist_file = os.path.join("data", "sunrgbd_all", "blacklist.txt")
 
     batch_size = 20             # Number of training examples per iteration
-    keywords = {                # Words that should be in the keywords set of dict
-        "train": ["SUNRGBD"],
-        "val": ["SUNRGBD"],
-        "test": ["SUNRGBD"],
-    }
+    train_keywords = ["SUNRGBD"]
+    val_keywords = ["SUNRGBD"]
+    test_keywords = ["SUNRGBD"]
     hist_use_albedo = True
     hist_use_squared_falloff = True
     # For testing how data loads. Turns off normalization.
@@ -233,23 +231,23 @@ def load_depth_data(train_file, train_dir, train_keywords,
     return train, val, test
 
 @data_ingredient.capture
-def get_depth_loaders(train_file, train_dir,
-                      val_file, val_dir,
-                      test_file, test_dir,
-                      batch_size, keywords,
+def get_depth_loaders(train_file, train_dir, train_keywords,
+                      val_file, val_dir, val_keywords,
+                      test_file, test_dir, test_keywords,
+                      batch_size,
                       hist_use_albedo,
                       hist_use_squared_falloff,
                       test_loader):
     """Wrapper for getting the loaders at training time."""
     train, val, test = load_depth_data(train_file,
                                        train_dir,
-                                       keywords["train"],
+                                       train_keywords,
                                        val_file,
                                        val_dir,
-                                       keywords["val"],
+                                       val_keywords,
                                        test_file,
                                        test_dir,
-                                       keywords["test"],
+                                       test_keywords,
                                        hist_use_albedo,
                                        hist_use_squared_falloff,
                                        test_loader)
@@ -519,6 +517,7 @@ def test_load_data():
     batch = next(iter(train_loader))
     print(batch["rgb"][0, :, :, :])
     print(batch["depth"][0, :, :, :])
+    print(batch["mask"][0, :, :, :])
     # Save a histogram
     # with open("test_hist.pkl", "w") as f:
     # Save RGB
