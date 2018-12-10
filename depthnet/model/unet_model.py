@@ -31,8 +31,8 @@ class UNet(nn.Module):
         x = self.up3(x, x2)
         x = self.up4(x, x1)
         x = self.outc(x)
-        x = F.relu(x, True) # Map depth to [0, inf)
-        return x * mask + (1 - mask) * input_["eps"] # Set masked out regions to be a small positive number.
+        # x = F.relu(x, True) # Map depth to [0, inf)
+        return x
 
 class UNetWithHints(nn.Module):
     def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, upsampling="bilinear",
@@ -78,8 +78,8 @@ class UNetWithHints(nn.Module):
         x = self.unet.up3(x, x2)
         x = self.unet.up4(x, x1)
         x = self.unet.outc(x)
-        x = F.relu(x, True) # Map depth to [0, inf)
-        return x * mask + (1 - mask) * input_["eps"] # Set masked out regions to be a small positive number.
+        # x = F.relu(x, True) # Map depth to [0, inf)
+        return x
 
 
 class UNetMultiScaleHints(nn.Module):
@@ -132,5 +132,5 @@ class UNetMultiScaleHints(nn.Module):
         x = self.unet.up3(x, x2)
         x = self.unet.up4(x, x1)
         x = self.unet.outc(x)
-        x = F.relu(x, True) # Map depth to [0, inf)
-        return x * mask + (1 - mask) * input_["eps"] # Set masked out regions to be a small positive number.
+        # x = F.relu(x, True) # Map depth to [0, inf)
+        return x

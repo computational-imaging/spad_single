@@ -2,16 +2,20 @@
 import os
 
 import socket
+import json
 from datetime import datetime
+from warnings import warn
 
 from pprint import PrettyPrinter
 
 import torch
 from tensorboardX import SummaryWriter
 
+from depthnet.model import make_model
 from depthnet.data import data_ingredient, load_depth_data
 from depthnet.train_utils import evaluate
 from depthnet.checkpoint import load_checkpoint, safe_makedir
+from depthnet.model.loss import berhu, delta, rmse, rel_abs_diff, rel_sqr_diff
 
 from sacred import Experiment
 
@@ -39,7 +43,8 @@ def cfg():
 
     test_config = {
         "dataset": "val",                       # {train, val, test}
-        "loss_fn": "rmse"
+        "mode": "run_tests",                    # {run_tests, check_nan}
+        "output_dir": "results.json"
     }
 
     comment = ""
@@ -52,35 +57,45 @@ def cfg():
     }
 
     cuda_device = "0"                       # The gpu index to run on. Should be a string
-    test_run = False                        # Whether or not to truncate epochs for testing
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
     # print("after: {}".format(os.environ["CUDA_VISIBLE_DEVICES"]))
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("using device: {} (CUDA_VISIBLE_DEVICES = {})".format(device,
                                                                 os.environ["CUDA_VISIBLE_DEVICES"]))
     if ckpt_config["ckpt_file"] is not None:
-        model_update, train_update, ckpt_update = load_checkpoint(ckpt_config["ckpt_file"], device)
+        model_update, _, ckpt_update = load_checkpoint(ckpt_config["ckpt_file"], device)
         model_config.update(model_update)
         ckpt_config.update(ckpt_update)
 
-        del model_update, train_update, ckpt_update
+        del model_update, _, ckpt_update # So sacred doesn't collect them.
+
     # seed = 2018
     # torch.manual_seed(seed)
     # torch.cuda.manual_seed(seed)
+
+
+@ex.named_config
+def current():
+    # model_config = {"model_name": "UNet"}
+    model_config = {"model_name": "UNetWithHints"}
+    # ckpt_config = {"ckpt_file": "checkpoints/Nov02_17-50-11_ares_hints/checkpoint_epoch_79.pth.tar"}
+    # ckpt_config = {"ckpt_file": "checkpoints/Nov25_00-20-06_ares_hints/checkpoint_epoch_35.pth.tar"}
+    ckpt_config = {"ckpt_file": "checkpoints/Dec03_17-20-39_ares_hints/checkpoint_epoch_79.pth.tar"}
 
 def test_avg(model,
              dataset,
              device,
              loss):
-    total = 0.
+    losses = torch.zeros(len(dataset))
     for i in range(len(dataset)):
         with torch.set_grad_enabled(False):
             data = dataset[i]
             for key in data:
-                data[key] = data[key].unsqueeze(0) # Batch size 1
-            test_loss = evaluate(loss, model, data, device=device, tag="test")
-            total += test_loss.item()
-    return total/len(dataset)
+                if isinstance(data[key], torch.Tensor):
+                    data[key] = data[key].unsqueeze(0) # Batch size 1
+            test_loss = evaluate(loss, model, data, data["depth"], data["mask"], device=device)
+            losses[i] = test_loss.item()
+    return torch.mean(losses)
 
 
 
@@ -90,39 +105,41 @@ def test_avg(model,
 def main(model_config,
          test_config,
          ckpt_config,
-         device,
-         test_run):
+         device):
     """Run stuff"""
+    if ckpt_config["ckpt_file"] is None:
+        warn("checkpoint file not specified! Will run on untrained model.")
+
     # Load data
-    _, _, test_dataset = load_depth_data()
+    _, val_dataset, test_dataset = load_depth_data()
+    if test_config["dataset"] == "val":
+        dataset = val_dataset
+    else:
+        dataset = test_dataset
+
     model = make_model(**model_config)
     model.to(device)
-    loss = get_loss(train_config["loss_fn"])
+    # loss = get_loss(train_config["loss_fn"])
+    if test_config["mode"] == "run_tests":
+        print("Running tests...")
+        test = lambda fn: test_avg(model, dataset, device, fn)
+        results = {}
+        results["berhu"] = test(berhu)
+        results["rmse"] = test(rmse)
+        results["delta1"] = test(lambda p, t, m: delta(p, t, m, threshold=1.25))
+        results["delta2"] = test(lambda p, t, m: delta(p, t, m, threshold=1.25**2))
+        results["delta3"] = test(lambda p, t, m: delta(p, t, m, threshold=1.25**3))
+        results["rel_abs_diff"] = test(rel_abs_diff)
+        results["rel_sqr_diff"] = test(rel_sqr_diff)
+        print(results)
 
+        # Save as a json
+        with open(test_config["output_dir"], "w") as f:
+            json.dump(results, f)
+    elif test_config["mode"] == "check_nan":
+        print("Checking for NaNs...")
+        for _, param in model.named_parameters():
+            print(param)
+            if torch.isnan(param).any():
 
-    config = {
-        "model_config": model_config,
-        "train_config": train_config,
-        "ckpt_config": ckpt_config,
-    }
-    writer = None
-
-    # Create checkpoint directory
-    safe_makedir(os.path.join(ckpt_config["ckpt_dir"],
-                              ckpt_config["run_id"]))
-    # Initialize tensorboardX writer
-    writer = SummaryWriter(log_dir=os.path.join(ckpt_config["log_dir"],
-                                                ckpt_config["run_id"]))
-
-    # Run Training
-    train(model,
-          scheduler,
-          loss,
-          train_loader,
-          val_loader,
-          config,
-          device,
-          writer,
-          test_run)
-
-    writer.close()
+                print("found nan")

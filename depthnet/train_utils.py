@@ -77,7 +77,7 @@ def make_training(model_config,
 ##############
 # Validation #
 ##############
-def evaluate(loss, model, input_, target, device="cpu", log_fn=None, log_kwargs=None):
+def evaluate(loss, model, input_, target, mask, device="cpu", log_fn=None, log_kwargs=None):
     """Computes the error of the model on the data set.
     Returns an ordinary number (i.e. not a tensor)
     loss - callable - loss(prediction, target) should give the loss on the particular image or
@@ -92,10 +92,11 @@ def evaluate(loss, model, input_, target, device="cpu", log_fn=None, log_kwargs=
             input_[key] = input_[key].to(device)
     # print(input_["eps"].shape)
     target = target.to(device)
+    mask = mask.to(device)
     output = model(input_)
-    loss_value = loss(output, target)
+    loss_value = loss(output, target, mask)
     if log_fn is not None:
-        log_fn(loss, model, input_, output, target, device, **log_kwargs)
+        log_fn(loss, model, input_, output, target, mask, device, **log_kwargs)
     return loss_value
 
 
@@ -124,7 +125,8 @@ def train(model,
         print("epoch: {}".format(epoch))
         data = None
         for it, data in enumerate(train_loader):
-            trainloss = evaluate(loss, model, data, data["depth"], device,
+            trainloss = evaluate(loss, model, data, data["depth"], data["mask"],
+                                 device,
                                  log_fn=log_depth_data, log_kwargs={"writer": writer,
                                                                     "tag": "train",
                                                                     "it": global_it,
@@ -146,7 +148,8 @@ def train(model,
             for it, data in enumerate(val_loader):
                 if it == (global_it % len(val_loader)):
                     with torch.set_grad_enabled(False):
-                        valloss = evaluate(loss, model, data, data["depth"], device,
+                        valloss = evaluate(loss, model, data, data["depth"], data["mask"],
+                                           device,
                                            log_fn=log_depth_data, log_kwargs={"writer": writer,
                                                                               "tag": "val",
                                                                               "it": epoch,

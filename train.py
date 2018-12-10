@@ -44,7 +44,7 @@ def cfg():
             "output_nc": 1,                     # Number of output channels
             "hist_len": 800//3,                 # Length of the histogram (hints only)
             "num_hints_layers": 4,              # Number of 1x1 conv layers for hints (hints only)
-            "upsampling": "bilinear",
+            "upsampling": "bilinear",           # {bilinear, nearest}
         },
         "model_state_dict_fn": None,            # Function for getting the state dict
     }
@@ -101,7 +101,7 @@ def no_hints_80():
     train_config = {
         "num_epochs": 80,
         "scheduler_params": {
-            "milestones": [40]
+            "milestones": [40, 60]
         }
     }
 
@@ -112,7 +112,7 @@ def hints_80():
     train_config = {
         "num_epochs": 80,
         "scheduler_params": {
-            "milestones": [40]
+            "milestones": [40, 60]
         }
     }
 
