@@ -13,12 +13,19 @@ Photon Cloud histogram from SPAD
 Output of the network: 
 Depth map
 
-train_test_split.py - command line script for extracting stuff from the SUNRGBD directory hierarchy
-data.py - functions for manipulating the files and directories created by train_test_split.py
-     
+This project uses sacred (https://github.com/IDSIA/sacred) to log and save configurations from run to run.
 
-Figure out how to simulate SPAD for training.
-    - For now, David says to just use regular (normalized?) histograms of depth data.
+train_test_split_nyu.py - script for splitting the NYU Depth v2 data along the offical train/test split.
+depthnet/data.py - functions for loading data
+depthnet/train_utils.py - functions for setting up and running the training.
+depthnet/utils.py - misc. functions for logging results during the training process.
+depthnet/models/loss.py - functions for calculating the loss of the network.
+depthnet/models/unet_model.py - functions for building the model.
+train.py - the main script for training the network.
+
+Data Directory
+data/code_nyu/simulated_data/ConvertRGBD.m - code for extracting the albedo from the RGBD images in the NYU Depth v2 dataset.
+
 
 Notes:
 	- SUNRGBD
@@ -27,4 +34,5 @@ Notes:
 		- Inpainted depth images (i.e. the ones in |depth_bfx| folders) are inpainted, but may still
 		  have missing depth values. Those values are assigned the same value as the MINIMUM PIXEL VALUE
 		  (elsewhere) in the image.
+
 
