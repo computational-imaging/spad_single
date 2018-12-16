@@ -4,6 +4,25 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+class Upsample(nn.Module):
+    # __constants__ = ["scale_factor", "mode"]
+
+    def __init__(self, scale_factor, mode):
+        super(Upsample, self).__init__()
+        self.scale_factor = scale_factor
+        self.mode = mode
+        if self.mode in ["linear", "bilinear", "trilinear"]:
+            self.interp = lambda x : F.interpolate(x, scale_factor=self.scale_factor,
+                                                   mode=self.mode, align_corners=True)
+        else:
+            self.interp = lambda x : F.interpolate(x, scale_factor=self.scale_factor, mode=self.mode)
+        
+    def extra_repr(self):
+        return "scale_factor={}, mode={}".format(self.scale_factor, self.mode)
+
+    def forward(self, x):
+        x = self.interp(x)
+        return x
 
 class double_conv(nn.Module):
     '''(conv => BN => ReLU) * 2'''
@@ -52,10 +71,9 @@ class up(nn.Module):
 
         #  would be a nice idea if the upsampling could be learned too,
         #  but my machine do not have enough memory to handle all those weights
-        if upsampling == 'bilinear':
-            self.up = lambda input_: F.interpolate(input_, scale_factor=2, mode='bilinear', align_corners=True)
-        elif upsampling == 'nearest':
-            self.up = lambda input_: F.interpolate(input_, scale_factor=2, mode='nearest')
+        if upsampling == 'bilinear' or upsampling == 'nearest':
+            self.up = Upsample(scale_factor=2, mode=upsampling)
+            # self.up = lambda input_: F.interpolate(input_, scale_factor=2, mode='nearest')
         else:
             self.up = nn.ConvTranspose2d(in_ch//2, in_ch//2, 2, stride=2)
 

@@ -5,6 +5,7 @@ import socket
 import json
 from datetime import datetime
 from warnings import warn
+from collections import OrderedDict
 
 from pprint import PrettyPrinter
 
@@ -16,6 +17,7 @@ from depthnet.data import data_ingredient, load_depth_data
 from depthnet.train_utils import evaluate
 from depthnet.checkpoint import load_checkpoint, safe_makedir
 from depthnet.model.loss import berhu, delta, rmse, rel_abs_diff, rel_sqr_diff
+from depthnet.utils import NYU_MIN, NYU_MAX, clip_min_max, save_images
 
 from sacred import Experiment
 
@@ -44,10 +46,12 @@ def cfg():
     test_config = {
         "dataset": "val",                       # {train, val, test}
         "mode": "run_tests",                    # {run_tests, check_nan}
-        "output_dir": "results.json"
+        "output_file": "results.json",
+        "losses_file": "losses.tar"
     }
 
     comment = ""
+    stop_early = False
 
     ckpt_config = {
         "ckpt_file": None,
@@ -76,26 +80,54 @@ def cfg():
 
 @ex.named_config
 def current():
-    # model_config = {"model_name": "UNet"}
-    model_config = {"model_name": "UNetWithHints"}
     # ckpt_config = {"ckpt_file": "checkpoints/Nov02_17-50-11_ares_hints/checkpoint_epoch_79.pth.tar"}
     # ckpt_config = {"ckpt_file": "checkpoints/Nov25_00-20-06_ares_hints/checkpoint_epoch_35.pth.tar"}
-    ckpt_config = {"ckpt_file": "checkpoints/Dec03_17-20-39_ares_hints/checkpoint_epoch_79.pth.tar"}
+    # ckpt_config = {"ckpt_file": "checkpoints/Dec03_17-20-39_ares_hints/checkpoint_epoch_79.pth.tar"}
+
+    # ckpt_config = {"ckpt_file": "checkpoints/Dec13_00-36-40_ares_hints_rawhist/checkpoint_epoch_79.pth.tar"}
+    # data_config = {"hist_use_albedo": False, "hist_use_squared_falloff": False}
+    # test_config = {"output_file": "results_rawhints.json"}
+
+    # ckpt_config = {"ckpt_file": "checkpoints/Dec12_23-53-46_ares_hints/checkpoint_epoch_79.pth.tar"}
+    # test_config = {"output_file": "results_hints.json"}
+
+    ckpt_config = {"ckpt_file": "checkpoints/Dec12_23-54-19_ares_nohints/checkpoint_epoch_79.pth.tar"}
+    test_config = {"output_file": "results_nohints.json", "losses_file": "losses_nohints.tar"}
+
 
 def test_avg(model,
              dataset,
              device,
-             loss):
-    losses = torch.zeros(len(dataset))
+             loss_fns, # list of ("name", loss function) pairs.
+             stop_early): # For testing
+    results = {}
+    losses = torch.zeros(len(loss_fns), len(dataset)) # Holds the average loss value for each image.
+    # npixels = torch.zeros(len(loss_fns), len(dataset)) # Holds the number of valid pixels per image (determined by the mask)
     for i in range(len(dataset)):
         with torch.set_grad_enabled(False):
             data = dataset[i]
             for key in data:
                 if isinstance(data[key], torch.Tensor):
-                    data[key] = data[key].unsqueeze(0) # Batch size 1
-            test_loss = evaluate(loss, model, data, data["depth"], data["mask"], device=device)
-            losses[i] = test_loss.item()
-    return torch.mean(losses)
+                    data[key] = data[key].unsqueeze(0).to(device) # Batch size 1
+            target = data["depth"]
+            print(target)
+            mask = data["mask"]
+            save_images(target, output_dir=".", filename="target_{}".format(i))
+            target = target.to(device)
+            mask = mask.to(device)
+            output = model(data)
+            output = clip_min_max(output, NYU_MIN, NYU_MAX)
+            print(output)
+            for j, (_, loss_fn) in enumerate(loss_fns):
+                losses[j, i] = loss_fn(output, target, mask)
+            if stop_early and i == 5:
+                break
+            # npixels[i, :] = torch.sum(data["mask"])
+    # loss_values = torch.sum(losses*npixels, axis=1)/torch.sum(npixels)
+    loss_values = torch.mean(losses, dim=1)
+    for (loss_name, _), value in zip(loss_fns, loss_values):
+        results[loss_name] = value.item()
+    return results, losses
 
 
 
@@ -105,7 +137,8 @@ def test_avg(model,
 def main(model_config,
          test_config,
          ckpt_config,
-         device):
+         device,
+         stop_early):
     """Run stuff"""
     if ckpt_config["ckpt_file"] is None:
         warn("checkpoint file not specified! Will run on untrained model.")
@@ -122,24 +155,24 @@ def main(model_config,
     # loss = get_loss(train_config["loss_fn"])
     if test_config["mode"] == "run_tests":
         print("Running tests...")
-        test = lambda fn: test_avg(model, dataset, device, fn)
-        results = {}
-        results["berhu"] = test(berhu)
-        results["rmse"] = test(rmse)
-        results["delta1"] = test(lambda p, t, m: delta(p, t, m, threshold=1.25))
-        results["delta2"] = test(lambda p, t, m: delta(p, t, m, threshold=1.25**2))
-        results["delta3"] = test(lambda p, t, m: delta(p, t, m, threshold=1.25**3))
-        results["rel_abs_diff"] = test(rel_abs_diff)
-        results["rel_sqr_diff"] = test(rel_sqr_diff)
-        print(results)
+        loss_fns = []
+        loss_fns.append(("berhu", berhu))
+        loss_fns.append(("rmse", rmse))
+        loss_fns.append(("delta1", lambda p, t, m: delta(p, t, m, threshold=1.25)))
+        loss_fns.append(("delta2", lambda p, t, m: delta(p, t, m, threshold=1.25**2)))
+        loss_fns.append(("delta3", lambda p, t, m: delta(p, t, m, threshold=1.25**3)))
+        loss_fns.append(("rel_abs_diff", rel_abs_diff))
+        loss_fns.append(("rel_sqr_diff", rel_sqr_diff))
+        results, losses = test_avg(model, dataset, device, loss_fns, stop_early)
 
         # Save as a json
-        with open(test_config["output_dir"], "w") as f:
+        with open(test_config["output_file"], "w") as f:
             json.dump(results, f)
+        torch.save(losses, test_config["losses_file"])
+        print(losses)
     elif test_config["mode"] == "check_nan":
         print("Checking for NaNs...")
         for _, param in model.named_parameters():
             print(param)
             if torch.isnan(param).any():
-
                 print("found nan")
