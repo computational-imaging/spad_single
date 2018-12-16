@@ -100,8 +100,9 @@ def no_hints_80():
     model_config = {"model_name": "UNet"}
     train_config = {
         "num_epochs": 80,
+        "optim_params": {"lr": 1e-3},
         "scheduler_params": {
-            "milestones": [40, 60]
+            "milestones": [40]
         }
     }
 
@@ -111,10 +112,19 @@ def hints_80():
     model_config = {"model_name": "UNetWithHints"}
     train_config = {
         "num_epochs": 80,
+        "optim_params": {"lr": 1e-3},
         "scheduler_params": {
-            "milestones": [40, 60]
+            "milestones": [40]
         }
     }
+
+@ex.named_config
+def raw_hist():
+    data_config = {
+        "hist_use_albedo": False,
+        "hist_use_squared_falloff": False
+    }
+
 
 @ex.named_config
 def multi_hints_80():
@@ -162,6 +172,7 @@ def main(model_config,
     model, scheduler, loss = make_training(model_config,
                                            train_config,
                                            device)
+    print(model)
     config = {
         "model_config": model_config,
         "train_config": train_config,

@@ -54,9 +54,9 @@ class UNetWithHints(nn.Module):
             hints.update({"hints_relu_{}".format(j): nn.ReLU(True)})
             j += 1
 
-        self.unet.up1 = up(1024+hist_len, 256, upsampling) # Concatenate the output of the global hints
+        self.unet.up1 = up(1024+hints_output, 256, upsampling) # Concatenate the output of the global hints
         self.global_hints = nn.Sequential(hints)
-        self.bottleneck_conv = double_conv(512+hist_len, 512+hist_len)
+        self.bottleneck_conv = double_conv(512+hints_output, 512+hints_output)
 
     def forward(self, input_):
         rgb = input_["rgb"]

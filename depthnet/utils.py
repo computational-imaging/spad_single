@@ -19,7 +19,6 @@ def clip_min_max(depth, min_depth, max_depth):
     depth[depth > max_depth] = max_depth
     return depth
 
-
 ###########
 # Logging #
 ###########

@@ -5,6 +5,7 @@
 checkpoints*
 experiments*
 *processed*
+*.tar
 
 # Tensorboard
 runs/*
@@ -15,6 +16,7 @@ runs/*
 
 # MATLAB
 *.mex*
+*.mat
 
 # Emacs
 *~
