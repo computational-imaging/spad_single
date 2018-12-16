@@ -13,15 +13,15 @@ Photon Cloud histogram from SPAD
 Output of the network: 
 Depth map
 
-This project uses sacred (https://github.com/IDSIA/sacred) to log and save configurations from run to run.
+This project uses [sacred](https://github.com/IDSIA/sacred) to log and save configurations from run to run.
 
-train_test_split_nyu.py - script for splitting the NYU Depth v2 data along the offical train/test split.
-depthnet/data.py - functions for loading data
-depthnet/train_utils.py - functions for setting up and running the training.
-depthnet/utils.py - misc. functions for logging results during the training process.
-depthnet/models/loss.py - functions for calculating the loss of the network.
-depthnet/models/unet_model.py - functions for building the model.
-train.py - the main script for training the network.
+- train_test_split_nyu.py - script for splitting the NYU Depth v2 data along the offical train/test split.
+- depthnet/data.py - functions for loading data
+- depthnet/train_utils.py - functions for setting up and running the training.
+- depthnet/utils.py - misc. functions for logging results during the training process.
+- depthnet/models/loss.py - functions for calculating the loss of the network.
+- depthnet/models/unet_model.py - functions for building the model.
+- train.py - the main script for training the network.
 
 Data Directory
 data/code_nyu/simulated_data/ConvertRGBD.m - code for extracting the albedo from the RGBD images in the NYU Depth v2 dataset.
