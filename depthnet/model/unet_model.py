@@ -1,8 +1,11 @@
 # full assembly of the sub-parts to form the complete net
 
 from collections import OrderedDict
+import torch
+import torch.nn as nn
+import numpy as np
 
-from .unet_parts import *
+from .unet_parts import up, down, inconv, outconv, double_conv, expand_and_cat, Upsample
 
 class UNet(nn.Module):
     def __init__(self, input_nc, output_nc, upsampling="bilinear", **kwargs):
@@ -35,7 +38,8 @@ class UNet(nn.Module):
         return x
 
 class UNetWithHints(nn.Module):
-    def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, upsampling="bilinear",
+    def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, len_hints_layers,
+                 upsampling="bilinear",
                  **kwargs):
         super(UNetWithHints, self).__init__()
         self.unet = UNet(input_nc, output_nc, upsampling)
@@ -44,7 +48,7 @@ class UNetWithHints(nn.Module):
 
         # Create hints network
         assert num_hints_layers > 0
-        hints_output = self.hist_len
+        hints_output = len_hints_layers
         hints = OrderedDict([("hints_conv_0", nn.Conv2d(self.hist_len, hints_output, kernel_size=1))])
         hints.update({"hints_relu_1": nn.ReLU(True)})
         j = 2
@@ -70,7 +74,7 @@ class UNetWithHints(nn.Module):
         x5 = self.unet.down4(x4)
 
         y = self.global_hints(hist)
-        z = torch.cat([y.expand(-1, -1, x5.size()[2], x5.size()[3]), x5], 1)
+        z = expand_and_cat(y, x5)
         z = self.bottleneck_conv(z)
 
         x = self.unet.up1(z, x4)
@@ -83,7 +87,8 @@ class UNetWithHints(nn.Module):
 
 
 class UNetMultiScaleHints(nn.Module):
-    def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, upsampling="bilinear",
+    def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, len_hints_layers,
+                 upsampling="bilinear",
                  **kwargs):
         super(UNetMultiScaleHints, self).__init__()
         self.unet = UNet(input_nc, output_nc, upsampling)
@@ -92,7 +97,7 @@ class UNetMultiScaleHints(nn.Module):
 
         # Create hints network
         assert num_hints_layers > 0
-        hints_output = self.hist_len
+        hints_output = len_hints_layers
         hints = OrderedDict([("hints_conv_0", nn.Conv2d(self.hist_len, hints_output, kernel_size=1))])
         hints.update({"hints_relu_1": nn.ReLU(True)})
         j = 2

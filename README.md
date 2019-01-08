@@ -24,7 +24,7 @@ This project uses [sacred](https://github.com/IDSIA/sacred) to log and save conf
 - train.py - the main script for training the network.
 
 Data Directory
-data/code_nyu/simulated_data/ConvertRGBD.m - code for extracting the albedo from the RGBD images in the NYU Depth v2 dataset.
+- data/code_nyu/simulated_data/ConvertRGBD.m - code for extracting the albedo from the RGBD images in the NYU Depth v2 dataset.
 
 
 Notes:

@@ -8,8 +8,10 @@ import torchvision.utils as vutils
 
 from depthnet.model import (make_model, split_params_weight_bias, get_loss,
                             delta, rmse, rel_abs_diff, rel_sqr_diff)
+from depthnet.model.utils import ModelWrapper
 from depthnet.checkpoint import save_checkpoint
 from depthnet.utils import log_depth_data
+from depthnet.model.unet_model import UNet, UNetWithHints
 
 
 def make_optimizer(model, optim_name, optim_params, optim_state_dict_fn):
@@ -83,7 +85,7 @@ def evaluate(loss, model, input_, target, mask, device="cpu", log_fn=None, log_k
     loss - callable - loss(prediction, target) should give the loss on the particular image or
     batch of images.
 
-    target should be the tensor such that loss(output, data[target_key]
+    target should be the tensor such that loss(output, data[target_key])
     is the correct thing to do.
     """
     for key in input_:
@@ -96,6 +98,7 @@ def evaluate(loss, model, input_, target, mask, device="cpu", log_fn=None, log_k
     output = model(input_)
     loss_value = loss(output, target, mask)
     if log_fn is not None:
+        output = model.post(output)
         log_fn(loss, model, input_, output, target, mask, device, **log_kwargs)
     return loss_value
 
@@ -159,7 +162,7 @@ def train(model,
 
         # Save the last batch output of every epoch
         if writer is not None:
-            for name, param in model.named_parameters():
+            for name, param in model.network.named_parameters():
                 if torch.isnan(param).any():
                     print("NaN detected.")
                 else:
@@ -170,12 +173,10 @@ def train(model,
             "last_epoch": epoch,
             "global_it": global_it,
         }
-        save_checkpoint(model,
+        save_checkpoint(model.network,
                         scheduler,
                         config,
                         state,
                         filename=os.path.join(ckpt_config["ckpt_dir"],
                                               ckpt_config["run_id"],
                                               "checkpoint_epoch_{}.pth.tar".format(epoch)))
-
-
