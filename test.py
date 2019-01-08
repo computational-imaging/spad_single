@@ -18,6 +18,7 @@ from depthnet.train_utils import evaluate
 from depthnet.checkpoint import load_checkpoint, safe_makedir
 from depthnet.model.loss import berhu, delta, rmse, rel_abs_diff, rel_sqr_diff
 from depthnet.utils import NYU_MIN, NYU_MAX, clip_min_max, save_images
+from depthnet.model.wrapper import DepthNetWrapper
 
 from sacred import Experiment
 
@@ -110,13 +111,12 @@ def test_avg(model,
                 if isinstance(data[key], torch.Tensor):
                     data[key] = data[key].unsqueeze(0).to(device) # Batch size 1
             target = data["depth"]
-            print(target)
+            # print(target)
             mask = data["mask"]
             save_images(target, output_dir=".", filename="target_{}".format(i))
             target = target.to(device)
             mask = mask.to(device)
-            output = model(data)
-            output = clip_min_max(output, NYU_MIN, NYU_MAX)
+            output = model(data) # Includes postprocessing
             print(output)
             for j, (_, loss_fn) in enumerate(loss_fns):
                 losses[j, i] = loss_fn(output, target, mask)
@@ -152,6 +152,10 @@ def main(model_config,
 
     model = make_model(**model_config)
     model.to(device)
+
+    model = DepthNetWrapper(model, pre_active=True, post_active=True,
+                            rgb_mean=dataset.rgb_mean,
+                            rgb_var=dataset.rgb_var)
     # loss = get_loss(train_config["loss_fn"])
     if test_config["mode"] == "run_tests":
         print("Running tests...")
@@ -172,7 +176,7 @@ def main(model_config,
         print(losses)
     elif test_config["mode"] == "check_nan":
         print("Checking for NaNs...")
-        for _, param in model.named_parameters():
+        for _, param in model.network.named_parameters():
             print(param)
             if torch.isnan(param).any():
                 print("found nan")

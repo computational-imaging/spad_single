@@ -1,5 +1,40 @@
+import abc
 import torch.nn as nn
-from .unet_model import UNet, UNetWithHints, UNetMultiScaleHints
+from copy import deepcopy
+
+from .unet_model import UNet, UNetWithHints
+
+class ModelWrapper(abc.ABC):
+    def __init__(self, network, pre_active=True, post_active=False):
+        """
+        model - nn.Module - the neural net we're wrapping
+        pre_active - bool - whether or not to perform the preprocessing in pre()
+            - Usually active for both test and train time.
+        post_active - bool - whether or not to perform the postprocessing in post()
+            - Usually only active at test time, not at train time.
+        """
+        self.network = network
+        self.pre_active = pre_active
+        self.post_active = post_active
+
+    @abc.abstractmethod
+    def pre(self, input_):
+        """Data preprocessing"""
+        return NotImplemented
+
+    @abc.abstractmethod
+    def post(self, output):
+        """Data postprocessing"""
+        return NotImplemented
+
+    def __call__(self, input_):
+        if self.pre_active:
+            input_ = self.pre(input_)
+        output = self.network(input_)
+        if self.post_active:
+            output = self.post(output)
+        return output
+
 
 def make_model(model_name, model_params, model_state_dict_fn):
     # model

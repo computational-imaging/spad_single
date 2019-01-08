@@ -13,9 +13,9 @@ from torchvision import transforms, utils
 
 from sacred import Ingredient, Experiment
 
-data_ingredient = Experiment('data_config')
+data_config = Experiment('data_config')
 
-@data_ingredient.config
+@data_config.config
 def cfg():
     train_file = os.path.join("data", "sunrgbd_all", "train.txt")
     train_dir = os.path.join("data", "sunrgbd_all")
@@ -34,10 +34,13 @@ def cfg():
     depth_format = "SUNRGBD"
     hist_use_albedo = True
     hist_use_squared_falloff = True
+
+    min_depth = 1e-3
+    max_depth = 8.
     # For testing how data loads. Turns off normalization.
     test_loader = False
 
-@data_ingredient.named_config
+@data_config.named_config
 def nyu_depth_v2():
     root_dir = os.path.join("data", "nyu_depth_v2_processed")
     train_file = os.path.join(root_dir, "train.json")
@@ -48,6 +51,8 @@ def nyu_depth_v2():
     test_dir = None
     del root_dir
 
+
+
     # Indices of images to exclude from the dataset.
     blacklist_file = os.path.join("blacklist.txt")
 
@@ -56,10 +61,18 @@ def nyu_depth_v2():
     val_keywords = None
     test_keywords = None
     depth_format = "NYU"
-    hist_use_albedo = True
-    hist_use_squared_falloff = True
+    # hist_use_albedo = True
+    # hist_use_squared_falloff = True
+
+    min_depth = 1e-3
+    max_depth = 10.
     # For testing how data loads. Turns off normalization.
     test_loader = False
+
+@data_config.named_config
+def raw_hist():
+    hist_use_albedo = False
+    hist_use_squared_falloff = False
 
 def worker_init(worker_id):
     cudnn.deterministic = True
@@ -74,7 +87,8 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
     """
     def __init__(self, splitfile, data_dir, keywords=None,
                  file_types=["rgb", "depth", "rawdepth", "albedo"],
-                 info_file="info.json", blacklist_file="blacklist.txt", transform=None):
+                 info_file="info.json", blacklist_file="blacklist.txt", 
+                 rgb_mean=None, rgb_var=None, transform=None):
         """
         Parameters
         ----------
@@ -83,7 +97,7 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
                             (via relative path)
         keywords - string - a set of 
         file_types - list of string - the keys for the dictionary of resource files provided by each entry in splitfile
-        info_file - not used
+        info_file - string - path to json file containing a dictionary with metadata about each image, indexed by image_id
         blacklist_file - list of string - keys in splitfile that should not be used.
         transform - torchvision.transform - preprocessing applied to the data before it is output.
 
@@ -96,6 +110,10 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
         self.data = []
         self.info = {}
         self.blacklist = []
+        if rgb_mean is None:
+            self.rgb_mean = (0, 0, 0)
+        if rgb_var is None:
+            self.rgb_var = (1, 1, 1)
         info = {}
         if info_file is not None:
             print("Loading info file from {}".format(os.path.join(data_dir, info_file)))
@@ -114,7 +132,7 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
             # Check blacklist
             if image_id in self.blacklist:
                 continue # Exclude this entry.
-            # if self.check_blank_albedo(image_id):
+            # elif self.check_blank_albedo(image_id):
             #     print("found blank albedo: {}".format(image_id))
             #     continue # Exclude this entry
             if info_file is not None and keywords is not None:
@@ -130,11 +148,7 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
             else:
                 self.data.append(image_id)
 
-
-
-#         print(self.data)
-
-    def get_global_stats(self, cache="stats_cache.txt", rgb_suffix="_rgb.png"):
+    def get_global_stats(self, cache="stats_cache.txt", write_cache=True):
         """Calculate mean and variance of each rgb channel.
         Optionally caches the result of this calculation in outfile so
         it doesn't need to be done each time the dataset is loaded.
@@ -142,26 +156,26 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
         Does everything in numpy.
         """
         if cache is not None:
+            cache_file = os.path.join(self.data_dir, cache)
             try:
-                with open(cache, "r") as f:
+                with open(cache_file, "r") as f:
                     mean = np.array([float(a) for a in f.readline().strip().split(",")])
                     var = np.array([float(a) for a in f.readline().strip().split(",")])
                     print(mean)
                     print(var)
                     return mean, var
-                print("loaded stats cache at {}".format(cache))
+                print("loaded stats cache at {}".format(cache_file))
             except IOError:
-                print("failed to load stats cache at {}".format(cache))
+                print("failed to load stats cache at {}".format(cache_file))
 
-        print("creating new stats cache (this may take a while...) at {} ".format(cache))
+        print("creating new stats cache (this may take a while...) at {} ".format(cache_file))
         S = np.zeros(3)
         S_sq = np.zeros(3)
         npixels = 0.
+
         for image_id in self.data:
-            rgb_file = os.path.join(self.data_dir, self.index[image_id]["rgb"])
-            rgb_img = Image.open(rgb_file)
+            rgb_img = self.load_from_file(image_id)["rgb"]
             rgb_img = np.asarray(rgb_img, dtype=np.uint16)
-#             print(rgb_img[0:10, 0:10, :])
 
             npixels += rgb_img.shape[0]*rgb_img.shape[1]
             for channel in range(rgb_img.shape[2]):
@@ -170,28 +184,24 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
         mean = S/npixels
         var = S_sq/npixels - mean**2
 
-        # Load full dataset (memory-intensive)
-#         full = []
-#         for depthFile, rgbFile in self.data:
-#             rgb_img = Image.open(os.path.join(self.dataDir, rgbFile))
-#             rgb_img = np.asarray(rgb_img, dtype=np.uint16)
-#             full.append(rgb_img)
-
-#         a = np.array(full)
-#         mean_true = np.mean(a, axis=(0, 1, 2))
-#         var_true = np.var(a, axis=(0, 1, 2))
-#         print("actual mean and variance: {} {}".format(mean_true, var_true))
-#         print(a.shape)
-        try:
-            with open(cache, "w") as f:
-                f.write(",".join(str(m) for m in mean)+"\n")
-                f.write(",".join(str(v) for v in var)+"\n")
-            print("wrote stats cache to {}".format(cache))
-        except IOError:
-            print("failed to write stats cache to {}".format(cache))
+        if write_cache:
+            try:
+                cache_file = os.path.join(self.data_dir, cache)
+                with open(cache_file, "w") as f:
+                    f.write(",".join(str(m) for m in mean)+"\n")
+                    f.write(",".join(str(v) for v in var)+"\n")
+                print("wrote stats cache to {}".format(cache_file))
+            except IOError:
+                print("failed to write stats cache to {}".format(cache_file))
+        self.rgb_mean = mean
+        self.rgb_var = var
         return mean, var
 
     def check_blank_albedo(self, image_id, albedo_key="albedo"):
+        """Check if a given image_id has an albedo image that is all blank.
+        Use the albedo_key to index into the index to find the file path
+        to the albedo image.
+        """
         if albedo_key not in self.index[image_id]:
             print("no albedo file: {}".format(image_id))
             return False # Entry doesn't have an albedo file associated with it.
@@ -200,18 +210,32 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
         albedo = np.asarray(Image.open(os.path.join(self.data_dir, relpath)))
         return np.all(albedo == 0)
 
+    def load_all_from_files(self, image_id):
+        """Given an image id, load the image as a
+        PIL.Image from the path given in the index.
+        """
+        files = {}
+        for file_type in self.file_types:
+            relpath = self.index[image_id][file_type]
+            files[file_type] = Image.open(os.path.join(self.data_dir, relpath))
+        return files
+
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, i):
         sample = {}
         sample["image_id"] = self.data[i]
-        for file_type in self.file_types:
-            relpath = self.index[self.data[i]][file_type]
-            sample[file_type] = Image.open(os.path.join(self.data_dir, relpath))
+        sample.update(self.load_all_from_files(self.data[i]))
         if self.transform:
             sample = self.transform(sample)
         return sample
+
+    def get_item_by_id(self, image_id):
+        """Different way of getting an item that goes by image_id
+        instead of index i
+        """
+        return self.__getitem__(self.data.index(image_id))
 
 ###########
 # Caching #
@@ -232,45 +256,59 @@ def read_cache(cache_file):
             return cache
     except IOError:
         print("failed to load cache at {}".format(cache_file))
-        return None 
+        return None
 
 #############
 # Load data #
 #############
-@data_ingredient.capture
+@data_config.capture
 def load_depth_data(train_file, train_dir, train_keywords=None,
                     val_file=None, val_dir=None, val_keywords=None,
                     test_file=None, test_dir=None, test_keywords=None,
                     blacklist_file=None, depth_format="SUNRGBD",
+                    min_depth=None, max_depth=None,
                     hist_use_albedo=True, hist_use_squared_falloff=True,
                     test_loader=False):
     """Generates training and validation datasets from
     text files and directories. Sets up datasets with transforms.
     *_file - string - a text file containing info for DepthDataset to load the images
     *_dir - string - the folder containing the images to load
-    *_keywords - string - a collection of strings used to decide which subset of the
+    *_keywords - list of string - a collection of strings used to decide which subset of the
                           data to load.
+    blacklist_file - string - a text file listing, on each line, an image_id of an image to exclude
+                              from the dataset.
+    depth_format - string - {SUNRGBD, NYU} the format for reading the depth from the file.
+    min_depth - float - the minimum depth to clip the images to
+    max_depth - float - the maximum depth to clip the images to
+    hist_use_albedo - bool - whether or not to take albedo into account
+    hist_use_squared_albedo - bool - whether or not to take the squared distance falloff into
+                                     account
+    test_loader - bool - whether or not to test the loader and not set the dataset-wide mean and
+                         variance.
     """
     train = DepthDataset(train_file, train_dir, train_keywords, blacklist_file=blacklist_file)
     if test_loader:
-        mean, var = (0., 1.) # Don't normalize
+        mean = None # Don't normalize
+        var = None
     else:
-        mean, var = train.get_global_stats(os.path.join(train_dir, "stats_cache.txt"))
+        mean, var = train.get_global_stats()
     augment = [RandomCropAll(300),
                RandomHorizontalFlipAll(0.5),
               ]
-    resize = [ResizeAll((224, 256))]
+    # resize = [ResizeAll((224, 256))]
+    resize = [CropPowerOf2All(4)]
+    # resize = [] # No resizing operation
     PIL_transforms = [DepthProcessing("depth", depth_format),
                       DepthProcessing("rawdepth", depth_format),
                       AddDepthMask(),
-                      ClipMinMax("depth", 1e-3, 8.),
+                      ClipMinMax("depth", min_depth, max_depth), # Note: Need to add depth mask before clipping.
                       ToFloat("rgb"),
                       ToFloat("albedo"),
                      ]
     float_transforms = [AddDepthHist(use_albedo=hist_use_albedo,
                                      use_squared_falloff=hist_use_squared_falloff,
                                      bins=800//3, range=(0, 8), density=True),
-                        NormalizeRGB(mean, var),
+                        #NormalizeRGB(mean, var),
                         ToTensor(),
                        ]
     train.transform = transforms.Compose(augment + resize + PIL_transforms + float_transforms)
@@ -279,24 +317,28 @@ def load_depth_data(train_file, train_dir, train_keywords=None,
     val = None
     if val_file is not None:
         val = DepthDataset(val_file, val_dir, val_keywords, blacklist_file=blacklist_file,
+                           rgb_mean=mean, rgb_var=var,
                            transform=transforms.Compose(resize + PIL_transforms + float_transforms))
 
         print("Loaded val dataset from {} with size {}.".format(val_file, len(val)))
     test = None
     if test_file is not None:
         test = DepthDataset(test_file, test_dir, test_keywords, blacklist_file=blacklist_file,
+                            rgb_mean=mean, rgb_var=var,
                             transform=transforms.Compose(resize + PIL_transforms + float_transforms))
 
         print("Loaded test dataset from {} with size {}.".format(test_file, len(test)))
     return train, val, test
 
-@data_ingredient.capture
+@data_config.capture
 def get_depth_loaders(train_file, train_dir, train_keywords,
                       val_file, val_dir, val_keywords,
                       test_file, test_dir, test_keywords,
                       batch_size,
                       blacklist_file,
                       depth_format,
+                      min_depth,
+                      max_depth,
                       hist_use_albedo,
                       hist_use_squared_falloff,
                       test_loader):
@@ -312,6 +354,8 @@ def get_depth_loaders(train_file, train_dir, train_keywords,
                                        test_keywords,
                                        blacklist_file,
                                        depth_format,
+                                       min_depth,
+                                       max_depth,
                                        hist_use_albedo,
                                        hist_use_squared_falloff,
                                        test_loader)
@@ -343,11 +387,6 @@ def get_depth_loaders(train_file, train_dir, train_keywords,
     return train_loader, val_loader, test_loader
 
 ##############
-# Clean data #
-##############
-
-
-##############
 # Transforms #
 ##############
 # Resizing:
@@ -367,6 +406,26 @@ class ResizeAll():
             if isinstance(sample[key], Image.Image):
                 random.seed(seed)
                 sample[key] = self.resize(sample[key])
+        return sample
+
+class CropPowerOf2All(): # pylint: disable=too-few-public-methods
+    """Crop to a size where both dimensions are divisible by the given power of 2
+    Note that for an Image.Image, the size attribute is given as (width, height) as is standard
+    for images and displays (e.g. 640 x 480), but which is NOT standard for most arrays, which
+    list the vertical direction first.
+    """
+    def __init__(self, power, rgb_key="rgb"):
+        self.pow_of_2 = 2**power
+        self.rgb_key = rgb_key
+
+    def __call__(self, sample):
+        rgb = sample[self.rgb_key]
+        new_h, new_w = (rgb.size[1]//self.pow_of_2)*self.pow_of_2, \
+                       (rgb.size[0]//self.pow_of_2)*self.pow_of_2
+        crop = transforms.CenterCrop((new_h, new_w))
+        for key in sample:
+            if isinstance(sample[key], Image.Image):
+                sample[key] = crop(sample[key])
         return sample
 
 # for data augmentation
@@ -428,7 +487,6 @@ class DepthProcessing(): # pylint: disable=too-few-public-methods
 
     def __call__(self, sample):
         depth = sample[self.key]
-        print(self.format)
         if self.format == "SUNRGBD":
             x = np.asarray(depth, dtype=np.uint16)
             y = (x >> 3) | (x << 16-3)
@@ -436,7 +494,6 @@ class DepthProcessing(): # pylint: disable=too-few-public-methods
             z[z > 8.] = 8. # Clip to maximum depth of 8m.
             sample[self.key] = z
         else:  # Just read and divide by 1000.
-            print(depth)
             depth = np.asarray(depth, dtype=np.float32)
             x = depth/1000
             sample[self.key] = x
@@ -461,7 +518,7 @@ class ToTensor(): # pylint: disable=too-few-public-methods
             sample['eps'] = torch.from_numpy(sample['eps']).unsqueeze(-1).unsqueeze(-1).float()
 #         print(output)
         sample.update({'depth': torch.from_numpy(depth).unsqueeze(0).float(),
-                       'rgb': torch.from_numpy(rgb).float()})
+                       'rgb': torch.from_numpy(rgb/255.).float()})
         return sample
 
 class AddDepthHist(): # pylint: disable=too-few-public-methods
@@ -477,23 +534,16 @@ class AddDepthHist(): # pylint: disable=too-few-public-methods
     def __call__(self, sample):
         depth = sample["depth"]
         weights = np.ones(depth.shape)
+
         if self.use_albedo:
             weights = weights * np.mean(sample["albedo"]) # Attenuate by the average albedo TODO
         if self.use_squared_falloff:
             weights[depth == 0] = 0.
             weights[depth != 0] = weights[depth != 0] / (depth[depth != 0]**2)
-        # print(weights/np.sum(weights))
-        # print(np.sum(weights))
-        # if np.sum(weights) < 1e-6:
-            # print("bad: {}".format(sample["image_id"]))
-        sample["hist"], _ = np.histogram(depth, weights=weights, **self.hist_kwargs)
-        # sample["hist"] = (raw_hist - np.mean(raw_hist))/np.std(raw_hist) # Instance norm
-        # print(self.hist_kwargs)
-        # print(self.use_albedo)
-        # print(self.use_squared_falloff)
-        # print("histogram sum: {}".format(np.sum(sample["hist"])))
-#         print(hist)
-#         print(sample["depth"])
+        if not self.use_albedo and not self.use_squared_falloff:
+            sample["hist"], _ = np.histogram(depth, **self.hist_kwargs)
+        else:
+            sample["hist"], _ = np.histogram(depth, weights=weights, **self.hist_kwargs)
         return sample
 
 class AddDepthMask(): # pylint: disable=too-few-public-methods
@@ -515,6 +565,9 @@ class AddDepthMask(): # pylint: disable=too-few-public-methods
 
 class ClipMinMax(): # pylint: disable=too-few-public-methods
     def __init__(self, key, min_val, max_val):
+        """Setting min_val or max_val equal to None removes clipping
+        for the min or the max, respectively.
+        """
         self.key = key
         self.min_val = min_val
         self.max_val = max_val
@@ -577,15 +630,7 @@ class CenterCrop(): # pylint: disable=too-few-public-methods
         sample.update(new_depth_rgb)
         return sample
 
-class Crop8(): # pylint: disable=too-few-public-methods
-    """Crop to a size where both dimensions are divisible by 8"""
-    def __call__(self, sample):
-        depth, rgb = sample['depth'], sample['rgb']
-        new_h, new_w = (depth.shape[0]//8)*8, (depth.shape[1]//8)*8
-        new_depth_rgb = {"depth": depth[:new_h, :new_w],
-                         "rgb": rgb[:new_h, :new_w, :]}
-        sample.update(new_depth_rgb)
-        return sample
+
 
 class CropSmall(): # pylint: disable=too-few-public-methods
     """Make a small patch for testing purposes"""
@@ -599,25 +644,41 @@ class CropSmall(): # pylint: disable=too-few-public-methods
 ###########
 # Testing #
 ###########
-@data_ingredient.automain
+@data_config.automain
 def test_load_data():
-    train_loader, _, _ = get_depth_loaders()
-    batch = next(iter(train_loader))
-    print(batch["rgb"][0, :, :, :])
-    print(batch["depth"][0, :, :, :])
-    print(batch["mask"][0, :, :, :])
-    print(batch["image_id"])
+    # train_loader, _, _ = get_depth_loaders()
+    # batch = next(iter(train_loader))
+    # print(batch["rgb"][0, :, :, :])
+    # print(batch["depth"][0, :, :, :])
+    # print(batch["mask"][0, :, :, :])
+    # print(batch["image_id"])
     # train, _, _ = load_depth_data()
     # batch = train[0]
     # print(batch["rgb"])
 
 
+
     # Save a histogram
     # with open("test_hist.pkl", "w") as f:
     # Save RGB
-    utils.save_image(batch["rgb"][0, :, :, :]/256., "test_rgb.png")
+    # from itertools import permutations
+    # for perm in permutations([0, 1, 2]):
+    #     utils.save_image(torch.tensor(batch["rgb"][0, torch.LongTensor(perm)], dtype=torch.uint8), 
+    #                      "test_rgb_{}.png".format("_".join([str(i) for i in perm])))
     # Save Depth
-    utils.save_image(batch["depth"][0, :, :, :]/8., "test_depth.png")
-    utils.save_image(batch["rawdepth"][0, :, :]/8., "test_rawdepth.png")
+    # utils.save_image(batch["depth"][0, :, :, :], "test_depth.png", range=(1e-3, 8.))
+    # utils.save_image(batch["rawdepth"][0, :, :], "test_rawdepth.png", range=(1e-3, 8.))
     # Save Albedo
     # utils.save_image(batch["albedo"][0, :, :, :], "test_albedo.png")
+
+    train, _, _ = load_depth_data()
+    files = train.get_item_by_id("dining_room_0001a/0001")
+    depth = files["depth"][0,:,:]
+    print(depth)
+    min_depth = 1e-3
+    max_depth = 10.
+    # print(depth.dim())
+    utils.save_image(depth, "0001_depth_test.png", range=(min_depth, max_depth), normalize=True)
+    # test_out = utils.make_grid(depth, range=(min_depth, max_depth), normalize=True)
+    # print(test_out)
+
