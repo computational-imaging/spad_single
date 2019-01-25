@@ -13,9 +13,9 @@ from torchvision import transforms, utils
 
 from sacred import Ingredient, Experiment
 
-data_config = Experiment('data_config')
+data_ingredient = Experiment('data_config')
 
-@data_config.config
+@data_ingredient.config
 def cfg():
     train_file = os.path.join("data", "sunrgbd_all", "train.txt")
     train_dir = os.path.join("data", "sunrgbd_all")
@@ -40,7 +40,7 @@ def cfg():
     # For testing how data loads. Turns off normalization.
     test_loader = False
 
-@data_config.named_config
+@data_ingredient.named_config
 def nyu_depth_v2():
     root_dir = os.path.join("data", "nyu_depth_v2_processed")
     train_file = os.path.join(root_dir, "train.json")
@@ -69,7 +69,7 @@ def nyu_depth_v2():
     # For testing how data loads. Turns off normalization.
     test_loader = False
 
-@data_config.named_config
+@data_ingredient.named_config
 def raw_hist():
     hist_use_albedo = False
     hist_use_squared_falloff = False
@@ -112,8 +112,12 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
         self.blacklist = []
         if rgb_mean is None:
             self.rgb_mean = (0, 0, 0)
+        else:
+            self.rgb_mean = rgb_mean
         if rgb_var is None:
             self.rgb_var = (1, 1, 1)
+        else:
+            self.rgb_var = rgb_var
         info = {}
         if info_file is not None:
             print("Loading info file from {}".format(os.path.join(data_dir, info_file)))
@@ -261,12 +265,13 @@ def read_cache(cache_file):
 #############
 # Load data #
 #############
-@data_config.capture
+@data_ingredient.capture
 def load_depth_data(train_file, train_dir, train_keywords=None,
                     val_file=None, val_dir=None, val_keywords=None,
                     test_file=None, test_dir=None, test_keywords=None,
                     blacklist_file=None, depth_format="SUNRGBD",
                     min_depth=None, max_depth=None,
+                    hist_bins=None, hist_range=None,
                     hist_use_albedo=True, hist_use_squared_falloff=True,
                     test_loader=False):
     """Generates training and validation datasets from
@@ -280,6 +285,8 @@ def load_depth_data(train_file, train_dir, train_keywords=None,
     depth_format - string - {SUNRGBD, NYU} the format for reading the depth from the file.
     min_depth - float - the minimum depth to clip the images to
     max_depth - float - the maximum depth to clip the images to
+    hist_bins - int - the number of bins in the histogram
+    hist_range - (float, float) the range of values for the histogram
     hist_use_albedo - bool - whether or not to take albedo into account
     hist_use_squared_albedo - bool - whether or not to take the squared distance falloff into
                                      account
@@ -292,6 +299,7 @@ def load_depth_data(train_file, train_dir, train_keywords=None,
         var = None
     else:
         mean, var = train.get_global_stats()
+    train.rgb_mean, train.rgb_var = mean, var
     augment = [RandomCropAll(300),
                RandomHorizontalFlipAll(0.5),
               ]
@@ -307,7 +315,9 @@ def load_depth_data(train_file, train_dir, train_keywords=None,
                      ]
     float_transforms = [AddDepthHist(use_albedo=hist_use_albedo,
                                      use_squared_falloff=hist_use_squared_falloff,
-                                     bins=800//3, range=(0, 8), density=True),
+                                     bins=hist_bins, range=hist_range, density=True),
+                                     # bins=int(8//0.03), range=(min_depth, max_depth), density=True),
+
                         #NormalizeRGB(mean, var),
                         ToTensor(),
                        ]
@@ -319,6 +329,7 @@ def load_depth_data(train_file, train_dir, train_keywords=None,
         val = DepthDataset(val_file, val_dir, val_keywords, blacklist_file=blacklist_file,
                            rgb_mean=mean, rgb_var=var,
                            transform=transforms.Compose(resize + PIL_transforms + float_transforms))
+        val.rgb_mean, val.rgb_var = mean, var
 
         print("Loaded val dataset from {} with size {}.".format(val_file, len(val)))
     test = None
@@ -326,11 +337,13 @@ def load_depth_data(train_file, train_dir, train_keywords=None,
         test = DepthDataset(test_file, test_dir, test_keywords, blacklist_file=blacklist_file,
                             rgb_mean=mean, rgb_var=var,
                             transform=transforms.Compose(resize + PIL_transforms + float_transforms))
-
+        test.rgb_mean, test.rgb_var = mean, var
         print("Loaded test dataset from {} with size {}.".format(test_file, len(test)))
+    # Incorporate global stats
+
     return train, val, test
 
-@data_config.capture
+@data_ingredient.capture
 def get_depth_loaders(train_file, train_dir, train_keywords,
                       val_file, val_dir, val_keywords,
                       test_file, test_dir, test_keywords,
@@ -339,6 +352,8 @@ def get_depth_loaders(train_file, train_dir, train_keywords,
                       depth_format,
                       min_depth,
                       max_depth,
+                      hist_bins,
+                      hist_range,
                       hist_use_albedo,
                       hist_use_squared_falloff,
                       test_loader):
@@ -356,6 +371,8 @@ def get_depth_loaders(train_file, train_dir, train_keywords,
                                        depth_format,
                                        min_depth,
                                        max_depth,
+                                       hist_bins,
+                                       hist_range,
                                        hist_use_albedo,
                                        hist_use_squared_falloff,
                                        test_loader)
@@ -500,7 +517,12 @@ class DepthProcessing(): # pylint: disable=too-few-public-methods
         return sample
 
 class ToTensor(): # pylint: disable=too-few-public-methods
-    """Convert ndarrays in sample to Tensors."""
+    """Convert ndarrays in sample to Tensors.
+    Outputs should have 3 dimensions i.e. len(sample[key].size()) == 3
+    for key in {'hist', 'mask', 'depth', 'rgb', 'eps'}
+
+    If using a DataLoader, the DataLoader will prepend the batch dimension.
+    """
 
     def __call__(self, sample):
         depth, rgb = sample['depth'], sample['rgb']
@@ -518,7 +540,7 @@ class ToTensor(): # pylint: disable=too-few-public-methods
             sample['eps'] = torch.from_numpy(sample['eps']).unsqueeze(-1).unsqueeze(-1).float()
 #         print(output)
         sample.update({'depth': torch.from_numpy(depth).unsqueeze(0).float(),
-                       'rgb': torch.from_numpy(rgb/255.).float()})
+                       'rgb': torch.from_numpy(rgb).float()})
         return sample
 
 class AddDepthHist(): # pylint: disable=too-few-public-methods
@@ -533,8 +555,10 @@ class AddDepthHist(): # pylint: disable=too-few-public-methods
 
     def __call__(self, sample):
         depth = sample["depth"]
+        if "mask" in sample:
+            mask = sample["mask"]
+            depth = depth[mask > 0]
         weights = np.ones(depth.shape)
-
         if self.use_albedo:
             weights = weights * np.mean(sample["albedo"]) # Attenuate by the average albedo TODO
         if self.use_squared_falloff:
@@ -644,7 +668,7 @@ class CropSmall(): # pylint: disable=too-few-public-methods
 ###########
 # Testing #
 ###########
-@data_config.automain
+@data_ingredient.automain
 def test_load_data():
     # train_loader, _, _ = get_depth_loaders()
     # batch = next(iter(train_loader))
