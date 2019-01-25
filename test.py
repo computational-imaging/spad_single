@@ -38,7 +38,7 @@ def cfg():
         "model_params": {
             "input_nc": 3,                      # Number of input channels
             "output_nc": 1,                     # Number of output channels
-            "hist_len": 800//3,                 # Length of the histogram (hints only)
+            "hist_len": 1000//3,                # Length of the histogram (hints only)
             "num_hints_layers": 4,              # Number of 1x1 conv layers for hints (hints only)
         },
         "model_state_dict_fn": None,            # Function for getting the state dict
@@ -47,8 +47,8 @@ def cfg():
     test_config = {
         "dataset": "val",                       # {train, val, test}
         "mode": "run_tests",                    # {run_tests, check_nan}
-        "output_file": "results.json",
-        "losses_file": "losses.tar"
+        "output_file": "results.json",          # Output file for aggregate numerical results
+        "losses_file": "losses.tar"             # Output file for per-image numerical results
     }
 
     comment = ""
@@ -81,18 +81,24 @@ def cfg():
 
 @ex.named_config
 def current():
-    # ckpt_config = {"ckpt_file": "checkpoints/Nov02_17-50-11_ares_hints/checkpoint_epoch_79.pth.tar"}
+    ckpt_config = {"ckpt_file": "checkpoints/Nov02_17-50-11_ares_hints/checkpoint_epoch_79.pth.tar"}
     # ckpt_config = {"ckpt_file": "checkpoints/Nov25_00-20-06_ares_hints/checkpoint_epoch_35.pth.tar"}
     # ckpt_config = {"ckpt_file": "checkpoints/Dec03_17-20-39_ares_hints/checkpoint_epoch_79.pth.tar"}
 
-    # ckpt_config = {"ckpt_file": "checkpoints/Dec13_00-36-40_ares_hints_rawhist/checkpoint_epoch_79.pth.tar"}
-    # data_config = {"hist_use_albedo": False, "hist_use_squared_falloff": False}
-    # test_config = {"output_file": "results_rawhints.json"}
+@ex.named_config
+def test_rawhints():
+    ckpt_config = {"ckpt_file": "checkpoints/Dec27_01-39-23_ares_rawhist/checkpoint_epoch_79.pth.tar"}
+    data_config = {"hist_use_albedo": False, "hist_use_squared_falloff": False}
+    test_config = {"output_file": "results_rawhints.json", "losses_file": "losses_rawhints.tar"}
 
-    # ckpt_config = {"ckpt_file": "checkpoints/Dec12_23-53-46_ares_hints/checkpoint_epoch_79.pth.tar"}
-    # test_config = {"output_file": "results_hints.json"}
+@ex.named_config
+def test_hints():
+    ckpt_config = {"ckpt_file": "checkpoints/Dec27_01-39-23_ares_hints/checkpoint_epoch_79.pth.tar"}
+    test_config = {"output_file": "results_hints.json", "losses_file": "losses_hints.tar"}
 
-    ckpt_config = {"ckpt_file": "checkpoints/Dec12_23-54-19_ares_nohints/checkpoint_epoch_79.pth.tar"}
+@ex.named_config
+def test_nohints():
+    ckpt_config = {"ckpt_file": "checkpoints/Dec27_01-39-23_ares_nohints/checkpoint_epoch_79.pth.tar"}
     test_config = {"output_file": "results_nohints.json", "losses_file": "losses_nohints.tar"}
 
 
@@ -111,9 +117,9 @@ def test_avg(model,
                 if isinstance(data[key], torch.Tensor):
                     data[key] = data[key].unsqueeze(0).to(device) # Batch size 1
             target = data["depth"]
-            # print(target)
+            print(target)
             mask = data["mask"]
-            save_images(target, output_dir=".", filename="target_{}".format(i))
+            # save_images(target, output_dir=".", filename="target_{}".format(i))
             target = target.to(device)
             mask = mask.to(device)
             output = model(data) # Includes postprocessing
@@ -137,6 +143,7 @@ def test_avg(model,
 def main(model_config,
          test_config,
          ckpt_config,
+         data_config,
          device,
          stop_early):
     """Run stuff"""
@@ -153,9 +160,15 @@ def main(model_config,
     model = make_model(**model_config)
     model.to(device)
 
-    model = DepthNetWrapper(model, pre_active=True, post_active=True,
+    model = DepthNetWrapper(model,
+                            pre_active=True,
+                            post_active=True,   # Turn on clipping for evaluation
+                            rgb_key="rgb",
                             rgb_mean=dataset.rgb_mean,
-                            rgb_var=dataset.rgb_var)
+                            rgb_var=dataset.rgb_var,
+                            min_depth=data_config["min_depth"],
+                            max_depth=data_config["max_depth"],
+                            device=device)
     # loss = get_loss(train_config["loss_fn"])
     if test_config["mode"] == "run_tests":
         print("Running tests...")
@@ -173,7 +186,7 @@ def main(model_config,
         with open(test_config["output_file"], "w") as f:
             json.dump(results, f)
         torch.save(losses, test_config["losses_file"])
-        print(losses)
+        # print(losses)
     elif test_config["mode"] == "check_nan":
         print("Checking for NaNs...")
         for _, param in model.network.named_parameters():

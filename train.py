@@ -17,7 +17,7 @@ import numpy as np
 ### Project-specific loaders ###
 from depthnet.model import (make_model, split_params_weight_bias, get_loss,
                             delta, rmse, rel_abs_diff, rel_sqr_diff)
-from depthnet.data import data_config, get_depth_loaders
+from depthnet.data import data_ingredient, get_depth_loaders
 from depthnet.train_utils import make_training, train
 from depthnet.model.wrapper import DepthNetWrapper
 from depthnet.checkpoint import load_checkpoint, safe_makedir
@@ -28,7 +28,7 @@ from sacred import Experiment
 pp = PrettyPrinter(indent=4)
 pprint = pp.pprint
 
-ex = Experiment('train', ingredients=[data_config])
+ex = Experiment('train', ingredients=[data_ingredient])
 ex.add_source_file(os.path.join("depthnet", "model", "unet_model.py"))
 ex.add_source_file(os.path.join("depthnet", "model", "unet_parts.py"))
 
@@ -43,7 +43,7 @@ def cfg():
         "model_params": {
             "input_nc": 3,                      # Number of input channels
             "output_nc": 1,                     # Number of output channels
-            "hist_len": 800//3,                 # Length of the histogram (hints only)
+            "hist_len": 1000//3,                # Length of the histogram (hints only)
             "num_hints_layers": 4,              # Number of 1x1 conv layers for hints (hints only)
             "len_hints_layers": 512,            # Number of units in the hints conv layers.
             "upsampling": "bilinear",           # {bilinear, nearest}
@@ -164,14 +164,17 @@ def main(model_config,
     """Run stuff"""
     init_randomness(seed)
     # Load data
-    train_loader, val_loader, _ = get_depth_loaders()
     model, scheduler, loss = make_training(model_config,
                                            train_config,
                                            device)
     print(model)
+    train_loader, val_loader, _ = get_depth_loaders(hist_bins=model_config["model_params"]["hist_len"],
+                                                    hist_range=(data_config["min_depth"], data_config["max_depth"]))
+
     model = DepthNetWrapper(model,
                             pre_active=True,
-                            post_active=False,
+                            post_active=False, # Turn off clipping for training
+                            rgb_key="rgb",
                             rgb_mean=train_loader.dataset.rgb_mean,
                             rgb_var=train_loader.dataset.rgb_var,
                             min_depth=data_config["min_depth"],
