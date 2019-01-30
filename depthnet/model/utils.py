@@ -2,7 +2,7 @@ import abc
 import torch.nn as nn
 from copy import deepcopy
 
-from .unet_model import UNet, UNetWithHints
+from .unet_model import UNet, UNetWithHints, UNetDORN, UNetDORNWithHints
 
 class ModelWrapper(abc.ABC):
     def __init__(self, network, pre_active=True, post_active=False):

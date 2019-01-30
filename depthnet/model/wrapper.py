@@ -79,9 +79,10 @@ class DORNWrapper(DepthNetWrapper):
         end = max_depth + self.sid_offset
         self.sid_bin_edges = np.array([np.power(end, i/sid_bins) for i in range(sid_bins+1)])
         self.sid_depths = (self.sid_bin_edges[:-1] + self.sid_bin_edges[1:])/2 - self.sid_offset
+        self.sid_depths = torch.from_numpy(self.sid_depths).float().to(device)
 
     def post(self, output_probs):
-        depth_index = torch.sum((output_probs >= 0.5), dim=1).long()
+        depth_index = torch.sum((output_probs >= 0.5), dim=1).long().unsqueeze(1)
         depth_vals = torch.take(self.sid_depths, depth_index)
         return depth_vals
 

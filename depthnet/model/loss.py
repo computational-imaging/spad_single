@@ -6,12 +6,6 @@ from torch.nn import MSELoss, L1Loss
 # Loss functions #
 ##################
 # Run on import
-MSE_loss = MSELoss()
-if torch.cuda.is_available():
-    MSE_loss.cuda()
-L1_loss = L1Loss()
-if torch.cuda.is_available():
-    L1_loss.cuda()
 
 def ord_reg_loss(prediction, target, mask, size_average=True):
     """Calculates the Ordinal Regression loss
