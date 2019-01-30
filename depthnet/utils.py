@@ -23,30 +23,30 @@ def clip_min_max(depth, min_depth, max_depth):
 # Logging #
 ###########
 
-def log_depth_data(loss, model, input_, output, target, mask, device,
+def log_depth_data(loss, model, input_, output, depth, mask, device,
                    writer, tag, it, write_images=False, save_output=False):
-    writer.add_scalar("data/{}_d1".format(tag), delta(output, target, mask, 1.25).item(), it)
-    writer.add_scalar("data/{}_d2".format(tag), delta(output, target, mask, 1.25**2).item(), it)
-    writer.add_scalar("data/{}_d3".format(tag), delta(output, target, mask, 1.25**3).item(), it)
-    writer.add_scalar("data/{}_rmse".format(tag), rmse(output, target, mask).item(), it)
+    writer.add_scalar("data/{}_d1".format(tag), delta(output, depth, mask, 1.25).item(), it)
+    writer.add_scalar("data/{}_d2".format(tag), delta(output, depth, mask, 1.25**2).item(), it)
+    writer.add_scalar("data/{}_d3".format(tag), delta(output, depth, mask, 1.25**3).item(), it)
+    writer.add_scalar("data/{}_rmse".format(tag), rmse(output, depth, mask).item(), it)
     # print(rmse(output, depth).item())
     log_output = torch.log(output)
-    log_target = torch.log(target)
+    log_depth = torch.log(depth)
     # print("log output nans: {}".format(torch.isnan(log_output).any()))
     # print("log output infs: {}".format(torch.sum(log_output == float('-inf'))))
     # print("log target nans: {}".format(torch.isnan(log_target).any()))
     # log_target[torch.isnan(log_target)] = 0
-    writer.add_scalar("data/{}_logrmse".format(tag), rmse(log_output, log_target, mask), it)
-    writer.add_scalar("data/{}_rel_abs_diff".format(tag), rel_abs_diff(output, target, mask), it)
-    writer.add_scalar("data/{}_rel_sqr_diff".format(tag), rel_sqr_diff(output, target, mask), it)
-    writer.add_scalar("data/{}_loss".format(tag), loss(output, target, mask).item(), it)
+    writer.add_scalar("data/{}_logrmse".format(tag), rmse(log_output, log_depth, mask), it)
+    writer.add_scalar("data/{}_rel_abs_diff".format(tag), rel_abs_diff(output, depth, mask), it)
+    writer.add_scalar("data/{}_rel_sqr_diff".format(tag), rel_sqr_diff(output, depth, mask), it)
+    writer.add_scalar("data/{}_loss".format(tag), loss(output, depth, mask).item(), it)
     # writer.add_scalar("data/{}_depth_min".format(tag), torch.min(output).item(), it)
     # writer.add_scalar("data/{}_depth_max".format(tag), torch.max(output).item(), it)
     if write_images:
         rgb_input = vutils.make_grid(input_["rgb"], nrow=4)
         writer.add_image('image/rgb_input', rgb_input, it)
 
-        depth_truth = vutils.make_grid(target, nrow=4,
+        depth_truth = vutils.make_grid(depth, nrow=4,
                                        normalize=True, range=(model.min_depth, model.max_depth))
         writer.add_image('image/depth_truth', depth_truth, it)
 

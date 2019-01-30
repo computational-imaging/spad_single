@@ -345,10 +345,9 @@ def load_depth_data(train_file, train_dir, train_keywords=None,
     return train, val, test
 
 @data_ingredient.capture
-def get_depth_loaders(batch_size, **data_kwargs):
+def get_data_loaders(batch_size, **data_kwargs):
     """Wrapper for getting the loaders at training time."""
     train, val, test = load_depth_data(**data_kwargs)
-    print(data_kwargs)
     train_loader = DataLoader(train,
                               batch_size=batch_size,
                               shuffle=True,
@@ -512,7 +511,7 @@ class ToTensor(): # pylint: disable=too-few-public-methods
             sample['mask'] = torch.from_numpy(sample['mask']).unsqueeze(0).float()
             sample['eps'] = torch.from_numpy(sample['eps']).unsqueeze(-1).unsqueeze(-1).float()
         if 'depth_sid' in sample:
-            sample["depth_sid"] = torch.from_numpy(sample['depth_sid']).transpose(2, 0, 1).float()
+            sample["depth_sid"] = torch.from_numpy(sample['depth_sid'].transpose(2, 0, 1)).float()
             sample["depth_sid_index"] = torch.from_numpy(sample["depth_sid_index"]).unsqueeze(0).float()
 #         print(output)
         sample.update({'depth': torch.from_numpy(depth).unsqueeze(0).float(),
@@ -594,7 +593,7 @@ class AddSIDDepth():
         K = np.zeros(depth.shape + (self.sid_bins,))
         for i in range(self.sid_bins):
             K[:, :, i] = K[:, :, i] + i * np.ones(depth.shape)
-        sample["depth_sid"] = (K < sample["depth_sid_index"])
+        sample["depth_sid"] = (K < sample["depth_sid_index"][:, :, np.newaxis]).astype(np.int32)
         return sample
 
     def get_depth_sid(self, depth):
@@ -605,7 +604,7 @@ class AddSIDDepth():
         start = 1.0
         end = self.sid_range[1] + self.offset
         depth_sid = self.sid_bins * np.log(depth / start) / \
-                                     np.log(end / start)
+                                    np.log(end / start)
         depth_sid = depth_sid.astype(np.int32)
         return depth_sid
 

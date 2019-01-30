@@ -7,13 +7,13 @@ from tensorboardX import SummaryWriter
 import torchvision.utils as vutils
 
 import depthnet.model.loss as loss_fns
-from depthnet.model import (make_model, split_params_weight_bias, get_loss,
+from depthnet.model import (make_model, split_params_weight_bias,
                             delta, rmse, rel_abs_diff, rel_sqr_diff)
 
 from depthnet.model.utils import ModelWrapper
 from depthnet.checkpoint import save_checkpoint
 from depthnet.utils import log_depth_data
-from depthnet.model.unet_model import UNet, UNetWithHints
+from depthnet.model.unet_model import UNet, UNetWithHints, UNetDORN, UNetDORNWithHints
 
 
 def make_optimizer(model, optim_name, optim_params, optim_state_dict_fn):
@@ -61,8 +61,8 @@ def make_training(model_config,
     """
     # model
     model = make_model(**model_config)
+    print(model)
     model.to(device)
-
 
     # loss
     # loss = get_loss(train_config["loss_fn"])
@@ -83,7 +83,7 @@ def make_training(model_config,
 ##############
 # Validation #
 ##############
-def evaluate(loss, model, input_, target, mask, device="cpu", log_fn=None, log_kwargs=None):
+def evaluate(loss, model, input_, target, ground_truth, mask, device="cpu", log_fn=None, log_kwargs=None):
     """Computes the error of the model on the data set.
     Returns an ordinary number (i.e. not a tensor)
     loss - callable - loss(prediction, target) should give the loss on the particular image or
@@ -102,8 +102,9 @@ def evaluate(loss, model, input_, target, mask, device="cpu", log_fn=None, log_k
     output = model(input_)
     loss_value = loss(output, target, mask)
     if log_fn is not None:
-        output = model.post(output)
-        log_fn(loss, model, input_, output, target, mask, device, **log_kwargs)
+        output_post = model.post(output) # Perform post-processing on the model output before passing to the log function.
+        ground_truth = ground_truth.to(device)
+        log_fn(loss, model, input_, output_post, ground_truth, mask, device, **log_kwargs)
     return loss_value
 
 
@@ -128,11 +129,15 @@ def train(model,
     num_epochs = train_config["num_epochs"]
     global_it = train_config["global_it"]
 
+    # Keys for indexing into data
+    target_key = train_config["target_key"]
+    ground_truth_key = train_config["ground_truth_key"]
+
     for epoch in range(start_epoch, start_epoch + num_epochs):
         print("epoch: {}".format(epoch))
         data = None
         for it, data in enumerate(train_loader):
-            trainloss = evaluate(loss, model, data, data["depth"], data["mask"],
+            trainloss = evaluate(loss, model, data, data[target_key], data[ground_truth_key], data["mask"],
                                  device,
                                  log_fn=log_depth_data, log_kwargs={"writer": writer,
                                                                     "tag": "train",
@@ -155,7 +160,7 @@ def train(model,
             for it, data in enumerate(val_loader):
                 if it == (global_it % len(val_loader)):
                     with torch.set_grad_enabled(False):
-                        valloss = evaluate(loss, model, data, data["depth"], data["mask"],
+                        valloss = evaluate(loss, model, data, data[target_key], data[ground_truth_key], data["mask"],
                                            device,
                                            log_fn=log_depth_data, log_kwargs={"writer": writer,
                                                                               "tag": "val",
@@ -164,13 +169,13 @@ def train(model,
                         break
             print("End epoch {}\tval loss: {}".format(epoch, valloss))
 
-        # Save the last batch output of every epoch
-        if writer is not None:
-            for name, param in model.network.named_parameters():
-                if torch.isnan(param).any():
-                    print("NaN detected.")
-                else:
-                    writer.add_histogram(name, param.clone().cpu().data.numpy(), global_it)
+        # # Save the last batch output of every epoch
+        # if writer is not None:
+        #     for name, param in model.network.named_parameters():
+        #         if torch.isnan(param).any():
+        #             print("NaN detected.")
+        #         else:
+        #             writer.add_histogram(name, param.clone().cpu().data.numpy(), global_it)
 
         # Save checkpoint
         state = {

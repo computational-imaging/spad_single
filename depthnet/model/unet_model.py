@@ -3,6 +3,7 @@
 from collections import OrderedDict
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 
 from .unet_parts import up, down, inconv, outconv, double_conv, expand_and_cat, Upsample
@@ -23,7 +24,6 @@ class UNet(nn.Module):
 
     def forward(self, input_):
         x = input_["rgb"]
-        mask = input_["mask"] # For masking away unknown depth values.
         x1 = self.inc(x)
         x2 = self.down1(x1)
         x3 = self.down2(x2)
@@ -34,7 +34,6 @@ class UNet(nn.Module):
         x = self.up3(x, x2)
         x = self.up4(x, x1)
         x = self.outc(x)
-        # x = F.relu(x, True) # Map depth to [0, inf)
         return x
 
 class UNetWithHints(nn.Module):
@@ -141,11 +140,29 @@ class UNetMultiScaleHints(nn.Module):
         return x
 
 class UNetDORN(nn.Module):
-    def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, len_hints_layers,
-                 upsampling="bilinear",
-                 **kwargs):
-        super(UNetWithHints, self).__init__()
-        self.unet = UNet(input_nc, output_nc, upsampling)
+    def __init__(self, input_nc, sid_bins, upsampling="bilinear", **kwargs):
+        super(UNetDORN, self).__init__()
+        self.unet = UNet(input_nc, 2*sid_bins, upsampling)
+        self.unet.outc = nn.Conv2d(64, 2*sid_bins, kernel_size=1, bias=False)
+        self.sid_bins = sid_bins
+
+    def forward(self, input_):
+        x = self.unet(input_)
+        probs = []
+        for i in range(self.sid_bins):
+            prob = F.softmax(x[:, 2*i:2*i+2, :, :], dim=1)
+            probs.append(prob[:, 0:1, :, :])
+        probs = torch.cat(probs, dim=1)
+        return probs
+
+class UNetDORNWithHints(nn.Module):
+    def __init__(self, input_nc, sid_bins, hist_len, num_hints_layers, len_hints_layers,
+                 upsampling="bilinear", **kwargs):
+        super(UNetDORNWithHints, self).__init__()
+        self.unet = UNet(input_nc, 2*sid_bins, upsampling)
+        self.unet.outc = nn.Conv2d(64, 2*sid_bins, kernel_size=1, bias=False)
+        self.sid_bins = sid_bins
+
         self.hist_len = hist_len
         self.num_hints_layers = num_hints_layers
 
@@ -168,7 +185,6 @@ class UNetDORN(nn.Module):
     def forward(self, input_):
         rgb = input_["rgb"]
         hist = input_["hist"]
-        mask = input_["mask"] # For masking away unknown depth values
 
         x1 = self.unet.inc(rgb)
         x2 = self.unet.down1(x1)
@@ -185,5 +201,20 @@ class UNetDORN(nn.Module):
         x = self.unet.up3(x, x2)
         x = self.unet.up4(x, x1)
         x = self.unet.outc(x)
-        # x = F.relu(x, True) # Map depth to [0, inf)
-        return x
+
+        probs = []
+        for i in range(self.sid_bins):
+            prob = F.softmax(x[:, 2*i:2*i+2, :, :], dim=1)
+            probs.append(prob[:, 0:1, :, :])
+        probs = torch.cat(probs, dim=1)
+        return probs
+
+if __name__ == '__main__':
+    # model = UNetDORN(3, 4)
+    model = UNetDORNWithHints(3, 4, 10, 4, 20)
+    input_ = {"rgb": torch.ones(1, 3, 32, 32),
+              "hist": torch.randn(1, 10, 1, 1)}
+    output = model(input_)
+    print(output)
+
+
