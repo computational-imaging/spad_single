@@ -49,6 +49,7 @@ def cfg():
             "upsampling": "bilinear",           # {bilinear, nearest}
         },
         "model_state_dict_fn": None,            # Function for getting the state dict
+        "model_wrapper": "DepthNetWrapper"      # Wrapper for doing pre- and post-processing on the data.
     }
 
     train_config = {
@@ -66,7 +67,7 @@ def cfg():
         },
         "last_epoch": -1,
         "global_it": 0,
-        "num_epochs": 10,
+        "num_epochs": 30,
     }
     comment = ""
 
@@ -95,6 +96,18 @@ def cfg():
     # seed = 2018
     # torch.manual_seed(seed)
     # torch.cuda.manual_seed(seed)
+
+@ex.named_config
+def unet_dorn():
+    comment = "_unet_dorn"
+    model_config = {
+        "model_name": "UNetDORN",
+        "model_params": {
+            "in_channels": 3
+            "sid_bins": 80
+
+        }
+    }
 
 @ex.named_config
 def no_hints_80():
@@ -162,16 +175,22 @@ def main(model_config,
          test_run,
          seed):
     """Run stuff"""
-    init_randomness(seed)
-    # Load data
+    init_randomness(seed)   # Initialize randomness for repeatability
+
+    # Load the data and configure any necessary transforms. May depend on the model as well as the data.
+    train_loader, val_loader, _ = get_data_loaders(model_config, data_config)
+    hist_bins=model_config["model_params"]["hist_len"],
+                                                    hist_range=(data_config["min_depth"], data_config["max_depth"]),
+                                                    sid_bins=model_config["model_params"]["sid_bins"],
+                                                    sid_range=(data_config["min_depth"], data_config["max_depth"])
+                                                    )
+
+    # Load the model, the scheduler/optimizer, and the loss function.
     model, scheduler, loss = make_training(model_config,
                                            train_config,
                                            device)
     print(model)
-    train_loader, val_loader, _ = get_depth_loaders(hist_bins=model_config["model_params"]["hist_len"],
-                                                    hist_range=(data_config["min_depth"], data_config["max_depth"]))
-
-    model = DepthNetWrapper(model,
+    model = DepthNetWrapper(model, 
                             pre_active=True,
                             post_active=False, # Turn off clipping for training
                             rgb_key="rgb",

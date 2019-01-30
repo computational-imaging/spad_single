@@ -37,6 +37,8 @@ def cfg():
 
     min_depth = 1e-3
     max_depth = 8.
+
+    sid_bins = 80               # Number of bins to use for the spacing-increasing discretization
     # For testing how data loads. Turns off normalization.
     test_loader = False
 
@@ -272,6 +274,7 @@ def load_depth_data(train_file, train_dir, train_keywords=None,
                     blacklist_file=None, depth_format="SUNRGBD",
                     min_depth=None, max_depth=None,
                     hist_bins=None, hist_range=None,
+                    sid_bins=None, sid_range=None, sid_offset=None,
                     hist_use_albedo=True, hist_use_squared_falloff=True,
                     test_loader=False):
     """Generates training and validation datasets from
@@ -316,9 +319,7 @@ def load_depth_data(train_file, train_dir, train_keywords=None,
     float_transforms = [AddDepthHist(use_albedo=hist_use_albedo,
                                      use_squared_falloff=hist_use_squared_falloff,
                                      bins=hist_bins, range=hist_range, density=True),
-                                     # bins=int(8//0.03), range=(min_depth, max_depth), density=True),
-
-                        #NormalizeRGB(mean, var),
+                        AddSIDDepth(sid_bins=sid_bins, sid_range=hist_range),
                         ToTensor(),
                        ]
     train.transform = transforms.Compose(augment + resize + PIL_transforms + float_transforms)
@@ -344,39 +345,10 @@ def load_depth_data(train_file, train_dir, train_keywords=None,
     return train, val, test
 
 @data_ingredient.capture
-def get_depth_loaders(train_file, train_dir, train_keywords,
-                      val_file, val_dir, val_keywords,
-                      test_file, test_dir, test_keywords,
-                      batch_size,
-                      blacklist_file,
-                      depth_format,
-                      min_depth,
-                      max_depth,
-                      hist_bins,
-                      hist_range,
-                      hist_use_albedo,
-                      hist_use_squared_falloff,
-                      test_loader):
+def get_depth_loaders(batch_size, **data_kwargs):
     """Wrapper for getting the loaders at training time."""
-    train, val, test = load_depth_data(train_file,
-                                       train_dir,
-                                       train_keywords,
-                                       val_file,
-                                       val_dir,
-                                       val_keywords,
-                                       test_file,
-                                       test_dir,
-                                       test_keywords,
-                                       blacklist_file,
-                                       depth_format,
-                                       min_depth,
-                                       max_depth,
-                                       hist_bins,
-                                       hist_range,
-                                       hist_use_albedo,
-                                       hist_use_squared_falloff,
-                                       test_loader)
-
+    train, val, test = load_depth_data(**data_kwargs)
+    print(data_kwargs)
     train_loader = DataLoader(train,
                               batch_size=batch_size,
                               shuffle=True,
@@ -393,6 +365,7 @@ def get_depth_loaders(train_file, train_dir, train_keywords,
                                 pin_memory=True,
                                 worker_init_fn=worker_init
                                )
+    test_loader = None
     if test is not None:
         test_loader = DataLoader(test,
                                  batch_size=batch_size,
@@ -538,6 +511,9 @@ class ToTensor(): # pylint: disable=too-few-public-methods
         if 'mask' in sample:
             sample['mask'] = torch.from_numpy(sample['mask']).unsqueeze(0).float()
             sample['eps'] = torch.from_numpy(sample['eps']).unsqueeze(-1).unsqueeze(-1).float()
+        if 'depth_sid' in sample:
+            sample["depth_sid"] = torch.from_numpy(sample['depth_sid']).transpose(2, 0, 1).float()
+            sample["depth_sid_index"] = torch.from_numpy(sample["depth_sid_index"]).unsqueeze(0).float()
 #         print(output)
         sample.update({'depth': torch.from_numpy(depth).unsqueeze(0).float(),
                        'rgb': torch.from_numpy(rgb).float()})
@@ -586,6 +562,53 @@ class AddDepthMask(): # pylint: disable=too-few-public-methods
         sample["depth"] = sample["depth"]*sample["mask"] + (1 - sample["mask"])*eps
         sample["eps"] = np.array([eps])
         return sample
+
+class AddSIDDepth():
+    """Creates a copy of the depth image where the depth value has been replaced
+    by the SID-discretized index
+
+    Discretizes depth into |sid_bins| number of bins, where the edges of the bins are
+    given by
+
+    t_i = exp(log(start) + i/K*log(end/start))
+
+    for i in {0,...,K}.
+
+    According to the DORN paper, we add an offset |sid_offset| such that
+    start = sid_range[0] + sid_offset = 1.0
+    end = sid_range[1] + sid_offset
+
+    Works in numpy.
+    """
+    def __init__(self, sid_bins, sid_range):
+        self.sid_bins = sid_bins
+        self.sid_range = sid_range
+        self.offset = 1.0 - sid_range[0]
+
+    def __call__(self, sample):
+        """Computes an array with indices, and also an array with 
+        0's and 1's that makes computing the ordinal regression loss easier later.
+        """
+        depth = sample["depth"]
+        sample["depth_sid_index"] = self.get_depth_sid(depth)
+        K = np.zeros(depth.shape + (self.sid_bins,))
+        for i in range(self.sid_bins):
+            K[:, :, i] = K[:, :, i] + i * np.ones(depth.shape)
+        sample["depth_sid"] = (K < sample["depth_sid_index"])
+        return sample
+
+    def get_depth_sid(self, depth):
+        """Given a depth image as a numpy array, computes the per-pixel
+        bin index for a SID with range |self.sid_range| = (min_depth, max_depth)
+        and a |self.sid_bins| number of bins.
+        """
+        start = 1.0
+        end = self.sid_range[1] + self.offset
+        depth_sid = self.sid_bins * np.log(depth / start) / \
+                                     np.log(end / start)
+        depth_sid = depth_sid.astype(np.int32)
+        return depth_sid
+
 
 class ClipMinMax(): # pylint: disable=too-few-public-methods
     def __init__(self, key, min_val, max_val):
@@ -669,7 +692,7 @@ class CropSmall(): # pylint: disable=too-few-public-methods
 # Testing #
 ###########
 @data_ingredient.automain
-def test_load_data():
+def test_load_data(min_depth, max_depth):
     # train_loader, _, _ = get_depth_loaders()
     # batch = next(iter(train_loader))
     # print(batch["rgb"][0, :, :, :])
@@ -695,12 +718,15 @@ def test_load_data():
     # Save Albedo
     # utils.save_image(batch["albedo"][0, :, :, :], "test_albedo.png")
 
-    train, _, _ = load_depth_data()
-    files = train.get_item_by_id("dining_room_0001a/0001")
+    # train, _, _ = load_depth_data(hist_bins=10, hist_range=(minxdepth, max_depth),
+    #                               sid_bins=40, sid_range=(min_depth, max_depth))
+    train, _, _ = get_depth_loaders(hist_bins=10, hist_range=(min_depth, max_depth),
+                                    sid_bins=40, sid_range=(min_depth, max_depth))
+    files = train.dataset.get_item_by_id("dining_room_0001a/0001")
     depth = files["depth"][0,:,:]
     print(depth)
-    min_depth = 1e-3
-    max_depth = 10.
+    depth_sid = files["depth_sid"]
+    print(depth_sid)
     # print(depth.dim())
     utils.save_image(depth, "0001_depth_test.png", range=(min_depth, max_depth), normalize=True)
     # test_out = utils.make_grid(depth, range=(min_depth, max_depth), normalize=True)
