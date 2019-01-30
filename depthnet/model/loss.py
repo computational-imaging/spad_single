@@ -5,6 +5,33 @@ from torch.nn import MSELoss, L1Loss
 ##################
 # Loss functions #
 ##################
+# Run on import
+MSE_loss = MSELoss()
+if torch.cuda.is_available():
+    MSE_loss.cuda()
+L1_loss = L1Loss()
+if torch.cuda.is_available():
+    L1_loss.cuda()
+
+def ord_reg_loss(prediction, target, mask, size_average=True):
+    """Calculates the Ordinal Regression loss
+    :param prediction - per-pixel probabilities in [0, 1] for each depth bin
+    :param target - per-pixel vector of 0's and 1's such that if the true depth
+    bin is k then the vector contains 1's up to entry k-1 and 0's for the remaining entries.
+    e.g. if k = 3 and the total number of bins is 7 then
+
+    target[:, i, j] = [1, 1, 1, 0, 0, 0, 0]
+
+    :param mask - same size as prediction and target, 1.0 if that position is
+    to be used in the loss calculation, 0 otherwise.
+    :param size_average - whether or not to take the average over all the mask pixels.
+    """
+    mask_L = (target > 0) & (mask > 0)
+    mask_U = ((1. - target) > 0) & (mask > 0)
+    out = -(torch.sum(torch.log(prediction[mask_L])) + torch.sum(1. - torch.log(prediction[mask_U])))
+    if size_average:
+        return (1./torch.sum(mask))*out
+    return out
 
 def berhu(prediction, target, mask, size_average=True):
     """Function for calculating the reverse Huber Loss.
@@ -27,21 +54,6 @@ def berhu(prediction, target, mask, size_average=True):
     if size_average:
         return (1./torch.sum(mask))*out
     return out
-
-def get_loss(loss_fn):
-    """Get a function for evaluating the loss from a string."""
-    loss = None
-    if loss_fn == "berhu":
-        loss = berhu
-    elif loss_fn == "l2":
-        loss = MSELoss()
-        if torch.cuda.is_available():
-            loss.cuda()
-    elif loss_fn == "l1":
-        loss = L1Loss()
-        if torch.cuda.is_available():
-            loss.cuda()
-    return loss
 
 #################
 # Other Metrics #
@@ -104,6 +116,10 @@ def rel_sqr_diff(prediction, target, mask, eps=1e-6):
     diff = prediction - target
     sum_sqr_rel = torch.sum((diff[mask > 0]).pow(2)/(target[mask > 0] + eps))
     return (1./torch.sum(mask))*sum_sqr_rel
+
+
+
+
 
 if __name__ == '__main__':
     print(test_rmse())

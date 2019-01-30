@@ -6,8 +6,10 @@ import torch.nn as nn
 from tensorboardX import SummaryWriter
 import torchvision.utils as vutils
 
+import depthnet.model.loss as loss_fns
 from depthnet.model import (make_model, split_params_weight_bias, get_loss,
                             delta, rmse, rel_abs_diff, rel_sqr_diff)
+
 from depthnet.model.utils import ModelWrapper
 from depthnet.checkpoint import save_checkpoint
 from depthnet.utils import log_depth_data
@@ -56,13 +58,15 @@ def make_training(model_config,
     last_epoch - int - The last epoch trained, or -1 if this is a new training instance.
     num_epochs - int - the number of (further) epochs to train the model.
     global_it - int - the global iteration. 0 for a new training instance.
-    trainlosses - list - list of training losses up to now.
-    vallosses - list - list of validation losses up to now.
     """
     # model
     model = make_model(**model_config)
     model.to(device)
-    loss = get_loss(train_config["loss_fn"])
+
+
+    # loss
+    # loss = get_loss(train_config["loss_fn"])
+    loss = getattr(loss_fns, train_config["loss_fn"])
 
     # optimizer
     optimizer = make_optimizer(model,

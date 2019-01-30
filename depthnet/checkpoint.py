@@ -10,18 +10,6 @@ import torchvision.transforms as transforms
 
 import depthnet.model as m
 
-from sacred import Ingredient
-
-
-def cfg():
-    print("ckpt")
-    ckpt_file = None
-    ckpt_dir = "checkpoints"
-    comment = ""
-    current_time = datetime.now().strftime('%b%d_%H-%M-%S')
-    run_id = current_time + '_' + socket.gethostname() + comment
-    log_dir = "runs"
-
 def safe_makedir(path):
     """Makes a directory, or returns if the directory
     already exists.

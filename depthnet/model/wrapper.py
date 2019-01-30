@@ -51,6 +51,42 @@ class DepthNetWrapper(ModelWrapper):
             depth[depth > self.max_depth] = self.max_depth
         return depth
 
+class DORNWrapper(DepthNetWrapper):
+    """Wrapper for depth networks using the Ordinal Regression Loss as in
+    H. Fu et al., “Deep Ordinal Regression Network for Monocular Depth Estimation.”
+
+    Wrapped model should output a per-pixel list of probabilities P_0,...,P_k-1
+    where
+    P_i = P(L > i)
+    where L is the bin index corresponding to the estimated depth of this pixel.
+    """
+
+    def __init__(self, network, pre_active, post_active, 
+                 rgb_key, rgb_mean, rgb_var, min_depth, max_depth, 
+                 sid_bins, device):
+        """
+        :param depth_bins - array of same length as the number of output probs of the network.
+                            Maps the bin number to the real-world depth value.
+        """
+        super(DORNWrapper, self).__init__(network, pre_active, post_active, rgb_key, rgb_mean,
+                                          rgb_var, min_depth, max_depth, device)
+        self.sid_offset = 1.0 - min_depth
+        self.sid_bins = sid_bins
+        # Compute sid_depths
+        # If bin i is from t_k to t_k+1, then the depth associated with that bin is
+        # d = (t_k + t_k+1)/2 - offset
+        start = 1.0
+        end = max_depth + self.sid_offset
+        self.sid_bin_edges = np.array([np.power(end, i/sid_bins) for i in range(sid_bins+1)])
+        self.sid_depths = (self.sid_bin_edges[:-1] + self.sid_bin_edges[1:])/2 - self.sid_offset
+
+    def post(self, output_probs):
+        depth_index = torch.sum((output_probs >= 0.5), dim=1).long()
+        depth_vals = torch.take(self.sid_depths, depth_index)
+        return depth_vals
+
+
+
 if __name__ == '__main__':
     a = {"rgb": torch.tensor([[4, 6, 8], [8, 6, 4], [4, 6, 8]], dtype=torch.float32)}
     mean = torch.tensor([6, 5, 4], dtype=torch.float32)

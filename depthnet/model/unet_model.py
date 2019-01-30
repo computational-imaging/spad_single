@@ -139,3 +139,51 @@ class UNetMultiScaleHints(nn.Module):
         x = self.unet.outc(x)
         # x = F.relu(x, True) # Map depth to [0, inf)
         return x
+
+class UNetDORN(nn.Module):
+    def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, len_hints_layers,
+                 upsampling="bilinear",
+                 **kwargs):
+        super(UNetWithHints, self).__init__()
+        self.unet = UNet(input_nc, output_nc, upsampling)
+        self.hist_len = hist_len
+        self.num_hints_layers = num_hints_layers
+
+        # Create hints network
+        assert num_hints_layers > 0
+        hints_output = len_hints_layers
+        hints = OrderedDict([("hints_conv_0", nn.Conv2d(self.hist_len, hints_output, kernel_size=1))])
+        hints.update({"hints_relu_1": nn.ReLU(True)})
+        j = 2
+        for _ in range(num_hints_layers-1):
+            hints.update({"hints_conv_{}".format(j): nn.Conv2d(hints_output, hints_output, kernel_size=1)})
+            j += 1
+            hints.update({"hints_relu_{}".format(j): nn.ReLU(True)})
+            j += 1
+
+        self.unet.up1 = up(1024+hints_output, 256, upsampling) # Concatenate the output of the global hints
+        self.global_hints = nn.Sequential(hints)
+        self.bottleneck_conv = double_conv(512+hints_output, 512+hints_output)
+
+    def forward(self, input_):
+        rgb = input_["rgb"]
+        hist = input_["hist"]
+        mask = input_["mask"] # For masking away unknown depth values
+
+        x1 = self.unet.inc(rgb)
+        x2 = self.unet.down1(x1)
+        x3 = self.unet.down2(x2)
+        x4 = self.unet.down3(x3)
+        x5 = self.unet.down4(x4)
+
+        y = self.global_hints(hist)
+        z = expand_and_cat(y, x5)
+        z = self.bottleneck_conv(z)
+
+        x = self.unet.up1(z, x4)
+        x = self.unet.up2(x, x3)
+        x = self.unet.up3(x, x2)
+        x = self.unet.up4(x, x1)
+        x = self.unet.outc(x)
+        # x = F.relu(x, True) # Map depth to [0, inf)
+        return x
