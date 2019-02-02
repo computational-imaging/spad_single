@@ -18,6 +18,15 @@ class ModelWrapper(abc.ABC):
         self.post_active = post_active
 
     @abc.abstractmethod
+    def from_config(cls):
+        """IMPORTANT: this is class method, override it with @classmethod!
+
+        Used for configuring a ModelWrapper using some external data structures.
+        """
+        return NotImplemented
+
+
+    @abc.abstractmethod
     def pre(self, input_):
         """Data preprocessing"""
         return NotImplemented
@@ -36,7 +45,10 @@ class ModelWrapper(abc.ABC):
         return output
 
 
-def make_model(model_name, model_params, model_state_dict_fn):
+def make_model(model_name, model_wrapper, model_params, model_state_dict_fn):
+    """
+    
+    """
     # model
     model_class = globals()[model_name]
     model = model_class(**model_params)
@@ -45,7 +57,7 @@ def make_model(model_name, model_params, model_state_dict_fn):
     else: # New model - apply initialization
         # m.initialize(model)
         pass # Use default pytorch initialization (He initialization)
-    return model
+    return model, model_wrapper
 
 def split_params_weight_bias(model):
     """Split parameters into weight and bias terms,

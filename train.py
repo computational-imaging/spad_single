@@ -20,6 +20,7 @@ from depthnet.model import (make_model, split_params_weight_bias,
 from depthnet.data import data_ingredient, get_data_loaders
 from depthnet.train_utils import make_training, train
 from depthnet.model.wrapper import DepthNetWrapper, DORNWrapper
+import depthnet.model.wrapper as wrapper
 from depthnet.checkpoint import load_checkpoint, safe_makedir
 ### end ###
 
@@ -47,6 +48,7 @@ def cfg():
             "num_hints_layers": 4,              # Number of 1x1 conv layers for hints (hints only)
             "len_hints_layers": 512,            # Number of units in the hints conv layers.
             "upsampling": "bilinear",           # {bilinear, nearest}
+            "model_wrapper": "DepthNetWrapper"  # Wrapper around the model for pre- and post-processing.
         },
         "model_state_dict_fn": None,            # Function for getting the state dict
     }
@@ -106,6 +108,7 @@ def unet_dorn():
         "model_name": "UNetDORN",
         "model_params": {
             "sid_bins": 80,
+            "model_wrapper": "DORNWrapper",
         }
     }
     train_config = {
@@ -126,6 +129,7 @@ def unet_dorn_hints():
         "model_name": "UNetDORNWithHints",
         "model_params": {
             "sid_bins": 80,
+            "model_wrapper": "DORNWrapper",
         }
     }
     train_config = {
@@ -210,30 +214,24 @@ def main(model_config,
 
     # Load the data and configure any necessary transforms. May depend on the model as well as the data.
     # train_loader, val_loader, _ = get_data_loaders(data_config, model_config)
-    train_loader, val_loader, _ = get_data_loaders(hist_bins=model_config["model_params"]["hist_len"],
-                                                   hist_range=(data_config["min_depth"], data_config["max_depth"]),
-                                                   sid_bins=model_config["model_params"]["sid_bins"],
-                                                   sid_range=(data_config["min_depth"], data_config["max_depth"])
-                                                  )
+    train_loader, val_loader, _, metadata = get_data_loaders(hist_bins=model_config["model_params"]["hist_len"],
+                                                             hist_range=(data_config["min_depth"], data_config["max_depth"]),
+                                                             sid_bins=model_config["model_params"]["sid_bins"],
+                                                             sid_range=(data_config["min_depth"], data_config["max_depth"])
+                                                            )
     # train_loader, val_loader, _ = get_data_loaders(hist_bins=model_config["model_params"]["hist_len"],
     #                                                hist_range=(data_config["min_depth"], data_config["max_depth"])
     #                                               )
 
     # Load the model, the scheduler/optimizer, and the loss function.
-    model, scheduler, loss = make_training(model_config,
-                                           train_config,
-                                           device)
+    model, ModelWrapper, scheduler, loss = make_training(model_config,
+                                                         train_config,
+                                                         device)
     print(model)
-    model = DORNWrapper(model,
-                        pre_active=True,
-                        post_active=False, # Turn off clipping for training
-                        rgb_key="rgb",
-                        rgb_mean=train_loader.dataset.rgb_mean,
-                        rgb_var=train_loader.dataset.rgb_var,
-                        min_depth=data_config["min_depth"],
-                        max_depth=data_config["max_depth"],
-                        sid_bins=model_config["model_params"]["sid_bins"],
-                        device=device)
+    model = ModelWrapper.from_config(model, pre_active=True, post_active=False, 
+                                     model_config=model_config, data_config=data_config,
+                                     metadata=metadata, device=device)
+
     # model = DepthNetWrapper(model,
     #                         pre_active=True,
     #                         post_active=False, # Turn off clipping for training
