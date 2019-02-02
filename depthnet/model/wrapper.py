@@ -27,6 +27,17 @@ class DepthNetWrapper(ModelWrapper):
         self.min_depth = min_depth
         self.max_depth = max_depth
 
+    @classmethod
+    def from_config(cls, network, pre_active, post_active,
+                    model_config, data_config, metadata, device):
+        return cls(network, pre_active, post_active,
+                   metadata["rgb_key"],
+                   metadata["rgb_mean"],
+                   metadata["rgb_var"],
+                   data_config["min_depth"],
+                   data_config["max_depth"],
+                   device)
+
     def pre(self, input_):
         """Depth preprocessing
         - Make RGB zero mean unit variance.
@@ -61,28 +72,44 @@ class DORNWrapper(DepthNetWrapper):
     where L is the bin index corresponding to the estimated depth of this pixel.
     """
 
-    def __init__(self, network, pre_active, post_active, 
-                 rgb_key, rgb_mean, rgb_var, min_depth, max_depth, 
-                 sid_bins, device):
+    def __init__(self, network, pre_active, post_active,
+                 rgb_key, rgb_mean, rgb_var, min_depth, max_depth, sid_bins, device):
         """
         :param depth_bins - array of same length as the number of output probs of the network.
                             Maps the bin number to the real-world depth value.
         """
-        super(DORNWrapper, self).__init__(network, pre_active, post_active, rgb_key, rgb_mean,
-                                          rgb_var, min_depth, max_depth, device)
-        self.sid_offset = 1.0 - min_depth
+        super(DORNWrapper, self).__init__(network, pre_active, post_active,
+                                          rgb_key, rgb_mean, rgb_var, min_depth, max_depth, sid_bins, device)
+        self.sid_offset = 1.0 - self.min_depth
         self.sid_bins = sid_bins
         # Compute sid_depths
         # If bin i is from t_k to t_k+1, then the depth associated with that bin is
         # d = (t_k + t_k+1)/2 - offset
-        start = 1.0
-        end = max_depth + self.sid_offset
-        self.sid_bin_edges = np.array([np.power(end, i/sid_bins) for i in range(sid_bins+1)])
+        # Implicitly, start = 1.0
+        end = self.max_depth + self.sid_offset
+        self.sid_bin_edges = np.array([np.power(end, i/self.sid_bins)
+                                       for i in range(self.sid_bins+1)])
         self.sid_depths = (self.sid_bin_edges[:-1] + self.sid_bin_edges[1:])/2 - self.sid_offset
         self.sid_depths = torch.from_numpy(self.sid_depths).float().to(device)
 
-    def post(self, output_probs):
-        depth_index = torch.sum((output_probs >= 0.5), dim=1).long().unsqueeze(1)
+    @classmethod
+    def from_config(cls, network, pre_active, post_active,
+                    model_config, data_config, metadata, device):
+        return cls(network, pre_active, post_active,
+                   metadata["rgb_key"],
+                   metadata["rgb_mean"],
+                   metadata["rgb_var"],
+                   data_config["min_depth"],
+                   data_config["max_depth"],
+                   model_config["model_params"]["sid_bins"],
+                   device)
+
+    def post(self, output):
+        """Post-processing for the probabilities to convert them into an actual depth image.
+        :param output - an N x K x H x W tensor where each pixel location is a
+        length K vector containing bin probabilities P_0,...,P_K-1.
+        """
+        depth_index = torch.sum((output >= 0.5), dim=1).long().unsqueeze(1)
         depth_vals = torch.take(self.sid_depths, depth_index)
         return depth_vals
 
@@ -93,6 +120,8 @@ if __name__ == '__main__':
     mean = torch.tensor([6, 5, 4], dtype=torch.float32)
     var = torch.tensor([0.5, 0.5, 0.5], dtype=torch.float32)
     model = lambda d: torch.sum(d["rgb"], dim=0)
+
+
     wrapper = DepthNetWrapper(model, True, True, "rgb", mean, var, 0., 8, "cpu")
 
     out = wrapper(a)

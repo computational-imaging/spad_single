@@ -295,6 +295,11 @@ def load_depth_data(train_file, train_dir, train_keywords=None,
                                      account
     test_loader - bool - whether or not to test the loader and not set the dataset-wide mean and
                          variance.
+
+    Returns
+    -------
+    train, val, test - torch.utils.data.Dataset objects containing the relevant splits
+    metadata - dict containing extra information about the dataset (e.g. global statistics)
     """
     train = DepthDataset(train_file, train_dir, train_keywords, blacklist_file=blacklist_file)
     if test_loader:
@@ -340,14 +345,15 @@ def load_depth_data(train_file, train_dir, train_keywords=None,
                             transform=transforms.Compose(resize + PIL_transforms + float_transforms))
         test.rgb_mean, test.rgb_var = mean, var
         print("Loaded test dataset from {} with size {}.".format(test_file, len(test)))
-    # Incorporate global stats
 
-    return train, val, test
+    # Incorporate global stats
+    metadata = {"rgb_key": "rgb", "rgb_mean": mean, "rgb_var": var}
+    return train, val, test, metadata
 
 @data_ingredient.capture
 def get_data_loaders(batch_size, **data_kwargs):
     """Wrapper for getting the loaders at training time."""
-    train, val, test = load_depth_data(**data_kwargs)
+    train, val, test, metadata = load_depth_data(**data_kwargs)
     train_loader = DataLoader(train,
                               batch_size=batch_size,
                               shuffle=True,
@@ -373,7 +379,7 @@ def get_data_loaders(batch_size, **data_kwargs):
                                  pin_memory=True,
                                  worker_init_fn=worker_init
                                 )
-    return train_loader, val_loader, test_loader
+    return train_loader, val_loader, test_loader, metadata
 
 ##############
 # Transforms #
