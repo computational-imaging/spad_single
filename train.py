@@ -26,7 +26,6 @@ from depthnet.checkpoint import load_checkpoint, safe_makedir
 
 from sacred import Experiment
 
-
 pp = PrettyPrinter(indent=4)
 pprint = pp.pprint
 
