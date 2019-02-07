@@ -9,18 +9,15 @@ from pprint import PrettyPrinter
 
 import torch
 import torch.backends.cudnn as cudnn
-import torchvision.utils as vutils
+from torch.utils.data import DataLoader
+
 from tensorboardX import SummaryWriter
 
 import numpy as np
 
 ### Project-specific loaders ###
-from depthnet.model import (make_model, split_params_weight_bias,
-                            delta, rmse, rel_abs_diff, rel_sqr_diff)
-from depthnet.data import data_ingredient, get_data_loaders
-from depthnet.train_utils import make_training, train
-from depthnet.model.wrapper import DepthNetWrapper, DORNWrapper
-import depthnet.model.wrapper as wrapper
+from depthnet.data import data_ingredient, load_depth_data as load_data, worker_init
+from depthnet.train_utils import train, make_training, make_wrapper
 from depthnet.checkpoint import load_checkpoint, safe_makedir
 ### end ###
 
@@ -34,23 +31,20 @@ ex.add_source_file(os.path.join("depthnet", "model", "unet_model.py"))
 ex.add_source_file(os.path.join("depthnet", "model", "unet_parts.py"))
 
 
-# Tensorboardx
-# writer = SummaryWriter()
-
 @ex.config
 def cfg():
-    model_config = {
-        "model_name": "UNet",                   # {DepthNet, DepthNetWithHints, UNet, UNetWithHints}
-        "model_params": {
+    network_config = {
+        "network_name": "UNet",                   # {DepthNet, DepthNetWithHints, UNet, UNetWithHints}
+        "network_params": {
+            "wrapper_name": "DepthNetWrapper",  # {DepthNetWrapper, DORNWrapper}
             "input_nc": 3,                      # Number of input channels
             "output_nc": 1,                     # Number of output channels
             "hist_len": 1000//3,                # Length of the histogram (hints only)
             "num_hints_layers": 4,              # Number of 1x1 conv layers for hints (hints only)
             "len_hints_layers": 512,            # Number of units in the hints conv layers.
             "upsampling": "bilinear",           # {bilinear, nearest}
-            "model_wrapper": "DepthNetWrapper"  # Wrapper around the model for pre- and post-processing.
         },
-        "model_state_dict_fn": None,            # Function for getting the state dict
+        "network_state_dict_fn": None,            # Function for getting the state dict
     }
 
     train_config = {
@@ -91,24 +85,22 @@ def cfg():
                                                                 os.environ["CUDA_VISIBLE_DEVICES"]))
 
     if ckpt_config["ckpt_file"] is not None:
-        model_update, train_update, ckpt_update = load_checkpoint(ckpt_config["ckpt_file"], device)
-        model_config.update(model_update)
+        network_update, train_update, ckpt_update = load_checkpoint(ckpt_config["ckpt_file"], device)
+        network_config.update(network_update)
         train_config.update(train_update)
         ckpt_config.update(ckpt_update)
 
-        del model_update, train_update, ckpt_update
-    # seed = 2018
-    # torch.manual_seed(seed)
-    # torch.cuda.manual_seed(seed)
+        del network_update, train_update, ckpt_update
+
 
 @ex.named_config
 def unet_dorn():
     comment = "_unet_dorn"
-    model_config = {
-        "model_name": "UNetDORN",
-        "model_params": {
+    network_config = {
+        "network_name": "UNetDORN",
+        "network_params": {
             "sid_bins": 80,
-            "model_wrapper": "DORNWrapper",
+            "wrapper_name": "DORNWrapper",
         }
     }
     train_config = {
@@ -125,11 +117,11 @@ def unet_dorn():
 @ex.named_config
 def unet_dorn_hints():
     comment = "_unet_dorn_hints"
-    model_config = {
-        "model_name": "UNetDORNWithHints",
-        "model_params": {
+    network_config = {
+        "network_name": "UNetDORNWithHints",
+        "network_params": {
             "sid_bins": 80,
-            "model_wrapper": "DORNWrapper",
+            "wrapper_name": "DORNWrapper",
         }
     }
     train_config = {
@@ -142,12 +134,20 @@ def unet_dorn_hints():
             "milestones": [40]
         }
     }
+
+@ex.named_config
+def no_batchnorm_up():
+    network_config = {
+        "network_params": {
+            "upnorm": None
+        }
+    }
         
 
 @ex.named_config
 def no_hints_80():
     comment = "_nohints"
-    model_config = {"model_name": "UNet"}
+    network_config = {"network_name": "UNet"}
     train_config = {
         "num_epochs": 80,
         "optim_params": {"lr": 1e-3},
@@ -159,7 +159,7 @@ def no_hints_80():
 @ex.named_config
 def hints_80():
     comment = "_hints"
-    model_config = {"model_name": "UNetWithHints"}
+    network_config = {"network_name": "UNetWithHints"}
     train_config = {
         "num_epochs": 80,
         "optim_params": {"lr": 1e-3},
@@ -172,7 +172,7 @@ def hints_80():
 @ex.named_config
 def multi_hints_80():
     comment = "_multihints"
-    model_config = {"model_name": "UNetMultiScaleHints"}
+    network_config = {"network_name": "UNetMultiScaleHints"}
     train_config = {
         "num_epochs": 80,
         "scheduler_params": {
@@ -180,18 +180,6 @@ def multi_hints_80():
         }
     }
 
-@ex.named_config
-def overfit_small():
-    train_config = {
-        "num_epochs": 100,
-        "scheduler_params": {
-            "milestones": [50]
-        }
-    }
-    data_config = {
-        "train_file": "data/sunrgbd_all/small.txt",
-        "val_file": "data/sunrgbd_all/small.txt"
-    }
 
 def init_randomness(seed):
     cudnn.deterministic = True
@@ -202,7 +190,7 @@ def init_randomness(seed):
 
 # To see the full configuration, run $ python train.py print_config
 @ex.automain
-def main(model_config,
+def main(network_config,
          train_config,
          ckpt_config,
          data_config,
@@ -212,38 +200,48 @@ def main(model_config,
     """Run stuff"""
     init_randomness(seed)   # Initialize randomness for repeatability
 
-    # Load the data and configure any necessary transforms. May depend on the model as well as the data.
-    # train_loader, val_loader, _ = get_data_loaders(data_config, model_config)
-    train_loader, val_loader, _, metadata = get_data_loaders(hist_bins=model_config["model_params"]["hist_len"],
-                                                             hist_range=(data_config["min_depth"], data_config["max_depth"]),
-                                                             sid_bins=model_config["model_params"]["sid_bins"],
-                                                             sid_range=(data_config["min_depth"], data_config["max_depth"])
-                                                            )
-    # train_loader, val_loader, _ = get_data_loaders(hist_bins=model_config["model_params"]["hist_len"],
-    #                                                hist_range=(data_config["min_depth"], data_config["max_depth"])
-    #                                               )
+    # Load network, scheduler, loss
+    network, scheduler, loss = make_training(network_config,
+                                             train_config,
+                                             device)
+    print(network)
+    # Load data
+    train_set, val_set, _ = load_data()
 
-    # Load the model, the scheduler/optimizer, and the loss function.
-    model, ModelWrapper, scheduler, loss = make_training(model_config,
-                                                         train_config,
-                                                         device)
-    print(model)
-    model = ModelWrapper.from_config(model, pre_active=True, post_active=False, 
-                                     model_config=model_config, data_config=data_config,
-                                     metadata=metadata, device=device)
+    # Perform additional configuration on data transforms and model wrapper.
+    stats_and_params = {}
+    stats_and_params.update(network_config["network_params"])
+    stats_and_params.update(data_config)
+    stats_and_params.update(train_set.get_global_stats())
 
-    # model = DepthNetWrapper(model,
-    #                         pre_active=True,
-    #                         post_active=False, # Turn off clipping for training
-    #                         rgb_key="rgb",
-    #                         rgb_mean=train_loader.dataset.rgb_mean,
-    #                         rgb_var=train_loader.dataset.rgb_var,
-    #                         min_depth=data_config["min_depth"],
-    #                         max_depth=data_config["max_depth"],
-    #                         device=device)
+    # Configure data transform
+    train_set.configure_transform(**stats_and_params)
+    val_set.configure_transform(**stats_and_params)
+    # print(train_set.transform)
+    # print(val_set.transform)
+    # Make and configure wrapper
+    model = make_wrapper(network=network, network_config=network_config,
+                         pre_active=False, post_active=False, device=device,
+                         **stats_and_params)
+
+    # Configure Data Loader using model wrapper, data
+    train_loader = DataLoader(train_set,
+                              batch_size=data_config["batch_size"],
+                              shuffle=True,
+                              num_workers=4,
+                              pin_memory=False,
+                              worker_init_fn=worker_init)
+
+    val_loader = DataLoader(val_set,
+                            batch_size=data_config["batch_size"],
+                            shuffle=False,
+                            num_workers=1,
+                            pin_memory=False,
+                            worker_init_fn=worker_init
+                           )
 
     config = {
-        "model_config": model_config,
+        "network_config": network_config,
         "train_config": train_config,
         "ckpt_config": ckpt_config,
     }
@@ -255,7 +253,9 @@ def main(model_config,
     # Initialize tensorboardX writer
     writer = SummaryWriter(log_dir=os.path.join(ckpt_config["log_dir"],
                                                 ckpt_config["run_id"]))
-
+    # Log some stuff before the run begins
+    if "write_globals" in dir(model):
+        model.write_globals(writer)
     # Run Training
     train(model,
           scheduler,
