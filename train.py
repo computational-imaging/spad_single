@@ -107,10 +107,10 @@ def unet_dorn():
         "loss_fn": "ord_reg_loss",
         "target_key": "depth_sid",
         "ground_truth_key": "depth",
-        "num_epochs": 80,
-        "optim_params": {"lr": 5e-5},
+        "num_epochs": 10,
+        "optim_params": {"lr": 1e-4},
         "scheduler_params": {
-            "milestones": [40]
+            "milestones": [4, 6]
         }
     }
 
@@ -128,10 +128,10 @@ def unet_dorn_hints():
         "loss_fn": "ord_reg_loss",
         "target_key": "depth_sid",
         "ground_truth_key": "depth",
-        "num_epochs": 80,
+        "num_epochs": 10,
         "optim_params": {"lr": 1e-4},
         "scheduler_params": {
-            "milestones": [40]
+            "milestones": [4, 6]
         }
     }
 

@@ -26,8 +26,9 @@ def ord_reg_loss(prediction, target, mask, size_average=True, eps=1e-6):
     :param size_average - whether or not to take the average over all the mask pixels.
     """
     log_ord_c0, log_ord_c1 = prediction
-    mask_L = (target > 0) & (mask > 0)
-    mask_U = ((1. - target) > 0) & (mask > 0)
+    nbins = log_ord_c0.size(1)
+    mask_L = ((target > 0) & (mask > 0))
+    mask_U = (((1. - target) > 0) & (mask > 0))
 
     out = -(torch.sum(log_ord_c0[mask_L]) + torch.sum(log_ord_c1[mask_U]))
     if size_average:

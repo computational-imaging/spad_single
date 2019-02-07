@@ -187,6 +187,7 @@ def train(model,
                                                "it": epoch,
                                                "write_images": True})
             print("End epoch {}\tval loss: {}".format(epoch, valloss))
+            del data, valloss # Clean up
         # # Save the last batch output of every epoch
         # if writer is not None:
         #     for name, param in model.network.named_parameters():
@@ -207,3 +208,9 @@ def train(model,
                         filename=os.path.join(ckpt_config["ckpt_dir"],
                                               ckpt_config["run_id"],
                                               "checkpoint_epoch_{}.pth.tar".format(epoch)))
+        if device.type == 'cuda':
+            # print(torch.cuda.get_device_name(0))
+            print('Memory Usage:')
+            print('Allocated:', round(torch.cuda.memory_allocated(0) / 1024 ** 3, 1), 'GB')
+            print('Cached:   ', round(torch.cuda.memory_cached(0) / 1024 ** 3, 1), 'GB')
+            torch.cuda.empty_cache()
