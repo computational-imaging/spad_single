@@ -7,9 +7,14 @@ from torch.nn import MSELoss, L1Loss
 ##################
 # Run on import
 
-def ord_reg_loss(prediction, target, mask, size_average=True):
+def ord_reg_loss(prediction, target, mask, size_average=True, eps=1e-6):
     """Calculates the Ordinal Regression loss
-    :param prediction - per-pixel probabilities in [0, 1] for each depth bin
+    :param prediction: a tuple (log_ord_c0, log_ord_c1).
+        log_ord_c0 is is an N x K x H x W tensor
+        where each pixel location is a length K vector containing log-probabilities log P(l > 0),..., log P(l > K-1).
+
+        The log_ord_c1 is the same, but contains the log-probabilities log (1 - P(l > 0)),..., log (1 - P(l > K-1))
+        instead.
     :param target - per-pixel vector of 0's and 1's such that if the true depth
     bin is k then the vector contains 1's up to entry k-1 and 0's for the remaining entries.
     e.g. if k = 3 and the total number of bins is 7 then
@@ -20,9 +25,11 @@ def ord_reg_loss(prediction, target, mask, size_average=True):
     to be used in the loss calculation, 0 otherwise.
     :param size_average - whether or not to take the average over all the mask pixels.
     """
+    log_ord_c0, log_ord_c1 = prediction
     mask_L = (target > 0) & (mask > 0)
     mask_U = ((1. - target) > 0) & (mask > 0)
-    out = -(torch.sum(torch.log(prediction[mask_L])) + torch.sum(1. - torch.log(prediction[mask_U])))
+
+    out = -(torch.sum(log_ord_c0[mask_L]) + torch.sum(log_ord_c1[mask_U]))
     if size_average:
         return (1./torch.sum(mask))*out
     return out

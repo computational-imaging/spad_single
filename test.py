@@ -5,20 +5,16 @@ import socket
 import json
 from datetime import datetime
 from warnings import warn
-from collections import OrderedDict
 
 from pprint import PrettyPrinter
 
 import torch
-from tensorboardX import SummaryWriter
 
 from depthnet.model import make_model
 from depthnet.data import data_ingredient, load_depth_data
-from depthnet.train_utils import evaluate
-from depthnet.checkpoint import load_checkpoint, safe_makedir
+from depthnet.checkpoint import load_checkpoint
 from depthnet.model.loss import berhu, delta, rmse, rel_abs_diff, rel_sqr_diff
-from depthnet.utils import NYU_MIN, NYU_MAX, clip_min_max, save_images
-from depthnet.model.wrapper import DepthNetWrapper
+from depthnet.wrappers import DepthNetWrapper
 
 from sacred import Experiment
 
