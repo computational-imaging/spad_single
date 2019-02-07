@@ -38,6 +38,9 @@ def load_checkpoint(ckpt_file, device):
     ----------
     loss_fn (string)
 
+    target_key
+    ground_truth_key
+
     optim_name
     optim_params
     optim_state_dict
@@ -75,6 +78,8 @@ def load_checkpoint(ckpt_file, device):
     }
     train_update = {
         "loss_fn": checkpoint["loss_fn"],
+        "target_key": checkpoint["target_key"],
+        "ground_truth_key": checkpoint["ground_truth_key"],
         "optim_name": checkpoint["optim_name"],
         # Because of sacred - don't want to explode the config
         "optim_state_dict_fn": lambda: checkpoint["optim_state_dict"],
@@ -113,6 +118,8 @@ def save_checkpoint(network,
         "network_state_dict": network.state_dict(),
 
         "loss_fn": train_config["loss_fn"],
+        "target_key": train_config["target_key"],
+        "ground_truth_key": train_config["ground_truth_key"],
         "optim_name": scheduler.optimizer.__class__.__name__,
         "optim_params": train_config["optim_params"],
         "optim_state_dict": scheduler.optimizer.state_dict(),
