@@ -23,37 +23,60 @@ def clip_min_max(depth, min_depth, max_depth):
 # Logging #
 ###########
 
-def log_depth_data(loss, model, input_, output, target, mask, device,
+def log_depth_data(loss, model, input_, output, target, prediction, ground_truth, mask, device,
                    writer, tag, it, write_images=False, save_output=False):
-    # print("clipping min and max to [{}, {}]".format(NYU_MIN, NYU_MAX))
-    output = clip_min_max(output, NYU_MIN, NYU_MAX)
-
-    writer.add_scalar("data/{}_d1".format(tag), delta(output, target, mask, 1.25).item(), it)
-    writer.add_scalar("data/{}_d2".format(tag), delta(output, target, mask, 1.25**2).item(), it)
-    writer.add_scalar("data/{}_d3".format(tag), delta(output, target, mask, 1.25**3).item(), it)
-    writer.add_scalar("data/{}_rmse".format(tag), rmse(output, target, mask).item(), it)
-    # print(rmse(output, depth).item())
-    log_output = torch.log(output)
-    log_target = torch.log(target)
-    # print("log output nans: {}".format(torch.isnan(log_output).any()))
-    # print("log output infs: {}".format(torch.sum(log_output == float('-inf'))))
+    """
+    Logging depth data using the tensorboardX writer.
+    :param loss: The loss being used to train the model. Takes (output, target).
+    :param model: The (wrapped) network being trained.
+    :param input_: The minibatch input from the dataloader.
+    :param output: The output of the network (not post-processed).
+    :param target: The target output for the network that the loss
+    :param prediction: The depth prediction of the network (post-processed).
+    :param ground_truth: The actual depth from the dataset.
+    :param mask: An array of 1.0 and 0.0 showing which pixels should be used in calculating the metrics.
+    :param device: The device to run the computation on.
+    :param writer: A tensorboardX SummaryWriter object to do the writing.
+    :param tag: A tag (usually either "train" or "val") for bookkeeping.
+    :param it: The current iteration (either the training iteration, in the case of training, or the current epoch).
+    :param write_images: Whether or not to write images to the tensorboard.
+    :param save_output: Whether or not to save the output of the network as an image.
+    :return: Nothing.
+    """
+    if writer is None:
+        return
+    writer.add_scalar("data/{}_d1".format(tag), delta(prediction, ground_truth, mask, 1.25).item(), it)
+    writer.add_scalar("data/{}_d2".format(tag), delta(prediction, ground_truth, mask, 1.25**2).item(), it)
+    writer.add_scalar("data/{}_d3".format(tag), delta(prediction, ground_truth, mask, 1.25**3).item(), it)
+    writer.add_scalar("data/{}_rmse".format(tag), rmse(prediction, ground_truth, mask).item(), it)
+    # print(rmse(prediction, ground_truth).item())
+    log_prediction = torch.log(prediction)
+    log_ground_truth = torch.log(ground_truth)
+    # print("log prediction nans: {}".format(torch.isnan(log_prediction).any()))
+    # print("log prediction infs: {}".format(torch.sum(log_prediction == float('-inf'))))
     # print("log target nans: {}".format(torch.isnan(log_target).any()))
     # log_target[torch.isnan(log_target)] = 0
-    # writer.add_scalar("data/{}_logrmse".format(tag), rmse(log_output, log_target), it)
-    writer.add_scalar("data/{}_rel_abs_diff".format(tag), rel_abs_diff(output, target, mask), it)
-    writer.add_scalar("data/{}_rel_sqr_diff".format(tag), rel_sqr_diff(output, target, mask), it)
+    writer.add_scalar("data/{}_logrmse".format(tag), rmse(log_prediction, log_ground_truth, mask), it)
+    writer.add_scalar("data/{}_rel_abs_diff".format(tag), rel_abs_diff(prediction, ground_truth, mask), it)
+    writer.add_scalar("data/{}_rel_sqr_diff".format(tag), rel_sqr_diff(prediction, ground_truth, mask), it)
     writer.add_scalar("data/{}_loss".format(tag), loss(output, target, mask).item(), it)
-    # writer.add_scalar("data/{}_depth_min".format(tag), torch.min(output).item(), it)
-    # writer.add_scalar("data/{}_depth_max".format(tag), torch.max(output).item(), it)
+    # writer.add_scalar("data/{}_ground_truth_min".format(tag), torch.min(output).item(), it)
+    # writer.add_scalar("data/{}_ground_truth_max".format(tag), torch.max(output).item(), it)
     if write_images:
-        rgb_input = vutils.make_grid(input_["rgb"], nrow=2, normalize=True, scale_each=True)
-        writer.add_image('image/rgb_input', rgb_input, it)
+        if "rgb_orig" in input_:
+            # print(input_["rgb_orig"].size())
+            rgb_orig = vutils.make_grid(input_["rgb_orig"]/255, nrow=4)
+        else:
+            rgb_orig = vutils.make_grid(input_["rgb"]/255, nrow=4)
+        writer.add_image('image/{}_rgb_orig'.format(tag), rgb_orig, it)
 
-        depth_truth = vutils.make_grid(target, nrow=2, normalize=True, scale_each=True)
-        writer.add_image('image/depth_truth', depth_truth, it)
+        depth_truth = vutils.make_grid(ground_truth, nrow=4,
+                                       normalize=True, range=(model.min_depth, model.max_depth))
+        writer.add_image('image/{}_depth_truth'.format(tag), depth_truth, it)
 
-        depth_output = vutils.make_grid(output, nrow=2, normalize=True, scale_each=True)
-        writer.add_image('image/depth_output', depth_output, it)
+        depth_output = vutils.make_grid(prediction, nrow=4,
+                                        normalize=True, range=(model.min_depth, model.max_depth))
+        writer.add_image('image/{}_depth_output'.format(tag), depth_output, it)
 
         # depth_mask = vutils.make_grid(input_["mask"], nrow=2, normalize=False, scale_each=True)
         # writer.add_image('image/depth_mask', depth_mask, it)

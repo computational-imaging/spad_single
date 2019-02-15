@@ -7,27 +7,40 @@ import re
 
 from collections import defaultdict
 from argparse import ArgumentParser
+from typing import List, Any
+
 from PIL import Image
 
 
-def random_split(index, seed=2018):
-    """Takes a dictionary where each entry is a datapoint and outputs
-    a 90-5-5 train-val-test split of dictionaries.
+def random_split(index, proportions, seed=2018):
+    """Split an index dictionary according to the proportions in |proportions|
+    :param index: A sequence of things to split.
+    :param delimiters: A list of numbers corresponding to the ratio of sizes of splits
+            e.g. [90, 5, 5], [50, 50], etc.
+    :param seed: The random seed.
+    :return:
+
     """
+    if len(proportions) == 1:
+        return index # No split required.
     random.seed(seed)
-    list_index = list(index.items())
+
     # shuffles the ordering of filenames (deterministic given the chosen seed)
-    random.shuffle(list_index)
+    random.shuffle(index)
 
-    split_1 = int(0.9 * len(list_index))
-    split_2 = int(0.95 * len(list_index))
-    train_filenames = list_index[:split_1]
-    val_filenames = list_index[split_1:split_2]
-    test_filenames = list_index[split_2:]
-    return dict(train_filenames), dict(val_filenames), dict(test_filenames)
+    delimiters = [sum(proportions[:i+1])/sum(proportions) for i in range(len(proportions) - 1)]
+    splits = []
+    prev_index = 0
+    for i in range(len(delimiters)):
+        next_index = int(delimiters[i]*len(index))
+        splits.append(index[prev_index:next_index])
+        prev_index = next_index
+    splits.append(index[prev_index:])
+    return splits
 
-def split_on_keywords(index, keywords):
-    """Finds all entries in index whose key contains some entry in split
+
+def split_dict_on_keywords(index: dict, keywords: List[str]):
+    """Finds all entries in index whose key contains some entry in |keywords|
     as a substring."""
     split = {}
     for keyword in keywords:
@@ -35,11 +48,25 @@ def split_on_keywords(index, keywords):
         split.update({key: index[key] for key in index if keyword_start.match(key)})
     return split
 
-def build_index(rootdir, file_types=["rgb", "depth", "rawdepth", "albedo"]):
+
+def build_index(rootdir: str, file_types: List[str], ext="png"):
+    """
+    :param rootdir - string - the name of the root of the dataset directory.
+    :param file_types - list of string - the types of files to search for in the dataset
+    :param ext - the file extension of the file types to search for.
+
+    Given a rootdir of a dataset directory, create an index by looking for files of the form:
+
+    (.+)_|file_type|.|ext|
+
+    Then, return a dictionary
+    """
     patterns = []
     for file_type in file_types:
-        # e.g. append the 2-tuple ("rgb", re.compile("(.+)_rgb.png")) to the list of patterns
-        patterns.append((file_type, re.compile("^(.+)_{}.png".format(file_type))))
+        # e.g. If file_type="rgb" and ext="png", append the 2-tuple
+        # ("rgb", re.compile("(.+)_rgb.png"))
+        # to the list of patterns.
+        patterns.append((file_type, re.compile("^(.+)_{}.{}".format(file_type, ext))))
 
     index = defaultdict(dict)
     for dir_name, sub_dir_list, file_list in os.walk(rootdir):
@@ -52,12 +79,19 @@ def build_index(rootdir, file_types=["rgb", "depth", "rawdepth", "albedo"]):
                     index[global_id][file_type] = os.path.join(relpath, file)
     return index
 
+
 if __name__ == '__main__':
-    index = build_index("./data/nyu_depth_v2_processed")
+    file_types = ["rgb", "depth", "rawdepth", "albedo"]
+    index = build_index("./data/nyu_depth_v2_processed", file_types)
     # print(index.keys())
     # print(len(index))
-    # train, val, test = random_split(index)
+    s1, s2, s3, s4 = random_split(index, [1, 1,1, 1])
+    print(len(index))
+    print(len(s1))
+    print(len(s2))
+    print(len(s3))
+    print(len(s4))
     # print(train.keys())
     # print(len(train))
-    bedroom_split = split_on_keywords(index, ["bedroom", "bathroom"])
-    print(len(bedroom_split))
+    # bedroom_split = split_on_keywords(index, ["bedroom", "bathroom"])
+    # print(len(bedroom_split))

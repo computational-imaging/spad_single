@@ -1,4 +1,4 @@
-function [ res_r, res_s ] = intrinsic_decomp( I, S, depth, sigma_c, sigma_i, sigma_n)
+ffunction [ res_r, res_s ] = intrinsic_decomp( I, S, depth, sigma_c, sigma_i, sigma_n)
 %   Matlab and mex implementation of "Intrinsic Image Decomposition using
 %   Texture Separation and Surface Normal". It require RGB image, its
 %   texture-removed image, and aligned depth image as inputs. It decompose
