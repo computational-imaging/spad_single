@@ -6,9 +6,11 @@ checkpoints*
 experiments*
 *processed*
 *.tar
+*.npy
 
 # Tensorboard
 runs/*
+oldruns/*
 
 # C
 *.o
