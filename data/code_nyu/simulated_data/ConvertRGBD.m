@@ -10,7 +10,7 @@ scenes(end) = [];
 
 addpath(genpath('./intrinsic_texture'));
 addpath('./nyu_utils');
-camera_params;
+camera_params; % Defines maxDepth
 
 % TESTING
 % disp(scenes)
@@ -24,7 +24,7 @@ parfor ss = 1:length(scenes)
     disp('starting!');
 
     % The name of the scene to demo.
-    outdir = ['../../nyu_depth_v2_processed/' sceneName];
+    outdir = ['../../nyu_depth_v2_scaled16/' sceneName];
     mkdir(outdir);
 
     % The absolute directory of the 
@@ -35,7 +35,7 @@ parfor ss = 1:length(scenes)
 
     % Displays each pair of synchronized RGB and Depth frames.
     % Take one out of every 10 frames.
-    idx = 1 : 20 : numel(frameList);
+    idx = 1 : numel(frameList);
     % idx = 1 : 100 : numel(frameList);
 
     for ii = 1:length(idx)
@@ -95,8 +95,11 @@ parfor ss = 1:length(scenes)
             % Save rgb (I), rawdepth (imgDepthAbs), depth (imgDepthFilled), and albedo (albedo)
             % (all at the same resolution)
             imwrite(I, rgb_out);
-            imwrite(uint16(imgDepthAbs*1000), rawdepth_out);
-            imwrite(uint16(imgDepthFilled*1000), depth_out);
+            % Rescale depth to use entire range of image bits
+            % 16 bits - max value is 2^16-1
+            % maxDepth (defined in camera_params) = 10 (for nyu_v2)
+            imwrite(uint16(imgDepthAbs*(2^16-1)/maxDepth), rawdepth_out);
+            imwrite(uint16(imgDepthFilled*(2^16-1)/maxDepth), depth_out);
             imwrite(albedo, albedo_out);
 
             % intensity = rgb2gray(I);
