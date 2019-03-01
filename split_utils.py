@@ -75,7 +75,7 @@ def build_index(rootdir: str, file_types: List[str], ext="png"):
             for file_type, pattern in patterns:
                 match = pattern.match(file)
                 if match:
-                    global_id = os.path.join(relpath, match.group(1))
+                    global_id = os.path.join(relpath, match.group(1)) # match for (.+)
                     index[global_id][file_type] = os.path.join(relpath, file)
     return index
 

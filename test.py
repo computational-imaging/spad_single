@@ -10,11 +10,11 @@ from pprint import PrettyPrinter
 
 import torch
 
-from depthnet.model import make_model
+from depthnet.model import make_network
 from depthnet.data import data_ingredient, load_depth_data
 from depthnet.checkpoint import load_checkpoint
 from depthnet.model.loss import berhu, delta, rmse, rel_abs_diff, rel_sqr_diff
-from depthnet.wrappers import DepthNetWrapper
+from depthnet.wrappers import make_wrapper
 
 from sacred import Experiment
 
@@ -136,7 +136,7 @@ def test_avg(model,
 
 # To see the full configuration, run $ python train.py print_config
 @ex.automain
-def main(model_config,
+def main(network_config,
          test_config,
          ckpt_config,
          data_config,
@@ -147,24 +147,26 @@ def main(model_config,
         warn("checkpoint file not specified! Will run on untrained model.")
 
     # Load data
-    _, val_dataset, test_dataset = load_depth_data()
+    train_set, val_set, test_set = load_depth_data()
     if test_config["dataset"] == "val":
         dataset = val_dataset
-    else:
+    elif test_config["dataset"] == "test":
         dataset = test_dataset
+    else:
+        print("unknown dataset: {} - using val dataset instead".format(test_config["dataset"]))
 
-    model = make_model(**model_config)
-    model.to(device)
+    network = make_network(**network_config)
+    network.to(device)
 
-    model = DepthNetWrapper(model,
-                            pre_active=True,
-                            post_active=True,   # Turn on clipping for evaluation
-                            rgb_key="rgb",
-                            rgb_mean=dataset.rgb_mean,
-                            rgb_var=dataset.rgb_var,
-                            min_depth=data_config["min_depth"],
-                            max_depth=data_config["max_depth"],
-                            device=device)
+    stats_and_params = {}
+    stats_and_params.update(network_config["network_params"])
+    stats_and_params.update(data_config)
+    stats_and_params.update(train_set.get_global_stats())
+
+    model = make_wrapper(network=network, network_config=network_config,
+                         pre_active=True, post_active=True, device=device,
+                         **stats_and_params)
+
     # loss = get_loss(train_config["loss_fn"])
     if test_config["mode"] == "run_tests":
         print("Running tests...")

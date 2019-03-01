@@ -3,6 +3,8 @@ import torch.nn as nn
 from copy import deepcopy
 
 from .unet_model import UNet, UNetWithHints, UNetDORN, UNetDORNWithHints
+from .DORN_nyu import DORN_nyu
+from .pytorch_prototyping import Unet
 
 class ModelWrapper(abc.ABC):
     def __init__(self, network, pre_active=True, post_active=False):

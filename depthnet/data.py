@@ -10,14 +10,14 @@ from torch.utils.data import Dataset, DataLoader
 import torch.backends.cudnn as cudnn
 
 from torchvision import transforms, utils
-from depthnet.transforms import (CropPowerOf2All, DepthProcessing, AddDepthMask, AddSIDDepth,
+from depthnet.transforms import (CropPowerOf2All, DepthProcessing, AddRawDepthMask, AddSIDDepth,
                                  AddDepthHist, ClipMinMax, NormalizeRGB, ToFloat, ToTensor,
                                  RandomCropAll, RandomHorizontalFlipAll, ResizeAll)
-
 
 from sacred import Ingredient, Experiment
 
 data_ingredient = Experiment('data_config')
+
 
 @data_ingredient.config
 def cfg():
@@ -31,9 +31,8 @@ def cfg():
     # Indices of images to exclude from the dataset.
     blacklist_file = os.path.join("data", "sunrgbd_all", "blacklist.txt")
 
-    batch_size = 20              # Number of training examples per iteration
-    train_keywords = ["SUNRGBD"] # Keywords that control which data points are used.
-    val_keywords = ["SUNRGBD"]   # A value of None means no restrictions on data points.
+    train_keywords = ["SUNRGBD"]  # Keywords that control which data points are used.
+    val_keywords = ["SUNRGBD"]  # A value of None means no restrictions on data points.
     test_keywords = ["SUNRGBD"]
     depth_format = "SUNRGBD"
 
@@ -43,10 +42,11 @@ def cfg():
     min_depth = 1e-3
     max_depth = 8.
 
-    sid_bins = 80               # Number of bins to use for the spacing-increasing discretization
+    sid_bins = 80  # Number of bins to use for the spacing-increasing discretization
     sid_range = (min_depth, max_depth)
     # For testing how data loads. Turns off normalization.
     test_loader = False
+
 
 @data_ingredient.named_config
 def nyu_depth_v2():
@@ -62,7 +62,6 @@ def nyu_depth_v2():
     # Indices of images to exclude from the dataset.
     blacklist_file = os.path.join("blacklist.txt")
 
-    batch_size = 20             # Number of training examples per iteration
     train_keywords = None
     val_keywords = None
     test_keywords = None
@@ -70,15 +69,17 @@ def nyu_depth_v2():
     # hist_use_albedo = True
     # hist_use_squared_falloff = True
 
-    min_depth = 1e-3
+    min_depth = 0.
     max_depth = 10.
     # For testing how data loads. Turns off normalization.
     test_loader = False
+
 
 @data_ingredient.named_config
 def raw_hist():
     hist_use_albedo = False
     hist_use_squared_falloff = False
+
 
 def worker_init(worker_id):
     cudnn.deterministic = True
@@ -88,9 +89,10 @@ def worker_init(worker_id):
     torch.cuda.manual_seed(1 + worker_id)
 
 
-class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
+class DepthDataset(Dataset):  # pylint: disable=too-few-public-methods
     """Class for reading and storing image and depth data together.
     """
+
     def __init__(self, splitfile, data_dir, keywords=None,
                  file_types=["rgb", "depth", "rawdepth", "albedo"],
                  info_file="info.json", blacklist_file="blacklist.txt",
@@ -136,7 +138,7 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
         for image_id in self.index:
             # Check blacklist
             if image_id in self.blacklist:
-                continue # Exclude this entry.
+                continue  # Exclude this entry.
             # elif self.check_blank_albedo(image_id):
             #     print("found blank albedo: {}".format(image_id))
             #     continue # Exclude this entry
@@ -180,19 +182,19 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
             rgb_img = self.load_from_file(image_id)["rgb"]
             rgb_img = np.asarray(rgb_img, dtype=np.uint16)
 
-            npixels += rgb_img.shape[0]*rgb_img.shape[1]
+            npixels += rgb_img.shape[0] * rgb_img.shape[1]
             for channel in range(rgb_img.shape[2]):
                 S[channel] += np.sum(rgb_img[:, :, channel])
-                S_sq[channel] += np.sum((rgb_img[:, :, channel])**2)
-        mean = S/npixels
-        var = S_sq/npixels - mean**2
+                S_sq[channel] += np.sum((rgb_img[:, :, channel]) ** 2)
+        mean = S / npixels
+        var = S_sq / npixels - mean ** 2
 
         if write_cache:
             try:
                 cache_file = os.path.join(self.data_dir, cache)
                 with open(cache_file, "w") as f:
-                    f.write(",".join(str(m) for m in mean)+"\n")
-                    f.write(",".join(str(v) for v in var)+"\n")
+                    f.write(",".join(str(m) for m in mean) + "\n")
+                    f.write(",".join(str(v) for v in var) + "\n")
                 print("wrote stats cache to {}".format(cache_file))
             except IOError:
                 print("failed to write stats cache to {}".format(cache_file))
@@ -208,7 +210,7 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
         """
         if albedo_key not in self.index[image_id]:
             print("no albedo file: {}".format(image_id))
-            return False # Entry doesn't have an albedo file associated with it.
+            return False  # Entry doesn't have an albedo file associated with it.
         # Load the albedo file
         relpath = self.index[image_id][albedo_key]
         albedo = np.asarray(Image.open(os.path.join(self.data_dir, relpath)))
@@ -252,21 +254,21 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
         resize = [CropPowerOf2All(4)]
         PIL_transforms = [DepthProcessing("depth", depth_format),
                           DepthProcessing("rawdepth", depth_format),
-                          AddDepthMask(),
+                          AddRawDepthMask(min_depth, max_depth),
                           ClipMinMax("depth", min_depth, max_depth),  # Note: Need to add depth mask before clipping.
                           ToFloat("rgb"),
                           ToFloat("albedo"),
                           ]
         float_transforms = []
-        if hist_len is not None: # Use depth histogram.
+        if hist_len is not None:  # Use depth histogram.
             float_transforms.append(AddDepthHist(use_albedo=hist_use_albedo,
                                                  use_squared_falloff=hist_use_squared_falloff,
                                                  bins=hist_len, range=(min_depth, max_depth), density=True))
-        if sid_bins is not None: # Use spacing increasing discretization loss - requires depth_sid entry
+        if sid_bins is not None:  # Use spacing increasing discretization loss - requires depth_sid entry
             float_transforms.append(AddSIDDepth(sid_bins=sid_bins, sid_range=(min_depth, max_depth)))
         float_transforms += [NormalizeRGB(rgb_mean, rgb_var),
                              ToTensor(),
-                            ]
+                             ]
         self.transform = transforms.Compose(resize + PIL_transforms + float_transforms)
 
     def __len__(self):
@@ -288,6 +290,7 @@ class DepthDataset(Dataset): # pylint: disable=too-few-public-methods
         """
         return self.__getitem__(self.data.index(image_id))
 
+
 ###########
 # Caching #
 ###########
@@ -296,6 +299,7 @@ def write_cache(obj, cache_file):
     with open(cache_file, "w") as f:
         json.dump(obj, f)
     print("wrote cache to {}.".format(cache_file))
+
 
 def read_cache(cache_file):
     """Reads list from the cache file. If the cache file does not exist,
@@ -308,6 +312,7 @@ def read_cache(cache_file):
     except IOError:
         print("failed to load cache at {}".format(cache_file))
         return None
+
 
 #############
 # Load data #
@@ -344,23 +349,23 @@ def load_depth_data(train_file, train_dir, train_keywords=None,
     """
     train = DepthDataset(train_file, train_dir, train_keywords, blacklist_file=blacklist_file)
     if test_loader:
-        mean = None # Don't normalize
+        mean = None  # Don't normalize
         var = None
     else:
         mean, var = train.get_global_stats()
     train.rgb_mean, train.rgb_var = mean, var
     augment = [RandomCropAll(300),
                RandomHorizontalFlipAll(0.5),
-               ResizeAll((208, 176)), #arbitrary, but smaller ish
-              ]
+               ]
+    resize = [ResizeAll((208, 176))]
 
-    train.augment = transforms.Compose(augment)
+    train.augment = transforms.Compose(augment + resize)
 
     print("Loaded training dataset from {} with size {}.".format(train_file, len(train)))
     val = None
     if val_file is not None:
         val = DepthDataset(val_file, val_dir, val_keywords, blacklist_file=blacklist_file,
-                           augment=None,
+                           augment=transforms.Compose(resize),
                            transform=None)
         val.rgb_mean, val.rgb_var = mean, var
 
@@ -374,6 +379,7 @@ def load_depth_data(train_file, train_dir, train_keywords=None,
         print("Loaded test dataset from {} with size {}.".format(test_file, len(test)))
 
     return train, val, test
+
 
 ###########
 # Testing #
@@ -390,8 +396,6 @@ def test_load_data(min_depth, max_depth):
     # batch = train[0]
     # print(batch["rgb"])
 
-
-
     # Save a histogram
     # with open("test_hist.pkl", "w") as f:
     # Save RGB
@@ -405,11 +409,11 @@ def test_load_data(min_depth, max_depth):
     # Save Albedo
     # utils.save_image(batch["albedo"][0, :, :, :], "test_albedo.png")
 
-    train, _, _ = load_depth_data(hist_bins=10, hist_range=(minxdepth, max_depth),
+    train, _, _ = load_depth_data(hist_bins=10, hist_range=(min_depth, max_depth),
                                   sid_bins=40, sid_range=(min_depth, max_depth))
 
     files = train.dataset.get_item_by_id("dining_room_0001a/0001")
-    depth = files["depth"][0,:,:]
+    depth = files["depth"][0, :, :]
     print(depth)
     depth_sid = files["depth_sid"]
     print(depth_sid)
@@ -417,4 +421,3 @@ def test_load_data(min_depth, max_depth):
     utils.save_image(depth, "0001_depth_test.png", range=(min_depth, max_depth), normalize=True)
     # test_out = utils.make_grid(depth, range=(min_depth, max_depth), normalize=True)
     # print(test_out)
-
