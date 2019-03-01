@@ -3,6 +3,8 @@ import torch.nn as nn
 from copy import deepcopy
 
 from .unet_model import UNet, UNetWithHints, UNetDORN, UNetDORNWithHints
+from .DORN_pytorch import DORN_nyu
+from .pytorch_prototyping import Unet
 
 class ModelWrapper(abc.ABC):
     def __init__(self, network, pre_active=True, post_active=False):
@@ -16,15 +18,6 @@ class ModelWrapper(abc.ABC):
         self.network = network
         self.pre_active = pre_active
         self.post_active = post_active
-
-    @abc.abstractmethod
-    def from_config(cls):
-        """IMPORTANT: this is class method, override it with @classmethod!
-
-        Used for configuring a ModelWrapper using some external data structures.
-        """
-        return NotImplemented
-
 
     @abc.abstractmethod
     def pre(self, input_):
@@ -45,25 +38,30 @@ class ModelWrapper(abc.ABC):
         return output
 
 
-def make_model(model_name, model_wrapper, model_params, model_state_dict_fn):
+def make_network(network_name, network_params, network_state_dict_fn):
     """
-    
+    Make a network from the name, params, and function for getting the state dict (if not None).
+    :param network_name: The name of the network's class in the global namespace.
+    :param network_params: A dictionary for initializing the network with the appropriate parameters
+    :param network_state_dict_fn: If not None, a function that, when called, returns a
+                                  state dict for initializing the network.
+    :return: An initialized network.
     """
-    # model
-    model_class = globals()[model_name]
-    model = model_class(**model_params)
-    if model_state_dict_fn is not None:
-        model.load_state_dict(model_state_dict_fn())
-    else: # New model - apply initialization
-        # m.initialize(model)
+    # network
+    network_class = globals()[network_name]
+    network = network_class(**network_params)
+    if network_state_dict_fn is not None:
+        network.load_state_dict(network_state_dict_fn())
+    else: # New network - apply initialization
+        # m.initialize(network)
         pass # Use default pytorch initialization (He initialization)
-    return model, model_wrapper
+    return network
 
-def split_params_weight_bias(model):
+def split_params_weight_bias(network):
     """Split parameters into weight and bias terms,
     in order to apply different regularization."""
     split_params = [{"params": []}, {"params": [], "weight_decay": 0.0}]
-    for name, param in model.named_parameters():
+    for name, param in network.named_parameters():
         # print(name)
         # print(param)
         if "weight" in name:
@@ -75,13 +73,13 @@ def split_params_weight_bias(model):
     return split_params
 
 
-def initialize(model):
-    """Initialize a model.
+def initialize(network):
+    """Initialize a network.
     Conv weights: Xavier initialization
     Batchnorm weights: Constant 1
     All biases: 0
     """
-    for name, param in model.named_parameters():
+    for name, param in network.named_parameters():
         #            print(param.shape)
         #            print(len(param.shape))
         #            print(name)

@@ -6,20 +6,21 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
-from .unet_parts import up, down, inconv, outconv, double_conv, expand_and_cat, Upsample
+from .unet_parts import (up, down, inconv, outconv, double_conv, \
+                         expand_and_cat, Upsample, to_logprobs)
 
 class UNet(nn.Module):
-    def __init__(self, input_nc, output_nc, upsampling="bilinear", **kwargs):
+    def __init__(self, input_nc, output_nc, upsampling_mode="bilinear", upnorm=nn.BatchNorm2d, **kwargs):
         super(UNet, self).__init__()
         self.inc = inconv(input_nc, 64)
         self.down1 = down(64, 128)
         self.down2 = down(128, 256)
         self.down3 = down(256, 512)
         self.down4 = down(512, 512)
-        self.up1 = up(1024, 256, upsampling)
-        self.up2 = up(512, 128, upsampling)
-        self.up3 = up(256, 64, upsampling)
-        self.up4 = up(128, 64, upsampling)
+        self.up1 = up(1024, 256, upsampling_mode, upnorm)
+        self.up2 = up(512, 128, upsampling_mode, upnorm)
+        self.up3 = up(256, 64, upsampling_mode, upnorm)
+        self.up4 = up(128, 64, upsampling_mode, upnorm)
         self.outc = outconv(64, output_nc)
 
     def forward(self, input_):
@@ -38,10 +39,10 @@ class UNet(nn.Module):
 
 class UNetWithHints(nn.Module):
     def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, len_hints_layers,
-                 upsampling="bilinear",
+                 upsampling_mode="bilinear", upnorm=nn.BatchNorm2d,
                  **kwargs):
         super(UNetWithHints, self).__init__()
-        self.unet = UNet(input_nc, output_nc, upsampling)
+        self.unet = UNet(input_nc, output_nc, upsampling_mode, upnorm)
         self.hist_len = hist_len
         self.num_hints_layers = num_hints_layers
 
@@ -57,7 +58,7 @@ class UNetWithHints(nn.Module):
             hints.update({"hints_relu_{}".format(j): nn.ReLU(True)})
             j += 1
 
-        self.unet.up1 = up(1024+hints_output, 256, upsampling) # Concatenate the output of the global hints
+        self.unet.up1 = up(1024+hints_output, 256, upsampling_mode) # Concatenate the output of the global hints
         self.global_hints = nn.Sequential(hints)
         self.bottleneck_conv = double_conv(512+hints_output, 512+hints_output)
 
@@ -87,10 +88,10 @@ class UNetWithHints(nn.Module):
 
 class UNetMultiScaleHints(nn.Module):
     def __init__(self, input_nc, output_nc, hist_len, num_hints_layers, len_hints_layers,
-                 upsampling="bilinear",
+                 upsampling_mode="bilinear",
                  **kwargs):
         super(UNetMultiScaleHints, self).__init__()
-        self.unet = UNet(input_nc, output_nc, upsampling)
+        self.unet = UNet(input_nc, output_nc, upsampling_mode)
         self.hist_len = hist_len
         self.num_hints_layers = num_hints_layers
 
@@ -108,10 +109,10 @@ class UNetMultiScaleHints(nn.Module):
         self.global_hints = nn.Sequential(hints)
 
 
-        self.unet.up1 = up(1024+hist_len, 256, upsampling) # Concatenate the output of the global hints
-        self.unet.up2 = up(512+hist_len, 128, upsampling) # Concatenate the output of the global hints
-        self.unet.up3 = up(256+hist_len, 64, upsampling) # Concatenate the output of the global hints
-        self.unet.up4 = up(128+hist_len, 64, upsampling) # Concatenate the output of the global hints
+        self.unet.up1 = up(1024+hist_len, 256, upsampling_mode) # Concatenate the output of the global hints
+        self.unet.up2 = up(512+hist_len, 128, upsampling_mode) # Concatenate the output of the global hints
+        self.unet.up3 = up(256+hist_len, 64, upsampling_mode) # Concatenate the output of the global hints
+        self.unet.up4 = up(128+hist_len, 64, upsampling_mode) # Concatenate the output of the global hints
 
 
     def forward(self, input_):
@@ -139,27 +140,27 @@ class UNetMultiScaleHints(nn.Module):
         # x = F.relu(x, True) # Map depth to [0, inf)
         return x
 
+
 class UNetDORN(nn.Module):
-    def __init__(self, input_nc, sid_bins, upsampling="bilinear", **kwargs):
+    def __init__(self, input_nc, sid_bins, upsampling_mode="bilinear", upnorm=nn.BatchNorm2d, **kwargs):
         super(UNetDORN, self).__init__()
-        self.unet = UNet(input_nc, 2*sid_bins, upsampling)
+        self.unet = UNet(input_nc=input_nc, output_nc=2*sid_bins, upsampling_mode=upsampling_mode, upnorm=upnorm)
         self.unet.outc = nn.Conv2d(64, 2*sid_bins, kernel_size=1, bias=False)
         self.sid_bins = sid_bins
 
     def forward(self, input_):
         x = self.unet(input_)
-        probs = []
-        for i in range(self.sid_bins):
-            prob = F.softmax(x[:, 2*i:2*i+2, :, :], dim=1)
-            probs.append(prob[:, 0:1, :, :])
-        probs = torch.cat(probs, dim=1)
-        return probs
+
+        if torch.isnan(x).any():
+            print("x is nan")
+        log_ord_c0, log_ord_c1 = to_logprobs(x)
+        return log_ord_c0, log_ord_c1
 
 class UNetDORNWithHints(nn.Module):
     def __init__(self, input_nc, sid_bins, hist_len, num_hints_layers, len_hints_layers,
-                 upsampling="bilinear", **kwargs):
+                 upsampling_mode="bilinear", upnorm=nn.BatchNorm2d, **kwargs):
         super(UNetDORNWithHints, self).__init__()
-        self.unet = UNet(input_nc, 2*sid_bins, upsampling)
+        self.unet = UNet(input_nc, 2*sid_bins, upsampling_mode, upnorm)
         self.unet.outc = nn.Conv2d(64, 2*sid_bins, kernel_size=1, bias=False)
         self.sid_bins = sid_bins
 
@@ -178,7 +179,7 @@ class UNetDORNWithHints(nn.Module):
             hints.update({"hints_relu_{}".format(j): nn.ReLU(True)})
             j += 1
 
-        self.unet.up1 = up(1024+hints_output, 256, upsampling) # Concatenate the output of the global hints
+        self.unet.up1 = up(1024+hints_output, 256, upsampling_mode) # Concatenate the output of the global hints
         self.global_hints = nn.Sequential(hints)
         self.bottleneck_conv = double_conv(512+hints_output, 512+hints_output)
 
@@ -202,12 +203,8 @@ class UNetDORNWithHints(nn.Module):
         x = self.unet.up4(x, x1)
         x = self.unet.outc(x)
 
-        probs = []
-        for i in range(self.sid_bins):
-            prob = F.softmax(x[:, 2*i:2*i+2, :, :], dim=1)
-            probs.append(prob[:, 0:1, :, :])
-        probs = torch.cat(probs, dim=1)
-        return probs
+        log_ord_c0, log_ord_c1 = to_logprobs(x)
+        return log_ord_c0, log_ord_c1
 
 if __name__ == '__main__':
     # model = UNetDORN(3, 4)

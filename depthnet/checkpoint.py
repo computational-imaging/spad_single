@@ -5,7 +5,6 @@ import socket
 
 import torch
 import torch.optim as optim
-import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 
 import depthnet.model as m
@@ -28,15 +27,18 @@ def load_checkpoint(ckpt_file, device):
     """Loads a checkpoint from a checkpointfile.
     Checkpoint is a dict consisting of:
 
-    model_ckpt
+    network_ckpt
     ----------
-    model_name
-    model_params
-    model_state_dict
+    network_name
+    network_params
+    network_state_dict
 
     train_ckpt
     ----------
     loss_fn (string)
+
+    target_key
+    ground_truth_key
 
     optim_name
     optim_params
@@ -54,7 +56,7 @@ def load_checkpoint(ckpt_file, device):
     ckpt_dir
 
     --
-    Can derive model_name and model_state_dict from model
+    Can derive network_name and network_state_dict from model
     Can derive scheduler_name from scheduler
        Can derive optim_name and optim_state_dict from scheduler.optimizer
 
@@ -63,18 +65,20 @@ def load_checkpoint(ckpt_file, device):
         checkpoint = torch.load(ckpt_file,
                                 map_location="cuda")
     else:
-        # Load GPU model on CPU
+        # Load GPU network on CPU
         checkpoint = torch.load(ckpt_file,
                                 map_location=lambda storage,
                                                     loc: storage)
-    model_update = {
-        "model_name": checkpoint["model_name"],
-        "model_params": checkpoint["model_params"],
+    network_update = {
+        "network_name": checkpoint["network_name"],
+        "network_params": checkpoint["network_params"],
         # Because of sacred - don't want to explode the config
-        "model_state_dict_fn": lambda: checkpoint["model_state_dict"],
+        "network_state_dict_fn": lambda: checkpoint["network_state_dict"],
     }
     train_update = {
         "loss_fn": checkpoint["loss_fn"],
+        "target_key": checkpoint["target_key"],
+        "ground_truth_key": checkpoint["ground_truth_key"],
         "optim_name": checkpoint["optim_name"],
         # Because of sacred - don't want to explode the config
         "optim_state_dict_fn": lambda: checkpoint["optim_state_dict"],
@@ -88,31 +92,33 @@ def load_checkpoint(ckpt_file, device):
         "log_dir": checkpoint["log_dir"],
         "ckpt_dir": checkpoint["ckpt_dir"],
     }
-    return model_update, train_update, ckpt_update
+    return network_update, train_update, ckpt_update
 
 
-def save_checkpoint(model,
+def save_checkpoint(network,
                     scheduler,
                     config,
                     state,
                     filename):
     """Save checkpoint using
-    model - the current model
+    network - the current network
     scheduler - the scheduler (and optimizer)
-    config - configuration of the model
+    config - configuration of the network
     state - the current state of the training process
     """
     # Unpack
-    model_config = config["model_config"]
+    network_config = config["network_config"]
     train_config = config["train_config"]
     ckpt_config = config["ckpt_config"]
 
     checkpoint = {
-        "model_name": model.__class__.__name__,
-        "model_params": model_config["model_params"],
-        "model_state_dict": model.state_dict(),
+        "network_name": network.__class__.__name__,
+        "network_params": network_config["network_params"],
+        "network_state_dict": network.state_dict(),
 
         "loss_fn": train_config["loss_fn"],
+        "target_key": train_config["target_key"],
+        "ground_truth_key": train_config["ground_truth_key"],
         "optim_name": scheduler.optimizer.__class__.__name__,
         "optim_params": train_config["optim_params"],
         "optim_state_dict": scheduler.optimizer.state_dict(),

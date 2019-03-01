@@ -1,5 +1,4 @@
 import torch
-import torch.cuda
 from torch.nn import MSELoss, L1Loss
 
 ##################
@@ -7,9 +6,14 @@ from torch.nn import MSELoss, L1Loss
 ##################
 # Run on import
 
-def ord_reg_loss(prediction, target, mask, size_average=True):
+def ord_reg_loss(prediction, target, mask, size_average=True, eps=1e-6):
     """Calculates the Ordinal Regression loss
-    :param prediction - per-pixel probabilities in [0, 1] for each depth bin
+    :param prediction: a tuple (log_ord_c0, log_ord_c1).
+        log_ord_c0 is is an N x K x H x W tensor
+        where each pixel location is a length K vector containing log-probabilities log P(l > 0),..., log P(l > K-1).
+
+        The log_ord_c1 is the same, but contains the log-probabilities log (1 - P(l > 0)),..., log (1 - P(l > K-1))
+        instead.
     :param target - per-pixel vector of 0's and 1's such that if the true depth
     bin is k then the vector contains 1's up to entry k-1 and 0's for the remaining entries.
     e.g. if k = 3 and the total number of bins is 7 then
@@ -20,11 +24,18 @@ def ord_reg_loss(prediction, target, mask, size_average=True):
     to be used in the loss calculation, 0 otherwise.
     :param size_average - whether or not to take the average over all the mask pixels.
     """
-    mask_L = (target > 0) & (mask > 0)
-    mask_U = ((1. - target) > 0) & (mask > 0)
-    out = -(torch.sum(torch.log(prediction[mask_L])) + torch.sum(1. - torch.log(prediction[mask_U])))
+    log_ord_c0, log_ord_c1 = prediction
+    nbins = log_ord_c0.size(1)
+    mask_L = ((target > 0) & (mask > 0))
+    mask_U = (((1. - target) > 0) & (mask > 0))
+
+    out = -(torch.sum(log_ord_c0[mask_L]) + torch.sum(log_ord_c1[mask_U]))
     if size_average:
-        return (1./torch.sum(mask))*out
+        total = torch.sum(mask).item()
+        if total > 0:
+            return (1./torch.sum(mask))*out
+        else:
+            return torch.zeros(1)
     return out
 
 def berhu(prediction, target, mask, size_average=True):
@@ -46,7 +57,11 @@ def berhu(prediction, target, mask, size_average=True):
     l1_part = diff
     out = torch.sum(l1_part[diff <= c])+torch.sum(l2_part[diff > c])
     if size_average:
-        return (1./torch.sum(mask))*out
+        total = torch.sum(mask).item()
+        if total > 0:
+            return (1./torch.sum(mask))*out
+        else:
+            return torch.zeros(1)
     return out
 
 #################
@@ -82,8 +97,12 @@ def rmse(prediction, target, mask):
     # print(squares[idx])
     # print(prediction[idx])
     # print(target[idx])
-    sum_squares = torch.sum(squares)
-    return torch.sqrt((1./torch.sum(mask))*sum_squares)
+    out = torch.sum(squares)
+    total = torch.sum(mask).item()
+    if total > 0:
+        return torch.sqrt((1. / torch.sum(mask)) * out)
+    else:
+        return torch.zeros(1)
 
 def test_rmse():
     prediction = 2*torch.ones(3, 3, 3)
@@ -98,8 +117,12 @@ def rel_abs_diff(prediction, target, mask, eps=1e-6):
     1/N*sum(|prediction - target|/target)
     """
     diff = prediction - target
-    sum_abs_rel = torch.sum(torch.abs(diff[mask > 0])/(target[mask > 0] + eps))
-    return (1./torch.sum(mask))*sum_abs_rel
+    out = torch.sum(torch.abs(diff[mask > 0])/(target[mask > 0] + eps))
+    total = torch.sum(mask).item()
+    if total > 0:
+        return (1. / torch.sum(mask)) * out
+    else:
+        return torch.zeros(1)
 
 def rel_sqr_diff(prediction, target, mask, eps=1e-6):
     """
@@ -108,12 +131,12 @@ def rel_sqr_diff(prediction, target, mask, eps=1e-6):
     1/N*sum(||prediction - target||**2/target)
     """
     diff = prediction - target
-    sum_sqr_rel = torch.sum((diff[mask > 0]).pow(2)/(target[mask > 0] + eps))
-    return (1./torch.sum(mask))*sum_sqr_rel
-
-
-
-
+    out = torch.sum((diff[mask > 0]).pow(2)/(target[mask > 0] + eps))
+    total = torch.sum(mask).item()
+    if total > 0:
+        return (1. / torch.sum(mask)) * out
+    else:
+        return torch.zeros(1)
 
 if __name__ == '__main__':
     print(test_rmse())
