@@ -5,7 +5,6 @@ import socket
 
 import torch
 import torch.optim as optim
-import matplotlib.pyplot as plt
 import torchvision.transforms as transforms
 
 import depthnet.model as m

@@ -9,7 +9,6 @@ from depthnet.model import (make_network, split_params_weight_bias,
 
 import depthnet.wrappers as wrappers
 from depthnet.checkpoint import save_checkpoint
-from depthnet.utils import log_depth_data
 
 from itertools import cycle
 
@@ -78,13 +77,6 @@ def make_training(network_config,
     return network, scheduler, loss
 
 
-def make_wrapper(network, network_config, pre_active, post_active, device, **stats_and_params):
-    wrapper_class = getattr(wrappers, network_config["network_params"]["wrapper_name"])
-    wrapper = wrapper_class(network, pre_active=pre_active, post_active=post_active, device=device,
-                            **stats_and_params)
-    return wrapper
-
-
 ##############
 # Validation #
 ##############
@@ -145,8 +137,8 @@ def train(model,
 
     val_loader_iter = iter(val_loader)
     for epoch in range(start_epoch, start_epoch + num_epochs):
+        model.network.train()
         print("epoch: {}".format(epoch))
-        data = None
         for it, data in enumerate(train_loader):
             trainloss = evaluate(loss, model, data, data[target_key], data[ground_truth_key], data["mask"],
                                  device,
@@ -180,6 +172,7 @@ def train(model,
                 val_loader_iter = iter(val_loader)
                 data = next(val_loader_iter) # Restart iterator
             with torch.no_grad():
+                model.network.eval()
                 valloss = evaluate(loss, model, data, data[target_key], data[ground_truth_key], data["mask"],
                                    device,
                                    log_kwargs={"writer": writer,

@@ -1,5 +1,4 @@
 import torch
-import torch.cuda
 from torch.nn import MSELoss, L1Loss
 
 ##################
@@ -32,7 +31,11 @@ def ord_reg_loss(prediction, target, mask, size_average=True, eps=1e-6):
 
     out = -(torch.sum(log_ord_c0[mask_L]) + torch.sum(log_ord_c1[mask_U]))
     if size_average:
-        return (1./torch.sum(mask))*out
+        total = torch.sum(mask).item()
+        if total > 0:
+            return (1./torch.sum(mask))*out
+        else:
+            return torch.zeros(1)
     return out
 
 def berhu(prediction, target, mask, size_average=True):
@@ -54,7 +57,11 @@ def berhu(prediction, target, mask, size_average=True):
     l1_part = diff
     out = torch.sum(l1_part[diff <= c])+torch.sum(l2_part[diff > c])
     if size_average:
-        return (1./torch.sum(mask))*out
+        total = torch.sum(mask).item()
+        if total > 0:
+            return (1./torch.sum(mask))*out
+        else:
+            return torch.zeros(1)
     return out
 
 #################
@@ -90,8 +97,12 @@ def rmse(prediction, target, mask):
     # print(squares[idx])
     # print(prediction[idx])
     # print(target[idx])
-    sum_squares = torch.sum(squares)
-    return torch.sqrt((1./torch.sum(mask))*sum_squares)
+    out = torch.sum(squares)
+    total = torch.sum(mask).item()
+    if total > 0:
+        return torch.sqrt((1. / torch.sum(mask)) * out)
+    else:
+        return torch.zeros(1)
 
 def test_rmse():
     prediction = 2*torch.ones(3, 3, 3)
@@ -106,8 +117,12 @@ def rel_abs_diff(prediction, target, mask, eps=1e-6):
     1/N*sum(|prediction - target|/target)
     """
     diff = prediction - target
-    sum_abs_rel = torch.sum(torch.abs(diff[mask > 0])/(target[mask > 0] + eps))
-    return (1./torch.sum(mask))*sum_abs_rel
+    out = torch.sum(torch.abs(diff[mask > 0])/(target[mask > 0] + eps))
+    total = torch.sum(mask).item()
+    if total > 0:
+        return (1. / torch.sum(mask)) * out
+    else:
+        return torch.zeros(1)
 
 def rel_sqr_diff(prediction, target, mask, eps=1e-6):
     """
@@ -116,12 +131,12 @@ def rel_sqr_diff(prediction, target, mask, eps=1e-6):
     1/N*sum(||prediction - target||**2/target)
     """
     diff = prediction - target
-    sum_sqr_rel = torch.sum((diff[mask > 0]).pow(2)/(target[mask > 0] + eps))
-    return (1./torch.sum(mask))*sum_sqr_rel
-
-
-
-
+    out = torch.sum((diff[mask > 0]).pow(2)/(target[mask > 0] + eps))
+    total = torch.sum(mask).item()
+    if total > 0:
+        return (1. / torch.sum(mask)) * out
+    else:
+        return torch.zeros(1)
 
 if __name__ == '__main__':
     print(test_rmse())

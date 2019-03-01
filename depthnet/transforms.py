@@ -116,6 +116,7 @@ class DepthProcessing(): # pylint: disable=too-few-public-methods
             z[z > 8.] = 8. # Clip to maximum depth of 8m.
             sample[self.key] = z
         else:  # Just read and divide by 1000.
+            # TODO Use entire 16 bit range i.e. use x = depth*(maxDepth/2.**16-1.)
             depth = np.asarray(depth, dtype=np.float32)
             x = depth/1000
             sample[self.key] = x
@@ -147,7 +148,7 @@ class ToTensor(): # pylint: disable=too-few-public-methods
             sample['hist'] = torch.from_numpy(sample['hist']).unsqueeze(-1).unsqueeze(-1).float()
         if 'mask' in sample:
             sample['mask'] = torch.from_numpy(sample['mask']).unsqueeze(0).float()
-            sample['eps'] = torch.from_numpy(sample['eps']).unsqueeze(-1).unsqueeze(-1).float()
+            # sample['eps'] = torch.from_numpy(sample['eps']).unsqueeze(-1).unsqueeze(-1).float()
         if 'depth_sid' in sample:
             sample["depth_sid"] = torch.from_numpy(sample['depth_sid'].transpose(2, 0, 1)).float()
             sample["depth_sid_index"] = torch.from_numpy(sample["depth_sid_index"]).unsqueeze(0).long()
@@ -202,6 +203,20 @@ class AddDepthMask(): # pylint: disable=too-few-public-methods
         sample["eps"] = np.array([eps])
         return sample
 
+class AddRawDepthMask(): # pylint: disable=too-few-public-methods
+    """Creates a mask according to the original paper Eigen et. al.
+    Assigns a 0 to pixels where the minimum or maximum depth is attained.
+    Assigns a 1 everywhere else.
+    """
+    def __init__(self, min_depth, max_depth):
+        self.min_depth = min_depth
+        self.max_depth = max_depth
+
+    def __call__(self, sample):
+        rawdepth = sample["rawdepth"]
+        boolmask = (rawdepth >= self.max_depth) | (rawdepth <= self.min_depth)
+        sample["mask"] = 1. - boolmask.astype(np.float32) # Logical NOT
+        return sample
 
 class AddSIDDepth():
     """Creates a copy of the depth image where the depth value has been replaced

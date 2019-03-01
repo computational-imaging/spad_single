@@ -17,7 +17,8 @@ import numpy as np
 
 ### Project-specific loaders ###
 from depthnet.data import data_ingredient, load_depth_data as load_data, worker_init
-from depthnet.train_utils import train, make_training, make_wrapper
+from depthnet.train_utils import train, make_training
+from depthnet.wrappers import make_wrapper
 from depthnet.checkpoint import load_checkpoint, safe_makedir
 ### end ###
 
@@ -34,7 +35,7 @@ ex.add_source_file(os.path.join("depthnet", "model", "unet_parts.py"))
 @ex.config
 def cfg():
     network_config = {
-        "network_name": "UNet",                   # {DepthNet, DepthNetWithHints, UNet, UNetWithHints}
+        "network_name": "UNet",                 # Class of model to use (see model/utils.py)
         "network_params": {
             "wrapper_name": "DepthNetWrapper",  # {DepthNetWrapper, DORNWrapper}
             "input_nc": 3,                      # Number of input channels
@@ -42,7 +43,7 @@ def cfg():
             "hist_len": 1000//3,                # Length of the histogram (hints only)
             "num_hints_layers": 4,              # Number of 1x1 conv layers for hints (hints only)
             "len_hints_layers": 512,            # Number of units in the hints conv layers.
-            "upsampling": "bilinear",           # {bilinear, nearest}
+            "upsampling_mode": "bilinear",           # {bilinear, nearest}
         },
         "network_state_dict_fn": None,            # Function for getting the state dict
     }
@@ -51,6 +52,8 @@ def cfg():
         "loss_fn": "berhu",                     # Loss function to use to train the network
         "target_key": "depth",                  # Key (index into data dict) for the object to compare the output of the network against
         "ground_truth_key": "depth",            # Key (index into data dict) for the ground truth depth image
+        "batch_size": 20,                       # Batch size to use for a single train step
+        "batch_size_val": 40,                   # Batch size for a single validation step
         "optim_name": "Adam",
         "optim_params": {
             "lr": 1e-2,                         # Learning rate (initial)
@@ -92,6 +95,47 @@ def cfg():
 
         del network_update, train_update, ckpt_update
 
+@ex.named_config
+def unet_vincent():
+    comment = "_unet_vincent"
+    network_config = {
+        "network_name": "Unet",
+        "network_params": {
+            "in_channels": 3,
+            "out_channels": 1,
+            "nf0": 128,
+            "num_down": 4,
+            "max_channels": 1024,
+            "use_dropout": False,
+            "outermost_linear": True
+        }
+    }
+    train_config = {
+        "batch_size": 5,
+        "batch_size_val": 20,
+        "target_key": "depth",
+        "ground_truth_key": "depth",
+        "num_epochs": 80,
+        "optim_params": {"lr": 1e-4},
+        "scheduler_params": {
+            "milestones": [40, 60]
+        }
+    }
+
+# @ex.named_config
+# def restart():
+
+
+@ex.named_config
+def dorn():
+    comment = "_dorn"
+    network_config = {
+        "network_name": "DORN",
+        "network_params": {
+
+        }
+    }
+
 
 @ex.named_config
 def unet_dorn():
@@ -114,6 +158,7 @@ def unet_dorn():
         }
     }
 
+
 @ex.named_config
 def unet_dorn_hints():
     comment = "_unet_dorn_hints"
@@ -135,8 +180,10 @@ def unet_dorn_hints():
         }
     }
 
+
 @ex.named_config
 def no_batchnorm_up():
+    comment += "_no_batchnorm_up"
     network_config = {
         "network_params": {
             "upnorm": None
@@ -155,6 +202,7 @@ def no_hints_80():
             "milestones": [40]
         }
     }
+
 
 @ex.named_config
 def hints_80():
@@ -226,14 +274,14 @@ def main(network_config,
 
     # Configure Data Loader using model wrapper, data
     train_loader = DataLoader(train_set,
-                              batch_size=data_config["batch_size"],
+                              batch_size=train_config["batch_size"],
                               shuffle=True,
                               num_workers=4,
                               pin_memory=False,
                               worker_init_fn=worker_init)
 
     val_loader = DataLoader(val_set,
-                            batch_size=data_config["batch_size"],
+                            batch_size=train_config["batch_size_val"],
                             shuffle=False,
                             num_workers=1,
                             pin_memory=False,

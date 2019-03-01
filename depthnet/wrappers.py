@@ -4,10 +4,28 @@ import torch.nn as nn
 import numpy as np
 from PIL import Image
 
-from depthnet.transforms import (CropPowerOf2All, DepthProcessing, AddDepthMask, AddSIDDepth,
-                           AddDepthHist, ClipMinMax, NormalizeRGB, ToFloat, ToTensor)
 from depthnet.model.utils import ModelWrapper
 from depthnet.model.loss import delta, rmse, rel_abs_diff, rel_sqr_diff
+
+################
+# Make wrapper #
+################
+def make_wrapper(network, network_config, pre_active, post_active, device, **wrapper_kwargs):
+    """
+    All wrapper classes should expect to be loaded via this function.
+    :param network: The network to wrap.
+    :param network_config: The configuration for creating the network.
+                           Only needed to retrieve the wrapper name.
+    :param pre_active: Boolean - whether or not to activate preprocessing.
+    :param post_active: Boolean - whether or not to activate postprocessing.
+    :param device: The device on which the network and model should run.
+    :param wrapper_kwargs: Extra keyword arguments for initializing the model
+    :return: An initialized wrapper wrapping the input network.
+    """
+    wrapper_class = globals()[network_config["network_params"]["wrapper_name"]]
+    wrapper = wrapper_class(network, pre_active=pre_active, post_active=post_active, device=device,
+                            **wrapper_kwargs)
+    return wrapper
 
 class DepthNetWrapper(ModelWrapper):
     """Wrapper specific for depth estimation networks.
@@ -110,8 +128,8 @@ class DepthNetWrapper(ModelWrapper):
                                             normalize=True, range=(self.min_depth, self.max_depth))
             writer.add_image('image/{}_depth_output'.format(tag), depth_output, it)
 
-            # depth_mask = vutils.make_grid(input_["mask"], nrow=2, normalize=False, scale_each=True)
-            # writer.add_image('image/depth_mask', depth_mask, it)
+            depth_mask = vutils.make_grid(input_["mask"], nrow=4, normalize=False)
+            writer.add_image('image/depth_mask', depth_mask, it)
         if save_output:
             vutils.save_image(output, "output.png")
 
@@ -255,8 +273,8 @@ class DORNWrapper(DepthNetWrapper):
                                             normalize=True, range=(self.min_depth, self.max_depth))
             writer.add_image('image/{}_depth_output'.format(tag), depth_output, it)
 
-            # depth_mask = vutils.make_grid(input_["mask"], nrow=2, normalize=False, scale_each=True)
-            # writer.add_image('image/depth_mask', depth_mask, it)
+            depth_mask = vutils.make_grid(input_["mask"], nrow=4, normalize=False)
+            writer.add_image('image/depth_mask', depth_mask, it)
         if save_output:
             vutils.save_image(output, "output.png")
 
