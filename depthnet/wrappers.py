@@ -137,10 +137,13 @@ class DORNWrapper(DepthNetWrapper):
     """Wrapper for depth networks using the Ordinal Regression Loss as in
     H. Fu et al., “Deep Ordinal Regression Network for Monocular Depth Estimation.”
 
-    Wrapped model should output a per-pixel list of probabilities P_0,...,P_k-1
+    Wrapped model should output two lists:
+    (1) a per-pixel list of log-probabilities log P_0,...,log P_k-1
     where
     P_i = P(L > i)
     where L is the bin index corresponding to the estimated depth of this pixel.
+    and
+    (2) a list of the log complementary probabilities, log (1 - P_i).
     """
 
     def __init__(self, network, pre_active, post_active,
@@ -191,6 +194,9 @@ class DORNWrapper(DepthNetWrapper):
         depth_index[depth_index > MAX_BIN] = MAX_BIN
         depth_vals = torch.take(self.sid_depths, depth_index)
         return depth_vals
+    # pred = pred[0,0,:,:] - 1.0
+    # pred = pred/25.0 - 0.36
+    # pred = np.exp(pred)
 
     def write_globals(self, writer):
         """

@@ -149,9 +149,9 @@ def main(network_config,
     # Load data
     train_set, val_set, test_set = load_depth_data()
     if test_config["dataset"] == "val":
-        dataset = val_dataset
+        dataset = val_set
     elif test_config["dataset"] == "test":
-        dataset = test_dataset
+        dataset = test_set
     else:
         print("unknown dataset: {} - using val dataset instead".format(test_config["dataset"]))
 

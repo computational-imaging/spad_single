@@ -82,7 +82,7 @@ def make_training(network_config,
 ##############
 def evaluate(loss, model, input_, target, ground_truth, mask, device="cpu", log_kwargs=None):
     """Computes the error of the network on the data set.
-    Returns an ordinary number (i.e. not a tensor)
+    Returns a tensor that you can call "backward" on.
     loss - callable - loss(prediction, target) should give the loss on the particular image or
     batch of images.
 
