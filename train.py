@@ -183,7 +183,7 @@ def unet_dorn_hints():
 
 @ex.named_config
 def no_batchnorm_up():
-    comment += "_no_batchnorm_up"
+    comment = "_no_batchnorm_up"
     network_config = {
         "network_params": {
             "upnorm": None
@@ -265,6 +265,10 @@ def main(network_config,
     # Configure data transform
     train_set.configure_transform(**stats_and_params)
     val_set.configure_transform(**stats_and_params)
+
+    # Alternatively:
+    # train_set.transform = model.get_transform()
+    # val_set.transform = model.get_transform()
     # print(train_set.transform)
     # print(val_set.transform)
     # Make and configure wrapper
