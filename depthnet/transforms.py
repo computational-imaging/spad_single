@@ -175,7 +175,7 @@ class AddDepthHist(): # pylint: disable=too-few-public-methods
             depth = depth[mask > 0]
         weights = np.ones(depth.shape)
         if self.use_albedo:
-            weights = weights * np.mean(sample["albedo"]) # Attenuate by the average albedo TODO
+            weights = weights * np.mean(sample["albedo"]) # Attenuate by the average albedo
         if self.use_squared_falloff:
             weights[depth == 0] = 0.
             weights[depth != 0] = weights[depth != 0] / (depth[depth != 0]**2)
