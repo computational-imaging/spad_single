@@ -2,269 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ebb10411-0152-4c74-83b8-0064780d50e4" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/data/code_nyu/nyu_test.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/code_nyu/nyu_train.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/code_nyu/split_nyu_depth.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/evaluate_cifar10.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/core/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/core/checkpoint.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/core/model_core.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/data/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/data/noisy_cifar10_dataset.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/data/nyuv2_nohints.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/denoising_unet.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/pytorch_prototyping/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/pytorch_prototyping/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/pytorch_prototyping/pytorch_prototyping.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/train_cifar10.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/train_hints.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/train_nohints.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/train_rawhints.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/train_utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/colornet.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/README.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/captured.ini" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/captured/elephant.mat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/config.ini" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/evaluate_captured.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/evaluate_middlebury.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/middlebury.ini" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/middlebury/SimulateTestMeasurements.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/middlebury/processed/Art_2_50.mat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/middlebury/processed/LR_Reindeer_2_50.mat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/middlebury/raw/Art/dmin.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/middlebury/raw/Books/dmin.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/middlebury/raw/Bowling1/dmin.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/middlebury/raw/Dolls/dmin.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/middlebury/raw/Laundry/dmin.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/middlebury/raw/Moebius/dmin.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/middlebury/raw/Plastic/dmin.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/middlebury/raw/Reindeer/dmin.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/models.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/pth/MSGNet.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/pth/MSGNetx2.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/pth/denoise.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/pth/fusion_denoise.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/pth/fusion_finetuned/finetune_noise_level_1.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/pth/fusion_finetuned/finetune_noise_level_2.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/pth/fusion_finetuned/finetune_noise_level_3.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/pth/fusion_finetuned/finetune_noise_level_4.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/pth/fusion_finetuned/finetune_noise_level_5.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/pth/fusion_finetuned/finetune_noise_level_6.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/pth/fusion_finetuned/finetune_noise_level_7.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/pth/fusion_finetuned/finetune_noise_level_8.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/pth/fusion_finetuned/finetune_noise_level_9.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/pth/upsample2x.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/pth/upsample8x.pth" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/requirements.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/.gdbinit" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/14_blacklist.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/17_blacklist.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/21_blacklist.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/22_blacklist.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/7_blacklist.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/8_blacklist.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/9_blacklist.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/ConvertRGBD.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/ConvertRGBD_nyu.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/README.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/SimulateSpadMeasurements.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/blacklist.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/bright_img.mat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/dark_img.mat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/download_nyu_dataset.bash" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/info.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/models/pytorch_prototyping/LICENSE" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/demo.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/RGF/RollingGuidanceFilter.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/RGF/bilateralFilter.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/RGF/example.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/demo.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mmx/license.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mmx/mmx_package/build_mmx.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mmx/mmx_package/compare_chol_flops.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mmx/mmx_package/compare_mult_flops.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mmx/mmx_package/comparison.fig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mmx/mmx_package/corei7.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mmx/mmx_package/dualXeon.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mmx/mmx_package/html/mmx_web.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mmx/mmx_package/matlab_mprod.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mmx/mmx_package/matrix_fun.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mmx/mmx_package/mmx.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mmx/mmx_package/mmx.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mmx/mmx_package/mmx_web.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mmx/mmx_package/my_blas.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mmx/mmx_package/small_list" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/license.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx_20110223.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx_RealTimesReal.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx_build.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx_mexopts.bat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx_sparse.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx_test_ddequal.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx_test_ddspeed.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx_test_dsequal.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx_test_dsspeed.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx_test_nd.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx_test_sdequal.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx_test_sdspeed.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx_test_ssequal.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/mtimesx_20110223/mtimesx_test_ssspeed.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/multinv/license.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/ext/multinv/multinv.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/readme.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/filtering/regcovsmooth/regcovsmooth.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/intrinsic_decomp.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/LLE.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/LLE.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/Copyright.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/License.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/MS_Win32/Ann.sln" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/MS_Win32/Makefile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/MS_Win32/ann2fig/ann2fig.vcproj" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/MS_Win32/dll/dll.vcproj" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/MS_Win32/sample/sample.vcproj" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/MS_Win32/test/test.vcproj" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/Make-config" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/Makefile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/ReadMe.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/ann2fig/Makefile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/ann2fig/ann2fig.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/bin/ann2fig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/bin/ann_sample" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/bin/ann_test" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/doc/ANNmanual.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/include/ANN/ANN.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/include/ANN/ANNperf.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/include/ANN/ANNx.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/make_ann.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/sample/Makefile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/sample/ann_sample.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/sample/data.pts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/sample/query.pts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/sample/sample.save" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/ANN.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/Makefile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/bd_fix_rad_search.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/bd_pr_search.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/bd_search.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/bd_tree.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/bd_tree.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/brute.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/kd_dump.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/kd_fix_rad_search.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/kd_fix_rad_search.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/kd_pr_search.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/kd_pr_search.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/kd_search.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/kd_search.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/kd_split.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/kd_split.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/kd_tree.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/kd_tree.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/kd_util.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/kd_util.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/perf.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/pr_queue.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/src/pr_queue_k.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/test/Makefile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/test/ann_test.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/test/rand.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/test/rand.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/test/test1-data.pts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/test/test1-query.pts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/test/test1.in" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/test/test1.save" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/test/test2-data.pts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/test/test2-query.pts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/test/test2.in" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/ann_1.1.2/test/test2.save" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/compile.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/getConstraintsMatrix.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/getContinuousConstraintMatrix.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/getGridLLEMatrix.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/getGridLLEMatrixNormal.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/getNormalConstraintMatrix.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/mexBase.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/mex/mexBase.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/utils/DenoisePoints.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/utils/getChrom.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/utils/getLaplacian1.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/utils/getVectors.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/intrinsic_texture/utils/smooth_d.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/make_blacklist.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/ConvertRGBDParsave.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/README" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/apply_distortion.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/camera_params.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/cbf.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/cbf.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/cbf_windows.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/cbf_windows.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/compile.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/crop_image.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/data_cube_plot.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/demo_fill_depth_cross_bf_test.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/demo_project_depth_map.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/depth_plane2depth_world.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/depth_rel2depth_abs.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/depth_world2rgb_world.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/fill_depth_colorization.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/fill_depth_cross_bf.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/get_accel_data.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/get_accel_data.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/get_instance_masks.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/get_projection_mask.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/get_rgb_depth_overlay.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/get_scene_type_from_scene.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/get_synched_frames.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/get_timestamp_from_filename.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/inpaint_nans.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/mex_cbf.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/mex_cbf_windows.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/parsave.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/project_depth_map.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/rgb_plane2rgb_world.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/rgb_world2rgb_plane.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/test_files.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/undistort.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/simulated_data/nyu_utils/undistort_depth.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/train.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/util/SpadDataset.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/util/make_train_lists.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/util/test.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/util/train.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_sunrgbd/util/val.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/count_albedo.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sunrgbd_all/blacklist.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sunrgbd_all/blank_albedo.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sunrgbd_all/info.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sunrgbd_all/info.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sunrgbd_all/nan_blacklist.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sunrgbd_all/small.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sunrgbd_all/stats_cache.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sunrgbd_all/test.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sunrgbd_all/train.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sunrgbd_all/val.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sunrgbd_nyu/dev.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sunrgbd_nyu/small.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sunrgbd_nyu/test.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sunrgbd_nyu/train.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/generate-train-test-splits.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/results.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/results_hints.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/results_nohints.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/results_rawhints.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/split_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/split_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/startjupyter.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_all.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_test_split.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_test_split_nyu.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/train_test_split_nyu.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/find_blank_albedo.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/train_test_split_nyu.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/train_test_split_nyu.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/depthnet/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/depthnet/data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/depthnet/transforms.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/transforms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/environment.yml" beforeDir="false" afterPath="$PROJECT_DIR$/environment.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/data/nyuv2_nohints.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/nyuv2_official_nohints_dataset.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_nohints.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_nohints.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -278,43 +24,61 @@
         <entry file="file://$PROJECT_DIR$/train_nohints.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="180">
-              <caret line="12" column="62" selection-start-line="12" selection-start-column="62" selection-end-line="12" selection-end-column="62" />
+              <caret line="12" column="79" selection-start-line="12" selection-start-column="79" selection-end-line="12" selection-end-column="79" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/models/data/nyuv2_nohints.py">
+        <entry file="file://$PROJECT_DIR$/models/data/transforms.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="483">
-              <caret line="35" selection-start-line="35" selection-end-line="37" selection-end-column="24" />
+            <state relative-caret-position="-2292">
+              <caret line="87" column="61" selection-start-line="87" selection-start-column="61" selection-end-line="87" selection-end-column="61" />
               <folding>
-                <element signature="e#0#9#0" expanded="true" />
+                <element signature="e#0#10#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/data/find_blank_albedo.py">
+        <entry file="file://$PROJECT_DIR$/environment.yml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30">
-              <caret line="2" selection-start-line="2" selection-end-line="27" />
+            <state relative-caret-position="165">
+              <caret line="11" column="11" selection-start-line="11" selection-start-column="11" selection-end-line="11" selection-end-column="11" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/README.md">
+          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+            <state split_layout="SPLIT">
+              <first_editor relative-caret-position="555">
+                <caret line="37" column="2" selection-start-line="37" selection-start-column="2" selection-end-line="37" selection-end-column="2" />
+              </first_editor>
+              <second_editor />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/models/data/noisy_cifar10_dataset.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="705">
+              <caret line="47" column="10" lean-forward="true" selection-start-line="47" selection-start-column="10" selection-end-line="47" selection-end-column="10" />
               <folding>
-                <element signature="e#25#46#0" expanded="true" />
+                <element signature="e#0#12#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/data/train_test_split_nyu.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="933">
-              <caret line="95" column="91" selection-start-line="95" selection-start-column="91" selection-end-line="95" selection-end-column="91" />
-              <folding>
-                <element signature="e#0#9#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="75">
+              <caret line="5" column="5" selection-start-line="5" selection-start-column="5" selection-end-line="5" selection-end-column="5" />
             </state>
           </provider>
         </entry>
@@ -338,6 +102,18 @@
               <caret line="8" selection-start-line="8" selection-end-line="8" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_dataset.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="530">
+              <caret line="225" column="32" lean-forward="true" selection-start-line="225" selection-start-column="32" selection-end-line="225" selection-end-column="32" />
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -379,6 +155,10 @@
       <find>hist</find>
       <find>torch.from</find>
       <find>worker</find>
+      <find>check_blank</find>
+      <find>load_from_file</find>
+      <find>load_all_from</find>
+      <find>flip</find>
     </findStrings>
     <replaceStrings>
       <replace>prediction</replace>
@@ -423,9 +203,13 @@
         <option value="$PROJECT_DIR$/depthnet/model/DORN_pytorch.py" />
         <option value="$PROJECT_DIR$/data/generate-train-test-splits.ipynb" />
         <option value="$PROJECT_DIR$/train_nohints.py" />
-        <option value="$PROJECT_DIR$/models/data/nyuv2_nohints.py" />
         <option value="$PROJECT_DIR$/data/split_utils.py" />
+        <option value="$PROJECT_DIR$/models/data/nyuv2_nohints.py" />
+        <option value="$PROJECT_DIR$/environment.yml" />
         <option value="$PROJECT_DIR$/data/train_test_split_nyu.py" />
+        <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/models/data/transforms.py" />
+        <option value="$PROJECT_DIR$/models/data/nyuv2_official_nohints_dataset.py" />
       </list>
     </option>
   </component>
@@ -451,12 +235,6 @@
               <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
               <item name="spad_single" type="462c0819:PsiDirectoryNode" />
               <item name="data" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
-              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
-              <item name="code_nyu" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
@@ -490,6 +268,7 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/models/data" />
       <recent name="$PROJECT_DIR$/data" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/depthnet" />
@@ -550,18 +329,18 @@
       <workItem from="1549071340607" duration="90047000" />
       <workItem from="1550735349035" duration="33382000" />
       <workItem from="1551604815789" duration="10792000" />
-      <workItem from="1551833459313" duration="23257000" />
+      <workItem from="1551833459313" duration="33115000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="158012000" />
+    <option name="totallyTimeSpent" value="167870000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1146" y="23" width="2293" height="1417" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1390493" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1390493" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -577,7 +356,7 @@
       <window_info anchor="bottom" id="Database Changes" order="10" />
       <window_info anchor="bottom" id="Terminal" order="11" weight="0.3299363" />
       <window_info anchor="bottom" id="Event Log" order="12" side_tool="true" />
-      <window_info anchor="bottom" id="Python Console" order="13" weight="0.24458599" />
+      <window_info anchor="bottom" id="Python Console" order="13" weight="0.24452831" />
       <window_info anchor="right" id="JuliaSciView" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -618,21 +397,6 @@
     <option name="version" value="1" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/inpaint_nans.m">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-5157" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/project_depth_map.m">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="758">
-          <caret line="71" column="26" lean-forward="true" selection-start-line="71" selection-start-column="26" selection-end-line="71" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/data_cube_plot.m">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/demo_fill_depth_cross_bf_test.m">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -881,16 +645,6 @@
     <entry file="file://$PROJECT_DIR$/train_hints.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/depthnet/transforms.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="271">
-          <caret line="177" column="91" selection-start-line="177" selection-start-column="91" selection-end-line="177" selection-end-column="91" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/depthnet/model/loss.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="15">
@@ -905,13 +659,6 @@
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/train_nohints.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="12" column="62" selection-start-line="12" selection-start-column="62" selection-end-line="12" selection-end-column="62" />
         </state>
       </provider>
     </entry>
@@ -938,16 +685,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_nohints.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="483">
-          <caret line="35" selection-start-line="35" selection-end-line="37" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/data/find_blank_albedo.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="30">
@@ -958,10 +695,61 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="555">
+            <caret line="37" column="2" selection-start-line="37" selection-start-column="2" selection-end-line="37" selection-end-column="2" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/data/train_test_split_nyu.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="933">
-          <caret line="95" column="91" selection-start-line="95" selection-start-column="91" selection-end-line="95" selection-end-column="91" />
+        <state relative-caret-position="75">
+          <caret line="5" column="5" selection-start-line="5" selection-start-column="5" selection-end-line="5" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/data/noisy_cifar10_dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="705">
+          <caret line="47" column="10" lean-forward="true" selection-start-line="47" selection-start-column="10" selection-end-line="47" selection-end-column="10" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/train_nohints.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="12" column="79" selection-start-line="12" selection-start-column="79" selection-end-line="12" selection-end-column="79" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/environment.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="11" column="11" selection-start-line="11" selection-start-column="11" selection-end-line="11" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/data/transforms.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2292">
+          <caret line="87" column="61" selection-start-line="87" selection-start-column="61" selection-end-line="87" selection-end-column="61" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="530">
+          <caret line="225" column="32" lean-forward="true" selection-start-line="225" selection-start-column="32" selection-end-line="225" selection-end-column="32" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>

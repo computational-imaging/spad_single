@@ -1,7 +1,7 @@
+import cv2
 import torch
 import numpy as np
 import random
-from PIL import Image
 from torchvision import transforms, utils
 
 
@@ -10,151 +10,145 @@ from torchvision import transforms, utils
 ##############
 # Resizing:
 class ResizeAll():
-    def __init__(self, output_size):
-        """output_size is a tuple (width, height)"""
+    def __init__(self, output_size, keys):
+        """output_size is a tuple (width, height)
+        keys is a list of keys into |sample| for images to resize.
+        """
         assert isinstance(output_size, (int, tuple))
         if isinstance(output_size, int):
             self.output_size = (output_size, output_size)
         else:
             assert len(output_size) == 2
             self.output_size = output_size
-        self.resize = transforms.Resize((224, 256), Image.NEAREST)
-
+        self.keys = keys
     def __call__(self, sample):
-        seed = np.random.randint(2**32-1)
-        for key in sample:
-            if isinstance(sample[key], Image.Image):
-                random.seed(seed)
-                sample[key] = self.resize(sample[key])
+        for key in self.keys:
+            sample[key] = cv2.resize(sample[key], self.output_size, cv2.INTER_LINEAR)
         return sample
 
 
-class CropPowerOf2All(): # pylint: disable=too-few-public-methods
-    """Crop to a size where both dimensions are divisible by the given power of 2
-    Note that for an Image.Image, the size attribute is given as (width, height) as is standard
-    for images and displays (e.g. 640 x 480), but which is NOT standard for most arrays, which
-    list the vertical direction first.
-    """
-    def __init__(self, power, rgb_key="rgb"):
-        self.pow_of_2 = 2**power
-        self.rgb_key = rgb_key
-
-    def __call__(self, sample):
-        rgb = sample[self.rgb_key]
-        new_h, new_w = (rgb.size[1]//self.pow_of_2)*self.pow_of_2, \
-                       (rgb.size[0]//self.pow_of_2)*self.pow_of_2
-        crop = transforms.CenterCrop((new_h, new_w))
-        for key in sample:
-            if isinstance(sample[key], Image.Image):
-                sample[key] = crop(sample[key])
-        return sample
+# class CropPowerOf2All(): # pylint: disable=too-few-public-methods
+#     """Crop to a size where both dimensions are divisible by the given power of 2
+#     Note that for an Image.Image, the size attribute is given as (width, height) as is standard
+#     for images and displays (e.g. 640 x 480), but which is NOT standard for most arrays, which
+#     list the vertical direction first.
+#     """
+#     def __init__(self, power, rgb_key="rgb"):
+#         self.pow_of_2 = 2**power
+#         self.rgb_key = rgb_key
+#
+#     def __call__(self, sample):
+#         rgb = sample[self.rgb_key]
+#         new_h, new_w = (rgb.size[1]//self.pow_of_2)*self.pow_of_2, \
+#                        (rgb.size[0]//self.pow_of_2)*self.pow_of_2
+#         crop = transforms.CenterCrop((new_h, new_w))
+#         for key in sample:
+#             if isinstance(sample[key], Image.Image):
+#                 sample[key] = crop(sample[key])
+#         return sample
 
 
 # for data augmentation
-class RandomCropAll(): # pylint: disable=too-few-public-methods
-    """Crop randomly the image in a sample.
-
-    Args:
-        output_size (tuple or int): Desired output size. If int, square crop
-            is made.
-    """
-    def __init__(self, output_size):
-        assert isinstance(output_size, (int, tuple))
-        if isinstance(output_size, int):
-            self.output_size = (output_size, output_size)
-        else:
-            assert len(output_size) == 2
-            self.output_size = output_size
-        self.random_crop = transforms.RandomCrop(self.output_size)
-
-    def __call__(self, sample):
-        seed = np.random.randint(2**32-1)
-        for key in sample:
-            if isinstance(sample[key], Image.Image):
-                random.seed(seed)
-                sample[key] = self.random_crop(sample[key])
-        return sample
+# class RandomCropAll(): # pylint: disable=too-few-public-methods
+#     """Crop randomly the image in a sample.
+#
+#     Args:
+#         output_size (tuple or int): Desired output size. If int, square crop
+#             is made.
+#     """
+#     def __init__(self, output_size):
+#         assert isinstance(output_size, (int, tuple))
+#         if isinstance(output_size, int):
+#             self.output_size = (output_size, output_size)
+#         else:
+#             assert len(output_size) == 2
+#             self.output_size = output_size
+#         self.random_crop = transforms.RandomCrop(self.output_size)
+#
+#     def __call__(self, sample):
+#         seed = np.random.randint(2**32-1)
+#         for key in sample:
+#             if isinstance(sample[key], Image.Image):
+#                 random.seed(seed)
+#                 sample[key] = self.random_crop(sample[key])
+#         return sample
 
 
 class RandomHorizontalFlipAll(): # pylint: disable=too-few-public-methods
     """Flip the image horizontally with probability flip_prob.
     """
-    def __init__(self, flip_prob):
+    def __init__(self, flip_prob, keys):
         self.flip_prob = flip_prob
-        self.random_horiz_flip = transforms.RandomHorizontalFlip(self.flip_prob)
+        self.keys = keys
 
     def __call__(self, sample):
-        seed = np.random.randint(2**32-1)
-        for key in sample:
-            if isinstance(sample[key], Image.Image):
-                random.seed(seed)
-                sample[key] = self.random_horiz_flip(sample[key])
+        flip = np.random.random() <= self.flip_prob
+        for key in self.keys:
+            if flip:
+                sample[key] = np.copy(np.fliplr(sample[key]))
         return sample
 
 
-class ToFloat(): # pylint: disable=too-few-public-methods
-    def __init__(self, key):
+class Normalize(object): # pylint: disable=too-few-public-methods
+    """Subtract the mean and divide by the variance for one of the objects in the dataset."""
+    def __init__(self, mean, var, key):
+        """
+        mean - np.array of size 3 - the means of the three color channels over the train set
+        var - np.array of size 3 - the variances of the three color channels over the train set
+        """
+        self.mean = mean
+        self.var = var
         self.key = key
+
     def __call__(self, sample):
-        sample[self.key] = np.asarray(sample[self.key]).astype(np.float32)
+        sample[self.key + "_orig"] = np.copy(sample[self.key])
+        sample[self.key] = (sample[self.key] - self.mean)/self.var
+        return sample
+
+class AddDepthMask(): # pylint: disable=too-few-public-methods
+    """Creates a mask that is 1 where actual depth values were recorded
+    (i.e. depth != min_depth and depth != max_depth)
+
+    Adds the mask based on the depth map in sample[key].
+    """
+    def __init__(self, min_depth, max_depth, key):
+        self.key = key
+        self.min_depth = min_depth
+        self.max_depth = max_depth
+
+    def __call__(self, sample, eps=1e-6):
+        sample["mask"] = ((sample[self.key] > self.min_depth) & (sample[self.key] < self.max_depth)).astype(np.float32)
         return sample
 
 
-class DepthProcessing(): # pylint: disable=too-few-public-methods
-    """Performs the necessary transform to convert
-    depth maps to floats."""
-    def __init__(self, depthkey, depth_format="SUNRGBD"):
-        self.format = depth_format
-        self.key = depthkey
-
-    def __call__(self, sample):
-        depth = sample[self.key]
-        if self.format == "SUNRGBD":
-            x = np.asarray(depth, dtype=np.uint16)
-            y = (x >> 3) | (x << 16-3)
-            z = y.astype(np.float32)/1000
-            z[z > 8.] = 8. # Clip to maximum depth of 8m.
-            sample[self.key] = z
-        else:  # Just read and divide by 1000.
-            # TODO Use entire 16 bit range i.e. use x = depth*(maxDepth/2.**16-1.)
-            depth = np.asarray(depth, dtype=np.float32)
-            x = depth/1000
-            sample[self.key] = x
-        return sample
-
-
-class ToTensor(): # pylint: disable=too-few-public-methods
+class ToTensorAll(): # pylint: disable=too-few-public-methods
     """Convert ndarrays in sample to Tensors.
     Outputs should have 3 dimensions i.e. len(sample[key].size()) == 3
-    for key in {'hist', 'mask', 'depth', 'rgb', 'eps'}
 
-    If using a DataLoader, the DataLoader will prepend the batch dimension.
+    Behavior:
+    1D arrays [N]: Append two dimensions to make shape [N, 1, 1]
+    2D arrays [M, N]: Prepend dimension of size 1 to make shape [1, M, N]
+    3D arrays [M, N, C]: transpose(2, 0, 1) to put channels first to make shape [C, M, N]
+
     """
+    def __init__(self, keys):
+        self.keys = keys
 
     def __call__(self, sample):
-        depth, rgb = sample['depth'], sample['rgb']
-        # swap color axis because
-        # numpy image: H x W x C
-        # torch image: C X H X W
-#         depth = depth.transpose((2, 0, 1))
-        rgb = rgb.transpose((2, 0, 1))
-        if "rgb_orig" in sample:
-            rgb_orig = sample["rgb_orig"]
-            rgb_orig = rgb_orig.transpose(2, 0, 1)
-            sample["rgb_orig"] = torch.from_numpy(rgb_orig).float()
-        # depth = depth.transpose((1, 0))
-        # output = {}
-        if 'hist' in sample:
-            sample['hist'] = torch.from_numpy(sample['hist']).unsqueeze(-1).unsqueeze(-1).float()
-        if 'mask' in sample:
-            sample['mask'] = torch.from_numpy(sample['mask']).unsqueeze(0).float()
-            # sample['eps'] = torch.from_numpy(sample['eps']).unsqueeze(-1).unsqueeze(-1).float()
-        if 'depth_sid' in sample:
-            sample["depth_sid"] = torch.from_numpy(sample['depth_sid'].transpose(2, 0, 1)).float()
-            sample["depth_sid_index"] = torch.from_numpy(sample["depth_sid_index"]).unsqueeze(0).long()
+        for key in self.keys:
+            arr = sample[key]
+            if len(arr.shape) == 1:
+                sample[key] = torch.from_numpy(arr).unsqueeze(-1).unsqueeze(-1).float()
+            elif len(arr.shape) == 2:
+                sample[key] = torch.from_numpy(arr).unsqueeze(0).float()
+            elif len(arr.shape) == 3:
+                sample[key] = torch.from_numpy(arr.transpose(2, 0, 1)).float()
+            else:
+                raise TypeError("Array with key {} has {} > 3 dimensions".format(key, len(arr.shape)))
+        # if 'depth_sid' in sample:
+        #     sample["depth_sid"] = torch.from_numpy(sample['depth_sid'].transpose(2, 0, 1)).float()
+        #     sample["depth_sid_index"] = torch.from_numpy(sample["depth_sid_index"]).unsqueeze(0).long()
 #         print(output)
-        sample.update({'depth': torch.from_numpy(depth).unsqueeze(0).float(),
-                       'rgb': torch.from_numpy(rgb).float()})
         return sample
 
 
@@ -186,22 +180,6 @@ class AddDepthHist(): # pylint: disable=too-few-public-methods
         return sample
 
 
-class AddDepthMask(): # pylint: disable=too-few-public-methods
-    """Creates a mask that is 1 where actual depth values were recorded and 0 where
-    the inpainting algorithm failed to inpaint depth.
-
-    eps - small positive number to assign to places with missing depth.
-    """
-    def __call__(self, sample, eps=1e-6):
-        closest = (sample["depth"] == np.min(sample["depth"]))
-        zero_depth = (sample["rawdepth"] == 0.)
-        mask = (zero_depth & closest)
-        # print(sample["rawdepth"])
-        sample["mask"] = 1. - mask.astype(np.float32) # Logical NOT
-        # Set all unknown depths to be a small positive number.
-        sample["depth"] = sample["depth"]*sample["mask"] + (1 - sample["mask"])*eps
-        sample["eps"] = np.array([eps])
-        return sample
 
 class AddRawDepthMask(): # pylint: disable=too-few-public-methods
     """Creates a mask according to the original paper Eigen et. al.
@@ -296,20 +274,7 @@ class ClipMinMax(): # pylint: disable=too-few-public-methods
         return sample
 
 
-class NormalizeRGB(object): # pylint: disable=too-few-public-methods
-    """Subtract the mean and divide by the variance of the dataset."""
-    def __init__(self, mean, var):
-        """
-        mean - np.array of size 3 - the means of the three color channels over the train set
-        var - np.array of size 3 - the variances of the three color channels over the train set
-        """
-        self.mean = mean
-        self.var = var
 
-    def __call__(self, sample):
-        sample["rgb_orig"] = np.copy(sample["rgb"])
-        sample["rgb"] = (sample["rgb"] - self.mean)/np.sqrt(self.var)
-        return sample
 
 
 class CenterCrop(): # pylint: disable=too-few-public-methods
