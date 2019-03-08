@@ -252,6 +252,7 @@ class DepthDataset(Dataset):  # pylint: disable=too-few-public-methods
         :return:
         """
         resize = [CropPowerOf2All(4)]
+        # resize = [ResizeAll((257, 353))]
         PIL_transforms = [DepthProcessing("depth", depth_format),
                           DepthProcessing("rawdepth", depth_format),
                           AddRawDepthMask(min_depth, max_depth),
@@ -269,6 +270,10 @@ class DepthDataset(Dataset):  # pylint: disable=too-few-public-methods
         float_transforms += [NormalizeRGB(rgb_mean, rgb_var),
                              ToTensor(),
                              ]
+        # float_transforms += [
+        #     SubtractMeanRGB(rgb_mean)
+        #
+        # ]
         self.transform = transforms.Compose(resize + PIL_transforms + float_transforms)
 
     def __len__(self):
