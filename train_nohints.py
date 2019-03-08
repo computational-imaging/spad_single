@@ -10,7 +10,7 @@ from sacred import Experiment
 from datetime import datetime
 
 # Dataset
-from models.data.nyuv2_nohints import nyuv2_nohints_ingredient, load_data
+from models.data.nyuv2_official_nohints_dataset import nyuv2_nohints_ingredient, load_data
 
 ex = Experiment('train_nohints', ingredients=[noisy_cifar10_ingredient])
 

@@ -1,10 +1,10 @@
+import cv2
 import os
 import json
 
 from argparse import ArgumentParser
 from split_utils import random_split, split_dict_on_keywords, build_index
 
-from PIL import Image
 import numpy as np
 
 def find_and_write_blank_albedo(index, rootdir, blacklist_file="blacklist.txt"):
@@ -21,7 +21,7 @@ def find_and_write_blank_albedo(index, rootdir, blacklist_file="blacklist.txt"):
         if entry not in blacklist:
             albedo_file = os.path.join(rootdir, "{}_albedo.png".format(entry))
             try:
-                img = np.asarray(Image.open(albedo_file))
+                img = cv2.imread(albedo_file, cv2.IMREAD_COLOR)
                 if np.sum(img[:, :, 1]) <= 0.:
                     blacklist.append(entry)
                     print(entry)

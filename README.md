@@ -28,11 +28,14 @@ Data Directory
 
 
 Notes:
-	- SUNRGBD
-		- Raw depth images (i.e. the ones in |depth| folders) are not inpainted. Pixels with missing
+- SUNRGBD
+  - Raw depth images (i.e. the ones in |depth| folders) are not inpainted. Pixels with missing
 		  depth values are assigned a depth value of 0.
-		- Inpainted depth images (i.e. the ones in |depth_bfx| folders) are inpainted, but may still
+  - Inpainted depth images (i.e. the ones in |depth_bfx| folders) are inpainted, but may still
 		  have missing depth values. Those values are assigned the same value as the MINIMUM PIXEL VALUE
 		  (elsewhere) in the image.
+- cv2
+  - WARNING: Loads images in BGR format (PIL.Image loades them in RGB format) so you may need to swap the
+        order of channels, etc. 
 
 
