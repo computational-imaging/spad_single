@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import random
 from torchvision import transforms, utils
-from .sid_utils import SID
+
 
 
 ##############
@@ -195,55 +195,6 @@ class AddRawDepthMask(): # pylint: disable=too-few-public-methods
         rawdepth = sample["rawdepth"]
         boolmask = (rawdepth >= self.max_depth) | (rawdepth <= self.min_depth)
         sample["mask"] = 1. - boolmask.astype(np.float32) # Logical NOT
-        return sample
-
-
-class AddSIDDepth():
-    """Creates a copy of the depth image where the depth value has been replaced
-    by the SID-discretized index
-
-    Discretizes depth into |sid_bins| number of bins, where the edges of the bins are
-    given by
-
-    t_i = exp(log(alpha) + i/K*log(beta/alpha))
-
-    for i in {0,...,K}.
-
-    Works in numpy.
-
-    offset is a shift term that we subtract from alpha
-    """
-    def __init__(self, sid_bins, max_val, min_val, offset, key):
-        """
-        :param sid_obj: The SID object to use to convert between indices and depth values and vice versa
-        :param key: The key (in sample) of the depth map to use.
-        """
-        self.key = key # Key of the depth image to convert to SID form.
-        self.sid_obj = SID(sid_bins, max_val, min_val, offset)
-        
-
-    def __call__(self, sample):
-        """Computes an array with indices, and also an array with
-        0's and 1's that makes computing the ordinal regression loss easier later.
-
-        Index array gives the per-pixel bin index of the depth value.
-        0's and 1's array has a vector of length |sid_bins| for each pixel that is
-        1.0 up to (but not including) the index of the depth value, and 0.0 for the rest.
-        Example:
-             If depth_sid_index assigns some pixel to be bin 4 (out of 7 bins), then the
-             vector for the same pixel in depth_sid is
-              0 1 2 3 4 5 6
-             [1 1 1 1 0 0 0]
-             Note: The most 1's possible is n, where n is the number of bins:
-             [1 1 1 1 1 1 1]
-             The fewest is 0.
-        """
-        depth = sample[self.key]
-        sample[self.key + "_sid_index"] = self.sid_obj.get_sid_index_from_value(depth)
-        K = np.zeros((self.sid_obj.sid_bins,) + depth.shape)
-        for i in range(self.sid_obj.sid_bins): # i = {0, ..., self.sid_bins - 1}
-            K[i, :, :] = K[i, :, :] + i * np.ones(depth.shape)
-        sample[self.key + "_sid"] = (K < sample["depth_sid_index"][np.newaxis, :, :]).astype(np.int32)
         return sample
 
 

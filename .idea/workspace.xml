@@ -2,15 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ebb10411-0152-4c74-83b8-0064780d50e4" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/models/DORN_nohints.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/DORN_pytorch.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/data/sid_utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/models/data/utils/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/depthnet/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/depthnet/data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/data/nyuv2_official_nohints_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/nyuv2_official_nohints_dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/data/transforms.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/transforms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_nohints.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_nohints.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/data/sid_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/utils/sid_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/data/transforms.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/utils/transforms.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -21,10 +19,10 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/models/data/transforms.py">
+        <entry file="file://$PROJECT_DIR$/models/data/utils/transforms.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="314">
-              <caret line="200" selection-start-line="200" selection-end-line="246" selection-end-column="21" />
+            <state relative-caret-position="797">
+              <caret line="197" column="21" selection-start-line="197" selection-start-column="21" selection-end-line="197" selection-end-column="21" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -32,11 +30,20 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/models/data/sid_utils.py">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/models/data/utils/sid_utils.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="367">
-              <caret line="46" column="17" selection-start-line="46" selection-start-column="17" selection-end-line="46" selection-end-column="17" />
+            <state relative-caret-position="994">
+              <caret line="98" column="88" selection-start-line="98" selection-start-column="88" selection-end-line="98" selection-end-column="88" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-805">
+              <caret line="11" column="16" selection-start-line="11" selection-start-column="16" selection-end-line="11" selection-end-column="16" />
             </state>
           </provider>
         </entry>
@@ -53,11 +60,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_dataset.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="475">
-              <caret line="37" column="111" selection-start-line="37" selection-start-column="111" selection-end-line="37" selection-end-column="111" />
+              <caret line="34" column="111" selection-start-line="34" selection-start-column="111" selection-end-line="34" selection-end-column="111" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -106,18 +113,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="585">
               <caret line="41" column="54" lean-forward="true" selection-start-line="41" selection-start-column="54" selection-end-line="41" selection-end-column="54" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="373">
-              <caret line="41" column="81" selection-start-line="41" selection-start-column="81" selection-end-line="41" selection-end-column="81" />
-              <folding>
-                <element signature="e#0#9#0" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -224,9 +219,11 @@
         <option value="$PROJECT_DIR$/depthnet/model/loss.py" />
         <option value="$PROJECT_DIR$/models/DORN_nohints.py" />
         <option value="$PROJECT_DIR$/models/data/transforms.py" />
-        <option value="$PROJECT_DIR$/models/data/sid_utils.py" />
-        <option value="$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py" />
         <option value="$PROJECT_DIR$/models/data/nyuv2_official_nohints_dataset.py" />
+        <option value="$PROJECT_DIR$/models/data/sid_utils.py" />
+        <option value="$PROJECT_DIR$/models/data/utils/transforms.py" />
+        <option value="$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py" />
+        <option value="$PROJECT_DIR$/models/data/utils/sid_utils.py" />
       </list>
     </option>
   </component>
@@ -290,17 +287,18 @@
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/models/data" />
-      <recent name="$PROJECT_DIR$/data" />
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/depthnet" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/models/data" />
       <recent name="$PROJECT_DIR$/models" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/depthnet/model" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/models/data/utils" />
+      <recent name="$PROJECT_DIR$/models/data" />
+      <recent name="$PROJECT_DIR$/data" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/depthnet" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -354,12 +352,12 @@
       <workItem from="1550735349035" duration="33382000" />
       <workItem from="1551604815789" duration="10792000" />
       <workItem from="1551833459313" duration="36202000" />
-      <workItem from="1552089057662" duration="6827000" />
+      <workItem from="1552089057662" duration="7998000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="177784000" />
+    <option name="totallyTimeSpent" value="178955000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1146" y="23" width="2293" height="1417" extended-state="0" />
@@ -752,29 +750,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/transforms.py">
+    <entry file="file://$PROJECT_DIR$/models/data/utils/transforms.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="314">
-          <caret line="200" selection-start-line="200" selection-end-line="246" selection-end-column="21" />
+        <state relative-caret-position="797">
+          <caret line="197" column="21" selection-start-line="197" selection-start-column="21" selection-end-line="197" selection-end-column="21" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/sid_utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="367">
-          <caret line="46" column="17" selection-start-line="46" selection-start-column="17" selection-end-line="46" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="373">
-          <caret line="41" column="81" selection-start-line="41" selection-start-column="81" selection-end-line="41" selection-end-column="81" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -782,10 +763,24 @@
     <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_dataset.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="475">
-          <caret line="37" column="111" selection-start-line="37" selection-start-column="111" selection-end-line="37" selection-end-column="111" />
+          <caret line="34" column="111" selection-start-line="34" selection-start-column="111" selection-end-line="34" selection-end-column="111" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-805">
+          <caret line="11" column="16" selection-start-line="11" selection-start-column="16" selection-end-line="11" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/data/utils/sid_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="994">
+          <caret line="98" column="88" selection-start-line="98" selection-start-column="88" selection-end-line="98" selection-end-column="88" />
         </state>
       </provider>
     </entry>

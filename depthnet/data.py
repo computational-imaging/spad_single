@@ -9,9 +9,9 @@ from torch.utils.data import Dataset
 import torch.backends.cudnn as cudnn
 
 from torchvision import transforms, utils
-from models.data.transforms import (CropPowerOf2All, DepthProcessing, AddRawDepthMask, AddSIDDepth,
-                                    AddDepthHist, ClipMinMax, NormalizeRGB, ToFloat, ToTensor,
-                                    RandomCropAll, RandomHorizontalFlipAll, ResizeAll)
+from models.data.utils.transforms import (CropPowerOf2All, DepthProcessing, AddRawDepthMask, AddSIDDepth,
+                                          AddDepthHist, ClipMinMax, NormalizeRGB, ToFloat, ToTensor,
+                                          RandomCropAll, RandomHorizontalFlipAll, ResizeAll)
 
 from sacred import Experiment
 

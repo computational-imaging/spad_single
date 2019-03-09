@@ -1,16 +1,13 @@
 import os
-import random
 import json
 
 import numpy as np
-import torch
 from torch.utils.data import Dataset
-import torch.backends.cudnn as cudnn
 import cv2
 
-from torchvision import transforms, utils
-from models.data.transforms import (ResizeAll, RandomHorizontalFlipAll, Normalize,
-                                    AddDepthMask, ToTensorAll)
+from torchvision import transforms
+from models.data.utils.transforms import (ResizeAll, RandomHorizontalFlipAll, Normalize,
+                                          AddDepthMask, ToTensorAll)
 
 from sacred import Experiment
 

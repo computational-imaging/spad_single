@@ -2,6 +2,12 @@ import numpy as np
 
 
 class SID:
+    """
+    Implements Spacing-Increasing Discretization as described in the DORN paper.
+
+    Bonus: Includes support for when the index is -1 (in which case the value should be min_val)
+    and when it is sid_bins (in which case the value should be max_val).
+    """
     def __init__(self, sid_bins, min_val, max_val, offset):
         self.sid_bins = sid_bins
         self.min_val = min_val
@@ -60,13 +66,13 @@ class AddSIDDepth:
     offset is a shift term that we subtract from alpha
     """
 
-    def __init__(self, sid_bins, max_val, min_val, offset, key):
+    def __init__(self, sid_bins, min_val, max_val, offset, key):
         """
         :param sid_obj: The SID object to use to convert between indices and depth values and vice versa
         :param key: The key (in sample) of the depth map to use.
         """
         self.key = key  # Key of the depth image to convert to SID form.
-        self.sid_obj = SID(sid_bins, max_val, min_val, offset)
+        self.sid_obj = SID(sid_bins, min_val, max_val, offset)
 
     def __call__(self, sample):
         """Computes an array with indices, and also an array with
@@ -86,11 +92,11 @@ class AddSIDDepth:
         """
         depth = sample[self.key]
         sample[self.key + "_sid_index"] = self.sid_obj.get_sid_index_from_value(depth)
-        K = np.zeros((self.sid_obj.sid_bins,) + depth.shape)
+        K = np.zeros(depth.shape + (self.sid_obj.sid_bins,))
         print(K.shape)
         for i in range(self.sid_obj.sid_bins):  # i = {0, ..., self.sid_bins - 1}
-            K[i, ...] = K[i, ...] + i * np.ones(depth.shape)
-        sample[self.key + "_sid"] = (K < sample[self.key + "_sid_index"][np.newaxis, ...]).astype(np.int32)
+            K[..., i] = K[..., i] + i * np.ones(depth.shape)
+        sample[self.key + "_sid"] = (K < sample[self.key + "_sid_index"][..., np.newaxis]).astype(np.int32)
         return sample
 
 
