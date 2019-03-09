@@ -2,7 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import os
+
 from models.core.model_core import Model
+from models.data.utils.sid_utils import SID
 
 
 class DORN_nyu_nohints(Model):
@@ -13,15 +16,23 @@ class DORN_nyu_nohints(Model):
 
     Meant to be run as a part of a larger network.
     """
-    def __init__(self, in_channels=3, in_height=257, in_width=353, sid_bins=136, frozen=True, pretrained=True,
-                 state_dict_file="torch_params_nyuv2_first_flip.pth.tar", **kwargs):
-        super(DORN_nyu, self).__init__()
+    def __init__(self, in_channels=3, in_height=257, in_width=353,
+                 sid_bins=68, offset=0.,
+                 min_depth=0.6569154266167957, max_depth=9.972175646365525,
+                 frozen=True, pretrained=True,
+                 state_dict_file=os.path.join("models","torch_params_nyuv2_BGR.tar")):
+        super(Model, self).__init__()
         self.make_layers(in_channels, in_height, in_width, sid_bins)
 
         self.in_heignt = in_height
         self.in_width = in_width
         self.in_channels = in_channels
+        self.offset = offset
         self.sid_bins = sid_bins
+        self.min_depth = min_depth
+        self.max_depth = max_depth
+        self.sid_obj = SID(sid_bins, min_val, max_val, offset)
+
 
         self.frozen = frozen
         self.pretrained = pretrained
@@ -34,11 +45,13 @@ class DORN_nyu_nohints(Model):
 
     def get_loss(self, input_, device):
         rgb = input_["rgb"].to(device)
+        mask = input_["mask"].to(device)
+        target = input_["rawdepth_sid"].to(device)
+
         depth_pred = self.forward(rgb)
         prediction = self.to_logprobs(input_["rawdepth"].to(device))
-        mask = input_["mask"].to(device)
 
-        return ord
+        return self.ord_reg_loss(prediction, target, mask)
 
     @staticmethod
     def to_logprobs(x):
@@ -670,7 +683,7 @@ class DORN_nyu_nohints(Model):
         self.relu7 = nn.ReLU(inplace=True)
         self.drop_conv7 = nn.Dropout2d(p=0.5, inplace=True)
 
-        self.conv8 = nn.Conv2d(2048, sid_bins, kernel_size=1)
+        self.conv8 = nn.Conv2d(2048, 2*sid_bins, kernel_size=1)
 
     def forward_to_fc(self, x):
         """

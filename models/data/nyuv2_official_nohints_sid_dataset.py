@@ -16,6 +16,7 @@ nyuv2_nohints_sid_ingredient = Experiment('data_config')
 
 @nyuv2_nohints_sid_ingredient.config
 def cfg():
+    data_name = "nyu_depth_v2"
     # Paths should be specified relative to the train script, not this file.
     root_dir = os.path.join("data", "nyu_depth_v2_scaled16")
     train_file = os.path.join(root_dir, "train.json")
@@ -30,14 +31,14 @@ def cfg():
     # Set relative to the directory from which the dataset is being loaded.
     blacklist_file = "blacklist.txt"
 
-    sid_bins = 68
+    sid_bins = 68   # Number of bins (network outputs 2x this number of channels)
     bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
     dorn_decode = np.exp((bin_edges - 1) / 25 - 0.36)
     d0 = dorn_decode[0]
     d1 = dorn_decode[1]
     alpha = (2 * d0 ** 2) / (d1 + d0)
     beta = alpha * np.exp(sid_bins * np.log(2 * d0 / alpha - 1))
-    del bin_edges, dorn_decode, d0, d1 # Clean up config
+    del bin_edges, dorn_decode, d0, d1
     offset = 0.
 
     # Complex procedure to calculate min and max depths
@@ -48,7 +49,6 @@ def cfg():
     del alpha, beta
     use_dorn_normalization = True # Sets specific normalization if using DORN network.
                                   # If False, defaults to using the empirical mean and variance from train set.
-    sid_bins = 68   # Number of bins (network outputs 2x this number of channels)
 
 
 #############

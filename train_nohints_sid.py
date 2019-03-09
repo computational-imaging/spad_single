@@ -10,16 +10,25 @@ from sacred import Experiment
 from datetime import datetime
 
 # Dataset
-from models.data.nyuv2_official_nohints_dataset import nyuv2_nohints_ingredient, load_data
+from models.data.nyuv2_official_nohints_sid_dataset import nyuv2_nohints_sid_ingredient, load_data
 
-ex = Experiment('train_nohints', ingredients=[nyuv2_nohints_ingredient])
+ex = Experiment('train_nohints_sid', ingredients=[nyuv2_nohints_sid_ingredient])
 
 @ex.config
 def cfg(data_config):
     model_config = {
         "model_name": "DORN_nyu",
         "model_params": {
-            "img_sidelength": 32
+            "in_channels": 3,
+            "in_height": 257,
+            "in_width": 353,
+            "sid_bins": data_config["sid_bins"],
+            "offset": data_config["offset"],
+            "min_depth": data_config["min_depth"],
+            "max_depth": data_config["max_depth"],
+            "frozen": True,
+            "pretrained": True,
+            "state_dict_file": os.path.join("models", "torch_params_nyuv2_BGR.tar"),
         },
         "model_state_dict_fn": None
     }
