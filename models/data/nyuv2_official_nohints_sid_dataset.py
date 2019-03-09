@@ -1,21 +1,15 @@
 import os
-import random
-import json
 
 import numpy as np
-import torch
-from torch.utils.data import Dataset
-import torch.backends.cudnn as cudnn
-import cv2
 
-from torchvision import transforms, utils
-from models.data.transforms import (ResizeAll, RandomHorizontalFlipAll, Normalize,
-                                    AddDepthMask, ToTensorAll)
-from models.data.sid_utils import AddSIDDepth
+from torchvision import transforms
+from models.data.utils.transforms import (ResizeAll, RandomHorizontalFlipAll, Normalize,
+                                          AddDepthMask, ToTensorAll)
+from models.data.utils.sid_utils import AddSIDDepth
 
 from sacred import Experiment
 
-from .nyuv2_official_nohints_dataset import NYUDepthv2Dataset
+from models.data.nyuv2_official_nohints_dataset import NYUDepthv2Dataset
 
 nyuv2_nohints_sid_ingredient = Experiment('data_config')
 
@@ -35,8 +29,23 @@ def cfg():
     # Indices of images to exclude from the dataset.
     # Set relative to the directory from which the dataset is being loaded.
     blacklist_file = "blacklist.txt"
-    min_depth = 0.  # Minimum depth
-    max_depth = 10. # Maximum depth
+
+    sid_bins = 68
+    bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
+    dorn_decode = np.exp((bin_edges - 1) / 25 - 0.36)
+    d0 = dorn_decode[0]
+    d1 = dorn_decode[1]
+    alpha = (2 * d0 ** 2) / (d1 + d0)
+    beta = alpha * np.exp(sid_bins * np.log(2 * d0 / alpha - 1))
+    del bin_edges, dorn_decode, d0, d1 # Clean up config
+    offset = 0.
+
+    # Complex procedure to calculate min and max depths
+    # to conform to DORN standards
+    # i.e. make it so that doing exp(i/25 - 0.36) is the right way to decode depth from a bin value i.
+    min_depth = alpha
+    max_depth = beta
+    del alpha, beta
     use_dorn_normalization = True # Sets specific normalization if using DORN network.
                                   # If False, defaults to using the empirical mean and variance from train set.
     sid_bins = 68   # Number of bins (network outputs 2x this number of channels)
@@ -49,7 +58,8 @@ def cfg():
 def load_data(train_file, train_dir,
               val_file, val_dir,
               test_file, test_dir,
-              min_depth, max_depth, use_dorn_normalization, sid_bins,
+              min_depth, max_depth, use_dorn_normalization,
+              sid_bins, offset,
               blacklist_file):
     """Generates training and validation datasets from
     text files and directories. Sets up datasets with transforms.py.
@@ -89,10 +99,10 @@ def load_data(train_file, train_dir,
     train_transform = transforms.Compose([
         ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
         RandomHorizontalFlipAll(flip_prob=0.5, keys=["rgb", "rawdepth"]),
-        AddDepthMask(min_depth, max_depth, "rawdepth"), # introduces "mask"
-        Normalize(transform_mean, transform_var, key="rgb"), # introduces "rgb_orig"
-        AddSIDDepth(),
-        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "mask"])
+        AddDepthMask(min_depth, max_depth, "rawdepth"), # "mask"
+        Normalize(transform_mean, transform_var, key="rgb"), # "rgb_orig"
+        AddSIDDepth(sid_bins, min_depth, max_depth, offset, "rawdepth"), # "rawdepth_sid"  "rawdepth_sid_index"
+        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_sid", "rawdepth_sid_index", "mask"])
         ]
     )
 
@@ -100,8 +110,8 @@ def load_data(train_file, train_dir,
         ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"),
         Normalize(transform_mean, transform_var, key="rgb"),
-        AddSIDDepth(),
-        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "mask"])
+        AddSIDDepth(sid_bins, min_depth, max_depth, offset, "rawdepth"),
+        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_sid", "rawdepth_sid_index", "mask"])
         ]
     )
 
@@ -109,7 +119,8 @@ def load_data(train_file, train_dir,
         ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"),
         Normalize(transform_mean, transform_var, key="rgb"),
-        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "mask"])
+        AddSIDDepth(sid_bins, min_depth, max_depth, offset, "rawdepth"),
+        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_sid", "rawdepth_sid_index", "mask"])
         ]
     )
     train.transform = train_transform
@@ -140,5 +151,5 @@ def load_data(train_file, train_dir,
 def test_load_data(min_depth, max_depth):
     train, val, test = load_data()
     sample = train.get_item_by_id("dining_room_0001a/0001")
-    print(sample["rgb"].size())
+    print(sample["rawdepth_sid"].size())
 
