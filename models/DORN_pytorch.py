@@ -626,7 +626,7 @@ class DORN_nyu(nn.Module):
         self.relu7 = nn.ReLU(inplace=True)
         self.drop_conv7 = nn.Dropout2d(p=0.5, inplace=True)
 
-        self.conv8 = nn.Conv2d(2048, sid_bins, kernel_size=1)
+        self.conv8 = nn.Conv2d(2048, 2*sid_bins, kernel_size=1)
 
     def forward_to_fc(self, x):
         """
