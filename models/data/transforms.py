@@ -3,6 +3,7 @@ import torch
 import numpy as np
 import random
 from torchvision import transforms, utils
+from .sid_utils import SID
 
 
 ##############
@@ -196,6 +197,7 @@ class AddRawDepthMask(): # pylint: disable=too-few-public-methods
         sample["mask"] = 1. - boolmask.astype(np.float32) # Logical NOT
         return sample
 
+
 class AddSIDDepth():
     """Creates a copy of the depth image where the depth value has been replaced
     by the SID-discretized index
@@ -203,20 +205,22 @@ class AddSIDDepth():
     Discretizes depth into |sid_bins| number of bins, where the edges of the bins are
     given by
 
-    t_i = exp(log(start) + i/K*log(end/start))
+    t_i = exp(log(alpha) + i/K*log(beta/alpha))
 
     for i in {0,...,K}.
 
-    According to the DORN paper, we add an offset |sid_offset| such that
-    start = sid_range[0] + sid_offset = 1.0
-    end = sid_range[1] + sid_offset
-
     Works in numpy.
+
+    offset is a shift term that we subtract from alpha
     """
-    def __init__(self, sid_bins, sid_range):
-        self.sid_bins = sid_bins
-        self.sid_range = sid_range
-        self.offset = 1.0 - sid_range[0]
+    def __init__(self, sid_bins, max_val, min_val, offset, key):
+        """
+        :param sid_obj: The SID object to use to convert between indices and depth values and vice versa
+        :param key: The key (in sample) of the depth map to use.
+        """
+        self.key = key # Key of the depth image to convert to SID form.
+        self.sid_obj = SID(sid_bins, max_val, min_val, offset)
+        
 
     def __call__(self, sample):
         """Computes an array with indices, and also an array with
@@ -230,29 +234,17 @@ class AddSIDDepth():
              vector for the same pixel in depth_sid is
               0 1 2 3 4 5 6
              [1 1 1 1 0 0 0]
-             Note: The most 1's possible is n-1, where n is the number of bins:
-             [1 1 1 1 1 1 0]
+             Note: The most 1's possible is n, where n is the number of bins:
+             [1 1 1 1 1 1 1]
              The fewest is 0.
         """
-        depth = sample["depth"]
-        sample["depth_sid_index"] = self.get_depth_sid(depth)
-        K = np.zeros(depth.shape + (self.sid_bins,))
-        for i in range(self.sid_bins):
-            K[:, :, i] = K[:, :, i] + i * np.ones(depth.shape)
-        sample["depth_sid"] = (K < sample["depth_sid_index"][:, :, np.newaxis]).astype(np.int32)
+        depth = sample[self.key]
+        sample[self.key + "_sid_index"] = self.sid_obj.get_sid_index_from_value(depth)
+        K = np.zeros((self.sid_obj.sid_bins,) + depth.shape)
+        for i in range(self.sid_obj.sid_bins): # i = {0, ..., self.sid_bins - 1}
+            K[i, :, :] = K[i, :, :] + i * np.ones(depth.shape)
+        sample[self.key + "_sid"] = (K < sample["depth_sid_index"][np.newaxis, :, :]).astype(np.int32)
         return sample
-
-    def get_depth_sid(self, depth):
-        """Given a depth image as a numpy array, computes the per-pixel
-        bin index for a SID with range |self.sid_range| = (min_depth, max_depth)
-        and a |self.sid_bins| number of bins.
-        """
-        start = 1.0
-        end = self.sid_range[1] + self.offset
-        depth_sid = self.sid_bins * np.log(depth + self.offset) / np.log(end)
-        depth_sid = depth_sid.astype(np.int32) # Performs rounding
-        depth_sid[depth_sid >= self.sid_bins] = self.sid_bins - 1 # Clip so as not to be out of range of the max index.
-        return depth_sid
 
 
 class ClipMinMax(): # pylint: disable=too-few-public-methods

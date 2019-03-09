@@ -38,14 +38,6 @@ def cfg():
                                   # If False, defaults to using the empirical mean and variance from train set.
 
 
-def worker_init(worker_id):
-    cudnn.deterministic = True
-    random.seed(1 + worker_id)
-    np.random.seed(1 + worker_id)
-    torch.manual_seed(1 + worker_id)
-    torch.cuda.manual_seed(1 + worker_id)
-
-
 class NYUDepthv2Dataset(Dataset):  # pylint: disable=too-few-public-methods
     """Class for reading and storing image and depth data together.
     """
