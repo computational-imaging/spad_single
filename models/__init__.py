@@ -1,4 +1,5 @@
 from .denoising_unet import DenoisingUnetModel
+from .DORN_nohints import DORN_nyu_nohints
 # import future models here
 
 

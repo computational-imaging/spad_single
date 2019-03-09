@@ -12,12 +12,12 @@ from datetime import datetime
 # Dataset
 from models.data.nyuv2_official_nohints_dataset import nyuv2_nohints_ingredient, load_data
 
-ex = Experiment('train_nohints', ingredients=[noisy_cifar10_ingredient])
+ex = Experiment('train_nohints', ingredients=[nyuv2_nohints_ingredient])
 
 @ex.config
 def cfg(data_config):
     model_config = {
-        "model_name": "DenoisingUnetModel",
+        "model_name": "DORN_nyu",
         "model_params": {
             "img_sidelength": 32
         },
