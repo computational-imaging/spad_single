@@ -1,11 +1,13 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 
 import os
 
 from models.core.model_core import Model
 from models.data.utils.sid_utils import SID
+from models.loss import delta, rmse, rel_abs_diff, rel_sqr_diff, log10
 
 
 class DORN_nyu_nohints(Model):
@@ -20,7 +22,7 @@ class DORN_nyu_nohints(Model):
                  sid_bins=68, offset=0.,
                  min_depth=0.6569154266167957, max_depth=9.972175646365525,
                  frozen=True, pretrained=True,
-                 state_dict_file=os.path.join("models","torch_params_nyuv2_BGR.tar")):
+                 state_dict_file=os.path.join("models", "torch_params_nyuv2_BGR.pth.tar")):
         super(Model, self).__init__()
         self.make_layers(in_channels, in_height, in_width, sid_bins)
 
@@ -31,7 +33,7 @@ class DORN_nyu_nohints(Model):
         self.sid_bins = sid_bins
         self.min_depth = min_depth
         self.max_depth = max_depth
-        self.sid_obj = SID(sid_bins, min_val, max_val, offset)
+        self.sid_obj = SID(sid_bins, min_depth, max_depth, offset)
 
 
         self.frozen = frozen
@@ -39,6 +41,7 @@ class DORN_nyu_nohints(Model):
         self.state_dict_file = state_dict_file
         if pretrained:
             self.load_state_dict(torch.load(state_dict_file))
+            print("Loaded state dict file from {}".format(state_dict_file))
         if frozen:
             for param in self.parameters():
                 param.requires_grad = False
@@ -47,11 +50,15 @@ class DORN_nyu_nohints(Model):
         rgb = input_["rgb"].to(device)
         mask = input_["mask"].to(device)
         target = input_["rawdepth_sid"].to(device)
-
+        print("dataloader: model input")
+        print(rgb[:,:,50:55,50:55])
         depth_pred = self.forward(rgb)
-        prediction = self.to_logprobs(input_["rawdepth"].to(device))
+        prediction = self.to_logprobs(depth_pred)
+        return self.ord_reg_loss(prediction, target, mask), prediction
 
-        return self.ord_reg_loss(prediction, target, mask)
+        # TEST
+        # Return decoded depth output only
+        # return depth_pred
 
     @staticmethod
     def to_logprobs(x):
@@ -115,18 +122,56 @@ class DORN_nyu_nohints(Model):
         return out
 
     @staticmethod
-    def ord_decode(prediction):
-        pass
+    def ord_decode(prediction, sid_obj):
+        """
+        Decodes a prediction to a depth image using the sid_obj
+        :param prediction: Tuple (log_ord_c, log_ord_c_comp), as in ord_reg_loss.
+        :param sid_obj: A SID object that stores info about this discretization.
+        :return: A depth map.
+        """
+        log_probs, _ = prediction
+        depth_index = torch.sum((log_probs >= np.log(0.5)), dim=1).long().unsqueeze(1)
+        depth_vals = sid_obj.get_value_from_sid_index(depth_index)
+        # print(depth_vals.size())
+        return depth_vals
 
     def write_updates(self, writer, input_, output_, loss, it, tag):
-        pass
+        # Metrics
+        # Ordinal regression loss
+        writer.add_scalar(tag + "/ord_reg_loss", loss.item(), it)
+
+        # Get predicted depth image
+        depth_pred = self.ord_decode(output_, self.sid_obj)
+        mask = input_["mask"]
+        depth_truth = input_["rawdepth"]
+        # deltas
+        writer.add_scalar(tag + "/delta1", delta(depth_pred, depth_truth, mask, 1.25).item(), it)
+        writer.add_scalar(tag + "/delta2", delta(depth_pred, depth_truth, mask, 1.25 ** 2).item(), it)
+        writer.add_scalar(tag + "/delta3", delta(depth_pred, depth_truth, mask, 1.25 ** 3).item(), it)
+        # rel_abs_diff
+        writer.add_scalar(tag + "/rel_abs_diff", rel_abs_diff(depth_pred, depth_truth, mask).item(), it)
+        # rel_sqr_diff
+        writer.add_scalar(tag + "/rel_sqr_diff", rel_sqr_diff(depth_pred, depth_truth, mask).item(), it)
+        # log10
+        writer.add_scalar(tag + "/log10", log10(depth_pred, depth_truth, mask).item(), it)
+        # rmse
+        writer.add_scalar(tag + "/rmse", rmse(depth_pred, depth_truth, mask).item(), it)
+        # rmse(log)
+        writer.add_scalar(tag + "/log_rmse", rmse(torch.log(depth_pred),
+                                                  torch.log(depth_truth),
+                                                  mask).item(), it)
+
+        # min/max
+        writer.add_scalar(tag + "depth_min", torch.min(depth_pred).item(), it)
+        writer.add_scalar(tag + "depth_max", torch.max(depth_pred).item(), it)
+
+        # Images
 
     def write_eval(self, data, output_file, device):
         pass
 
     def evaluate_dir(self, output_dir, device):
         pass
-
 
     def make_layers(self, in_channels, in_height, in_width, sid_bins):
         """
@@ -1837,3 +1882,154 @@ class DORN_nyu_nohints(Model):
         x = F.interpolate(x, size=(height_out, width_out), mode="bilinear", align_corners=False)
 
         return x
+
+if __name__ == "__main__":
+    import cv2
+    from torch.utils.data import DataLoader
+    from torchvision import utils
+    from models.data.nyuv2_official_nohints_sid_dataset import load_data
+    data_name = "nyu_depth_v2"
+    # Paths should be specified relative to the train script, not this file.
+    root_dir = os.path.join("data", "nyu_depth_v2_scaled16")
+    train_file = os.path.join(root_dir, "train.json")
+    train_dir = root_dir
+    val_file = os.path.join(root_dir, "val.json")
+    val_dir = root_dir
+    test_file = os.path.join(root_dir, "test.json")
+    test_dir = root_dir
+    del root_dir
+
+    # Indices of images to exclude from the dataset.
+    # Set relative to the directory from which the dataset is being loaded.
+    blacklist_file = "blacklist.txt"
+
+    sid_bins = 68   # Number of bins (network outputs 2x this number of channels)
+    bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
+    dorn_decode = np.exp((bin_edges - 1) / 25 - 0.36)
+    d0 = dorn_decode[0]
+    d1 = dorn_decode[1]
+    alpha = (2 * d0 ** 2) / (d1 + d0)
+    beta = alpha * np.exp(sid_bins * np.log(2 * d0 / alpha - 1))
+    del bin_edges, dorn_decode, d0, d1
+    offset = 0.
+
+    # Complex procedure to calculate min and max depths
+    # to conform to DORN standards
+    # i.e. make it so that doing exp(i/25 - 0.36) is the right way to decode depth from a bin value i.
+    min_depth = alpha
+    max_depth = beta
+    del alpha, beta
+    use_dorn_normalization = True # Sets specific normalization if using DORN network.
+                                  # If False, defaults to using the empirical mean and variance from train set.
+    # if use_dorn_normalization:
+    #     transform_mean = np.array([[[103.0626, 115.9029, 123.1516]]]).astype(np.float32)
+    #     transform_var = np.ones((1, 1, 3))
+
+
+    def load_image_cv2(img_file, device):
+        rgb_cv2 = cv2.imread(img_file, cv2.IMREAD_COLOR)
+        H, W = rgb_cv2.shape[:2]
+        rgb_cv2 = rgb_cv2.astype(np.float32)
+        print("rgb_cv2: before mean subtraction")
+        print(rgb_cv2[50:55, 50:55, 0])
+
+        rgb_cv2 = rgb_cv2 - np.array([[[103.0626, 115.9029, 123.1516]]]).astype(np.float32)
+        rgb_cv2 = cv2.resize(rgb_cv2, (353, 257), interpolation=cv2.INTER_LINEAR)
+        print("rgb_cv2: after mean subtraction")
+        print(rgb_cv2[50:55, 50:55, 0])
+        # Flip because that's how numpy works vs. PIL
+        # rgb = torch.from_numpy(rgb_cv2.transpose(2, 0, 1)).unsqueeze(0).flip([1])
+        rgb = torch.from_numpy(rgb_cv2.transpose(2, 0, 1)).unsqueeze(0)
+        rgb = rgb.to(device)
+        return rgb, H, W
+
+    def depth_prediction(filename, net, device):
+        rgb, H, W = load_image_cv2(filename, device)
+        # rgb, H, W = load_image_torchvision(filename, device)
+        # print(rgb[:,:,50:55, 50:55])
+        with torch.no_grad():
+            # print("network input")
+            # print(rgb[:,:,50:55,50:55])
+            output = net(rgb)
+            print("network output")
+            print(output[:, 30:32, 50:55, 50:55])
+            pred = decode_ord(output)  # Pred is in numpy
+            print("after decoding")
+            print(pred[:, :, 50:55, 50:55])
+
+        pred = pred[0, 0, :, :] - 1.0
+        pred = pred / 25.0 - 0.36
+        pred = np.exp(pred)
+        # print("after exp")
+        # print(pred[50:55,50:55])
+        ord_score = cv2.resize(pred, (W, H), interpolation=cv2.INTER_LINEAR)
+        return ord_score
+
+
+    def decode_ord(data_pytorch):
+        """Takes a pytorch tensor, converts to numpy, then
+        does the ordinal loss decoding.
+        """
+        data = data_pytorch.cpu().numpy()
+        N = data.shape[0]
+        C = data.shape[1]
+        H = data.shape[2]
+        W = data.shape[3]
+        ord_labels = data
+        decode_label = np.zeros((N, 1, H, W), dtype=np.float32)
+        ord_num = C / 2
+        for i in range(int(ord_num)):
+            ord_i = ord_labels[:, 2 * i:2 * i + 2, :, :]
+            decode_label = decode_label + np.argmax(ord_i, axis=1)
+        return decode_label.astype(np.float32, copy=False)
+
+    def convert_to_uint8(img, min_val, max_val):
+        return np.uint8((img - min_val) / (max_val - min_val) * 255.0)
+
+    # rgb, H, W = load_image_cv2("models/demo_01.png", "cpu")
+    # rgb, H, W = load_image_cv2("./data/nyu_depth_v2_scaled16/playroom_0002/1111_rgb.png", "cpu")
+    model = DORN_nyu_nohints()
+    model.eval()
+    # depth = depth_prediction("models/demo_01.png", model, "cpu")
+    depth = depth_prediction("./data/nyu_depth_v2_scaled16/playroom_0002/1111_rgb.png", model, "cpu")
+    depth_img = convert_to_uint8(depth, 0., 10.)
+    cv2.imwrite("models/out_01.png", depth_img)
+    train, _, _ = load_data(train_file, train_dir,
+              val_file, val_dir,
+              test_file, test_dir,
+              min_depth, max_depth, use_dorn_normalization,
+              sid_bins, offset,
+              blacklist_file)
+    dataloader = DataLoader(train, batch_size=1, shuffle=False, num_workers=1)
+    model = DORN_nyu_nohints()
+    model.eval()
+    for i, input_ in enumerate(dataloader):
+        print(train.data[i])
+        # Save the rgb image
+        # rgb = input_["rgb_orig"]
+        print("dataloader: before normalizing")
+        print(input_["rgb_orig"][:,0,50:55, 50:55])
+        print("dataloader: after normalizing")
+        print(input_["rgb"][:, 0, 50:55, 50:55])
+        # loss, pred = model.get_loss(input_, device="cpu")
+        loss, pred = model.get_loss(input_, device="cpu")
+        # print("dataloader: network output")
+        # print(depth_out[:,30:32,50:55,50:55])
+        # pred = decode_ord(depth_out)
+        # print("dataloader: after decoding")
+        # print(pred[:,:,50:55,50:55])
+        # pred = pred[0, 0, :, :] - 1.0
+        # pred = pred / 25.0 - 0.36
+        # pred = np.exp(pred)
+        # print("dataloader: after exp")
+        # print(pred[50:55,50:55])
+
+        # ord_score = cv2.resize(pred, (W, H), interpolation=cv2.INTER_LINEAR)
+        depth_out = torch.tensor(model.ord_decode(pred, model.sid_obj))
+
+        # depth_out = torch.tensor(pred)
+        # print(pred[:,:,50:55,50:55])
+        utils.save_image(depth_out/10., os.path.join("models", "test_{}.png".format(i)))
+
+        if i == 4:
+            break

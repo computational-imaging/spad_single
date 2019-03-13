@@ -93,7 +93,6 @@ class AddSIDDepth:
         depth = sample[self.key]
         sample[self.key + "_sid_index"] = self.sid_obj.get_sid_index_from_value(depth)
         K = np.zeros(depth.shape + (self.sid_obj.sid_bins,))
-        print(K.shape)
         for i in range(self.sid_obj.sid_bins):  # i = {0, ..., self.sid_bins - 1}
             K[..., i] = K[..., i] + i * np.ones(depth.shape)
         sample[self.key + "_sid"] = (K < sample[self.key + "_sid_index"][..., np.newaxis]).astype(np.int32)
