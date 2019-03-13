@@ -49,7 +49,7 @@ class DORN_nyu_nohints(Model):
             for param in self.parameters():
                 param.requires_grad = False
 
-    def get_loss(self, input_, device):
+    def get_loss(self, input_, device, resize_output=False):
         """
         :param input_: Dictionary from dataloader
         :param device: Device to run on (e.g. "cpu", "cuda")
@@ -59,10 +59,16 @@ class DORN_nyu_nohints(Model):
         rgb = input_["rgb"].to(device)
         mask = input_["mask"].to(device)
         target = input_["rawdepth_sid"].to(device)
-        print("dataloader: model input")
-        print(rgb[:,:,50:55,50:55])
+        # print("dataloader: model input")
+        # print(rgb[:,:,50:55,50:55])
         depth_pred = self.forward(rgb)
         logprobs = self.to_logprobs(depth_pred)
+        if resize_output:
+            original_size = input_["rgb_orig"].size()[-2:]
+            depth_pred_full = F.interpolate(depth_pred, size=original_size,
+                                            mode="bilinear", align_corners=False)
+            logprobs_full = self.to_logprobs(depth_pred_full)
+            return self.ord_reg_loss(logprobs, target, mask), logprobs_full
         return self.ord_reg_loss(logprobs, target, mask), logprobs
 
         # TEST
@@ -185,17 +191,16 @@ class DORN_nyu_nohints(Model):
         writer.add_image(tag + "/depth_mask", depth_mask, it)
 
     def write_eval(self, data, path, device):
-        _, logprobs = self.get_loss(data, device)
+        _, logprobs = self.get_loss(data, device, resize_output=True)
         depth_map = self.ord_decode(logprobs, self.sid_obj)
-        gt = data["rawdepth"]
-        mask = data["mask"]
+        gt = data["rawdepth_orig"]
+        mask = data["mask_orig"]
         out = {"depth_map": depth_map,
                "gt": gt,
                "mask": mask,
                "logprobs": logprobs}
         safe_makedir(os.path.dirname(path))
         torch.save(out, path)
-
 
     def evaluate_dir(self, output_dir, device):
         """Get average losses over all data files"""
@@ -2058,12 +2063,12 @@ if __name__ == "__main__":
 
     # rgb, H, W = load_image_cv2("models/demo_01.png", "cpu")
     # rgb, H, W = load_image_cv2("./data/nyu_depth_v2_scaled16/playroom_0002/1111_rgb.png", "cpu")
-    model = DORN_nyu_nohints()
-    model.eval()
+    # model = DORN_nyu_nohints()
+    # model.eval()
     # depth = depth_prediction("models/demo_01.png", model, "cpu")
-    depth = depth_prediction("./data/nyu_depth_v2_scaled16/playroom_0002/1111_rgb.png", model, "cpu")
-    depth_img = convert_to_uint8(depth, 0., 10.)
-    cv2.imwrite("models/out_01.png", depth_img)
+    # depth = depth_prediction("./data/nyu_depth_v2_scaled16/playroom_0002/1111_rgb.png", model, "cpu")
+    # depth_img = convert_to_uint8(depth, 0., 10.)
+    # cv2.imwrite("models/out_01.png", depth_img)
     train, _, _ = load_data(train_file, train_dir,
               val_file, val_dir,
               test_file, test_dir,
@@ -2077,12 +2082,12 @@ if __name__ == "__main__":
         print(train.data[i])
         # Save the rgb image
         # rgb = input_["rgb_orig"]
-        print("dataloader: before normalizing")
-        print(input_["rgb_orig"][:,0,50:55, 50:55])
-        print("dataloader: after normalizing")
-        print(input_["rgb"][:, 0, 50:55, 50:55])
+        # print("dataloader: before normalizing")
+        # print(input_["rgb_orig"][:,0,50:55, 50:55])
+        # print("dataloader: after normalizing")
+        # print(input_["rgb"][:, 0, 50:55, 50:55])
         # loss, pred = model.get_loss(input_, device="cpu")
-        loss, pred = model.get_loss(input_, device="cpu")
+        loss, pred = model.get_loss(input_, device="cpu", resize_output=True)
         # print("dataloader: network output")
         # print(depth_out[:,30:32,50:55,50:55])
         # pred = decode_ord(depth_out)
@@ -2095,11 +2100,11 @@ if __name__ == "__main__":
         # print(pred[50:55,50:55])
 
         # ord_score = cv2.resize(pred, (W, H), interpolation=cv2.INTER_LINEAR)
-        depth_out = torch.tensor(model.ord_decode(pred, model.sid_obj))
+        depth_out = model.ord_decode(pred, model.sid_obj)
 
         # depth_out = torch.tensor(pred)
         # print(pred[:,:,50:55,50:55])
         utils.save_image(depth_out/10., os.path.join("models", "test_{}.png".format(i)))
 
-        if i == 4:
+        if i == 0:
             break

@@ -9,6 +9,20 @@ from torchvision import transforms, utils
 ##############
 # Transforms #
 ##############
+# Save original data inputs
+class Save():
+    """
+    Save current state of the data point by duplicating the entries under a different name.
+    """
+    def __init__(self, keys, save_tag):
+        self.keys = keys
+        self.save_tag = save_tag
+
+    def __call__(self, sample):
+        for key in self.keys:
+            sample[key + self.save_tag] = np.copy(sample[key])
+        return sample
+
 # Resizing:
 class ResizeAll():
     def __init__(self, output_size, keys):
@@ -22,6 +36,8 @@ class ResizeAll():
             assert len(output_size) == 2
             self.output_size = output_size
         self.keys = keys
+
+
     def __call__(self, sample):
         for key in self.keys:
             sample[key] = cv2.resize(sample[key], self.output_size, cv2.INTER_LINEAR)
@@ -102,9 +118,9 @@ class Normalize(object): # pylint: disable=too-few-public-methods
         self.key = key
 
     def __call__(self, sample):
-        sample[self.key + "_orig"] = np.copy(sample[self.key])
         sample[self.key] = (sample[self.key] - self.mean)/self.var
         return sample
+
 
 class AddDepthMask(): # pylint: disable=too-few-public-methods
     """Creates a mask that is 1 where actual depth values were recorded

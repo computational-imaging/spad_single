@@ -2,11 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ebb10411-0152-4c74-83b8-0064780d50e4" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/models/data/utils/spad_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/evaluate_nohints_sid.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_nohints_sid.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/DORN_nohints.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/DORN_nohints.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/data/utils/sid_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/utils/sid_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/data/utils/transforms.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/utils/transforms.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -18,11 +16,11 @@
     <splitter split-orientation="horizontal" split-proportion="0.5">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/models/data/utils/transforms.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1559">
-                  <caret line="105" column="66" selection-start-line="105" selection-start-column="66" selection-end-line="105" selection-end-column="66" />
+                <state relative-caret-position="240">
+                  <caret line="123" lean-forward="true" selection-start-line="123" selection-end-line="123" />
                   <folding>
                     <element signature="e#0#10#0" expanded="true" />
                   </folding>
@@ -51,11 +49,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/models/DORN_nohints.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1687">
-                  <caret line="214" column="24" selection-start-line="214" selection-start-column="24" selection-end-line="214" selection-end-column="24" />
+                <state relative-caret-position="199">
+                  <caret line="63" column="38" lean-forward="true" selection-start-line="63" selection-start-column="38" selection-end-line="63" selection-end-column="38" />
                   <folding>
                     <element signature="e#0#12#0" expanded="true" />
                     <element signature="e#4732#31269#0" />
@@ -69,8 +67,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/depthnet/model/demo_nyuv2_pytorch_hints.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-1194">
-                  <caret line="178" lean-forward="true" selection-start-line="178" selection-end-line="178" />
+                <state relative-caret-position="292">
+                  <caret line="56" column="30" selection-start-line="56" selection-end-line="57" />
                   <folding>
                     <element signature="e#0#12#0" expanded="true" />
                   </folding>
@@ -157,11 +155,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-854">
-                  <caret line="38" column="13" selection-start-line="38" selection-start-column="13" selection-end-line="38" selection-end-column="13" />
+                <state relative-caret-position="606">
+                  <caret line="129" column="33" lean-forward="true" selection-start-line="129" selection-start-column="33" selection-end-line="129" selection-end-column="33" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -181,9 +179,13 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/evaluate_cifar10.py">
-              <provider selected="true" editor-type-id="text-editor" />
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="600">
+                  <caret line="50" column="38" lean-forward="true" selection-start-line="50" selection-start-column="38" selection-end-line="50" selection-end-column="38" />
+                </state>
+              </provider>
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
@@ -211,8 +213,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>train</find>
-      <find>resize</find>
       <find>output</find>
       <find>depth</find>
       <find>25</find>
@@ -241,6 +241,8 @@
       <find>print</find>
       <find>size</find>
       <find>logprobsa</find>
+      <find>resize</find>
+      <find>model input</find>
     </findStrings>
     <replaceStrings>
       <replace>prediction</replace>
@@ -297,12 +299,12 @@
         <option value="$PROJECT_DIR$/train_nohints_sid.py" />
         <option value="$PROJECT_DIR$/models/DORN_pytorch.py" />
         <option value="$PROJECT_DIR$/models/loss.py" />
-        <option value="$PROJECT_DIR$/models/data/utils/transforms.py" />
-        <option value="$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py" />
         <option value="$PROJECT_DIR$/models/data/utils/sid_utils.py" />
         <option value="$PROJECT_DIR$/evaluate_nohints_sid.py" />
         <option value="$PROJECT_DIR$/models/data/utils/spad_utils.py" />
         <option value="$PROJECT_DIR$/models/DORN_nohints.py" />
+        <option value="$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py" />
+        <option value="$PROJECT_DIR$/models/data/utils/transforms.py" />
       </list>
     </option>
   </component>
@@ -438,18 +440,18 @@
       <workItem from="1550735349035" duration="33382000" />
       <workItem from="1551604815789" duration="10792000" />
       <workItem from="1551833459313" duration="36202000" />
-      <workItem from="1552089057662" duration="25969000" />
+      <workItem from="1552089057662" duration="29079000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="196926000" />
+    <option name="totallyTimeSpent" value="200036000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1920" height="1057" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.16897655" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.16897655" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -762,16 +764,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/utils/transforms.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1559">
-          <caret line="105" column="66" selection-start-line="105" selection-start-column="66" selection-end-line="105" selection-end-column="66" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/models/loss.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="480">
@@ -799,26 +791,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-854">
-          <caret line="38" column="13" selection-start-line="38" selection-start-column="13" selection-end-line="38" selection-end-column="13" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/depthnet/model/demo_nyuv2_pytorch_hints.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1194">
-          <caret line="178" lean-forward="true" selection-start-line="178" selection-end-line="178" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/models/denoising_unet.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="48">
@@ -828,16 +800,6 @@
           </folding>
         </state>
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/train_nohints_sid.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1271">
-          <caret line="4" column="35" selection-start-line="4" selection-end-line="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_cifar10.py">
-      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/evaluate_nohints_sid.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -859,15 +821,59 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/evaluate_cifar10.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="600">
+          <caret line="50" column="38" lean-forward="true" selection-start-line="50" selection-start-column="38" selection-end-line="50" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/train_nohints_sid.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1271">
+          <caret line="4" column="35" selection-start-line="4" selection-end-line="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/depthnet/model/demo_nyuv2_pytorch_hints.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="292">
+          <caret line="56" column="30" selection-start-line="56" selection-end-line="57" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/models/DORN_nohints.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1687">
-          <caret line="214" column="24" selection-start-line="214" selection-start-column="24" selection-end-line="214" selection-end-column="24" />
+        <state relative-caret-position="199">
+          <caret line="63" column="38" lean-forward="true" selection-start-line="63" selection-start-column="38" selection-end-line="63" selection-end-column="38" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
             <element signature="e#4732#31269#0" />
             <element signature="e#30880#47943#0" />
             <element signature="e#47979#64974#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="606">
+          <caret line="129" column="33" lean-forward="true" selection-start-line="129" selection-start-column="33" selection-end-line="129" selection-end-column="33" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/data/utils/transforms.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="123" lean-forward="true" selection-start-line="123" selection-end-line="123" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 from torchvision import transforms
-from models.data.utils.transforms import (ResizeAll, RandomHorizontalFlipAll, Normalize,
+from models.data.utils.transforms import (Save, ResizeAll, RandomHorizontalFlipAll, Normalize,
                                           AddDepthMask, ToTensorAll)
 from models.data.utils.sid_utils import AddSIDDepth
 
@@ -99,30 +99,39 @@ def load_data(train_file, train_dir,
         transform_mean = train.rgb_mean
         transform_var = train.rgb_var
     train_transform = transforms.Compose([
-        Normalize(transform_mean, transform_var, key="rgb"),  # "rgb_orig"
-        ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
+        AddDepthMask(min_depth, max_depth, "rawdepth"),
+        Save(["rgb", "mask", "rawdepth"], "_orig"),
+        Normalize(transform_mean, transform_var, key="rgb"),
+        ResizeAll((353, 257), keys=["rgb", "rawdepth"]), #
         RandomHorizontalFlipAll(flip_prob=0.5, keys=["rgb", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"), # "mask"
         AddSIDDepth(sid_bins, min_depth, max_depth, offset, "rawdepth"), # "rawdepth_sid"  "rawdepth_sid_index"
-        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_sid", "rawdepth_sid_index", "mask"])
+        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_orig",
+                          "rawdepth_sid", "rawdepth_sid_index", "mask", "mask_orig"])
         ]
     )
 
     val_transform = transforms.Compose([
+        AddDepthMask(min_depth, max_depth, "rawdepth"),
+        Save(["rgb", "mask", "rawdepth"], "_orig"),
         Normalize(transform_mean, transform_var, key="rgb"),
         ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"),
         AddSIDDepth(sid_bins, min_depth, max_depth, offset, "rawdepth"),
-        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_sid", "rawdepth_sid_index", "mask"])
+        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_orig",
+                          "rawdepth_sid", "rawdepth_sid_index", "mask", "mask_orig"])
         ]
     )
 
     test_transform = transforms.Compose([
+        AddDepthMask(min_depth, max_depth, "rawdepth"),
+        Save(["rgb", "mask", "rawdepth"], "_orig"),
         Normalize(transform_mean, transform_var, key="rgb"),
         ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"),
         AddSIDDepth(sid_bins, min_depth, max_depth, offset, "rawdepth"),
-        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_sid", "rawdepth_sid_index", "mask"])
+        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_orig",
+                          "rawdepth_sid", "rawdepth_sid_index", "mask", "mask_orig"])
         ]
     )
     train.transform = train_transform
