@@ -20,7 +20,7 @@ ex = Experiment('eval_nohints_sid', ingredients=[nyuv2_nohints_sid_ingredient])
 @ex.config
 def cfg(data_config):
     model_config = {                            # Load pretrained model for testing
-        "model_name": "DORN_nyu",
+        "model_name": "DORN_nyu_nohints",
         "model_params": {
             "in_channels": 3,
             "in_height": 257,
@@ -31,7 +31,7 @@ def cfg(data_config):
             "max_depth": data_config["max_depth"],
             "frozen": True,
             "pretrained": True,
-            "state_dict_file": os.path.join("models", "torch_params_nyuv2_BGR.tar"),
+            "state_dict_file": os.path.join("models", "torch_params_nyuv2_BGR.pth.tar"),
         },
         "model_state_dict_fn": None
     }
@@ -39,7 +39,7 @@ def cfg(data_config):
     eval_config = {
         "dataset": "val",                       # {val, test}
         "mode": "save_outputs",                 # {save_outputs, evaluate_metrics}
-        "output_dir": "cifar10_eval"
+        "output_dir": "./data/dorn_nohints_eval"
     }
     seed = 95290421
 
@@ -53,7 +53,7 @@ def cfg(data_config):
         model_update, _, _ = load_checkpoint(ckpt_file)
         model_config.update(model_update)
 
-        del model_update, _ # So sacred doesn't collect them.
+        del model_update, _  # So sacred doesn't collect them.
 
 
 @ex.automain
@@ -64,6 +64,8 @@ def main(model_config,
          device):
     # Load the model
     model = make_model(**model_config)
+    model.to(device)
+    model.sid_obj.to(device)
     print(model)
 
     # Load the data
@@ -85,11 +87,14 @@ def main(model_config,
         with torch.no_grad():
             model.eval()
             for i, data in enumerate(dataloader):
-                print("Evaluating {}".format(i))
+                print("Evaluating {}".format(data["entry"][0]))
                 model.write_eval(data,
                                  os.path.join(eval_config["output_dir"],
-                                              "{}_out.pt".format(data["entry"])),
+                                              "{}_out.pt".format(data["entry"][0])),
                                  device)
+                # TESTING
+                if i == 9:
+                    break
 
     elif eval_config["mode"] == "evaluate_metrics":
         # Load things and call the model's evaluate function on them.

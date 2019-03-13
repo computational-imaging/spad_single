@@ -49,6 +49,7 @@ def main(model_config,
          device):
     # Load the model
     model = make_model(**model_config)
+    model.to(device)
     print(model)
 
     # Load the data
@@ -66,6 +67,7 @@ def main(model_config,
                             worker_init_fn=worker_init_randomness)
     if eval_config["mode"] == "save_outputs":
         # Run the model on everything and save everything to disk.
+        model.eval()
         safe_makedir(eval_config["output_dir"])
         with torch.no_grad():
             for i, data in enumerate(dataloader):

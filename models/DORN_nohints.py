@@ -193,8 +193,8 @@ class DORN_nyu_nohints(Model):
     def write_eval(self, data, path, device):
         _, logprobs = self.get_loss(data, device, resize_output=True)
         depth_map = self.ord_decode(logprobs, self.sid_obj)
-        gt = data["rawdepth_orig"]
-        mask = data["mask_orig"]
+        gt = data["rawdepth_orig"].to(device)
+        mask = data["mask_orig"].to(device)
         out = {"depth_map": depth_map,
                "gt": gt,
                "mask": mask,
@@ -209,7 +209,9 @@ class DORN_nyu_nohints(Model):
         for (dirname, dirnames, filenames) in os.walk(output_dir, topdown=False, followlinks=True):
             if len(filenames):
                 for torchfile in filenames:
-                    metrics, data = self.evaluate_file(torchfile)
+                    if not torchfile.endswith(".pt"):
+                        continue
+                    metrics, data = self.evaluate_file(os.path.join(dirname, torchfile))
                     num_valid_pixels = torch.sum(data["mask"]).item()
                     num_pixels += num_valid_pixels
                     for metric_name in metrics:
@@ -246,6 +248,7 @@ class DORN_nyu_nohints(Model):
         metrics["log_rmse"] = rmse(torch.log(depth_pred),
                                    torch.log(depth_truth),
                                    mask).item()
+        print(metrics)
         return metrics
 
     def make_layers(self, in_channels, in_height, in_width, sid_bins):

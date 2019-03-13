@@ -82,6 +82,10 @@ class SIDTorch:
         # and
         # self.sid_bin_values[sid_bins] = self.max_val > self.sid_bin_values[sid_bins-1]
 
+    def to(self, device):
+        self.sid_bin_values = self.sid_bin_values.to(device)
+        self.sid_bin_edges = self.sid_bin_edges.to(device)
+
     def get_sid_index_from_value(self, arr):
         """
         Given an array of values in the range [min_val, max_val], return the
