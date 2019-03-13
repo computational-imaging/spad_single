@@ -36,6 +36,8 @@ def cfg():
     dorn_decode = np.exp((bin_edges - 1) / 25 - 0.36)
     d0 = dorn_decode[0]
     d1 = dorn_decode[1]
+    # Algebra stuff to make the depth bins work out exactly like in the
+    # original DORN code.
     alpha = (2 * d0 ** 2) / (d1 + d0)
     beta = alpha * np.exp(sid_bins * np.log(2 * d0 / alpha - 1))
     del bin_edges, dorn_decode, d0, d1
@@ -97,28 +99,28 @@ def load_data(train_file, train_dir,
         transform_mean = train.rgb_mean
         transform_var = train.rgb_var
     train_transform = transforms.Compose([
+        Normalize(transform_mean, transform_var, key="rgb"),  # "rgb_orig"
         ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
         RandomHorizontalFlipAll(flip_prob=0.5, keys=["rgb", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"), # "mask"
-        Normalize(transform_mean, transform_var, key="rgb"), # "rgb_orig"
         AddSIDDepth(sid_bins, min_depth, max_depth, offset, "rawdepth"), # "rawdepth_sid"  "rawdepth_sid_index"
         ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_sid", "rawdepth_sid_index", "mask"])
         ]
     )
 
     val_transform = transforms.Compose([
+        Normalize(transform_mean, transform_var, key="rgb"),
         ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"),
-        Normalize(transform_mean, transform_var, key="rgb"),
         AddSIDDepth(sid_bins, min_depth, max_depth, offset, "rawdepth"),
         ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_sid", "rawdepth_sid_index", "mask"])
         ]
     )
 
     test_transform = transforms.Compose([
+        Normalize(transform_mean, transform_var, key="rgb"),
         ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"),
-        Normalize(transform_mean, transform_var, key="rgb"),
         AddSIDDepth(sid_bins, min_depth, max_depth, offset, "rawdepth"),
         ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_sid", "rawdepth_sid_index", "mask"])
         ]
