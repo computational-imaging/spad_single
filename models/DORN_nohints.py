@@ -1,12 +1,15 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.utils as vutils
 import numpy as np
 
 import os
+from collections import defaultdict
 
+from models.core.checkpoint import safe_makedir
 from models.core.model_core import Model
-from models.data.utils.sid_utils import SID
+from models.data.utils.sid_utils import SIDTorch
 from models.loss import delta, rmse, rel_abs_diff, rel_sqr_diff, log10
 
 
@@ -33,7 +36,7 @@ class DORN_nyu_nohints(Model):
         self.sid_bins = sid_bins
         self.min_depth = min_depth
         self.max_depth = max_depth
-        self.sid_obj = SID(sid_bins, min_depth, max_depth, offset)
+        self.sid_obj = SIDTorch(sid_bins, min_depth, max_depth, offset)
 
 
         self.frozen = frozen
@@ -47,14 +50,20 @@ class DORN_nyu_nohints(Model):
                 param.requires_grad = False
 
     def get_loss(self, input_, device):
+        """
+        :param input_: Dictionary from dataloader
+        :param device: Device to run on (e.g. "cpu", "cuda")
+        :return: A tuple of (ordinal regression loss, log_probs) containing the loss
+        computed on the image and the tuple of (log_ord_c, log_ord_c_comp) that is the prediction.
+        """
         rgb = input_["rgb"].to(device)
         mask = input_["mask"].to(device)
         target = input_["rawdepth_sid"].to(device)
         print("dataloader: model input")
         print(rgb[:,:,50:55,50:55])
         depth_pred = self.forward(rgb)
-        prediction = self.to_logprobs(depth_pred)
-        return self.ord_reg_loss(prediction, target, mask), prediction
+        logprobs = self.to_logprobs(depth_pred)
+        return self.ord_reg_loss(logprobs, target, mask), logprobs
 
         # TEST
         # Return decoded depth output only
@@ -89,7 +98,7 @@ class DORN_nyu_nohints(Model):
         return log_ord_c, log_ord_c_comp
 
     @staticmethod
-    def ord_reg_loss(prediction, target, mask, size_average=True, eps=1e-6):
+    def ord_reg_loss(logprobs, target, mask, size_average=True, eps=1e-6):
         """Calculates the Ordinal Regression loss
         :param prediction: a tuple (log_ord_c, log_ord_c_comp).
             log_ord_c is is an N x K x H x W tensor
@@ -107,7 +116,7 @@ class DORN_nyu_nohints(Model):
         to be used in the loss calculation, 0 otherwise.
         :param size_average - whether or not to take the average over all the mask pixels.
         """
-        log_ord_c, log_ord_c_comp = prediction
+        log_ord_c, log_ord_c_comp = logprobs
         # nbins = log_ord_c.size(1)
         mask_L = ((target > 0) & (mask > 0))
         mask_U = (((1. - target) > 0) & (mask > 0))
@@ -126,52 +135,113 @@ class DORN_nyu_nohints(Model):
         """
         Decodes a prediction to a depth image using the sid_obj
         :param prediction: Tuple (log_ord_c, log_ord_c_comp), as in ord_reg_loss.
-        :param sid_obj: A SID object that stores info about this discretization.
-        :return: A depth map.
+        :param sid_obj: A SIDTorch object that stores info about this discretization.
+        :return: A depth map, as a torch.tensor.
         """
         log_probs, _ = prediction
         depth_index = torch.sum((log_probs >= np.log(0.5)), dim=1).long().unsqueeze(1)
-        depth_vals = sid_obj.get_value_from_sid_index(depth_index)
+        depth_map = sid_obj.get_value_from_sid_index(depth_index)
         # print(depth_vals.size())
-        return depth_vals
+        return depth_map
 
-    def write_updates(self, writer, input_, output_, loss, it, tag):
+    def write_updates(self, writer, input_, output, loss, it, tag):
         # Metrics
         # Ordinal regression loss
         writer.add_scalar(tag + "/ord_reg_loss", loss.item(), it)
 
         # Get predicted depth image
-        depth_pred = self.ord_decode(output_, self.sid_obj)
-        mask = input_["mask"]
+        depth_pred = self.ord_decode(output, self.sid_obj)
         depth_truth = input_["rawdepth"]
-        # deltas
-        writer.add_scalar(tag + "/delta1", delta(depth_pred, depth_truth, mask, 1.25).item(), it)
-        writer.add_scalar(tag + "/delta2", delta(depth_pred, depth_truth, mask, 1.25 ** 2).item(), it)
-        writer.add_scalar(tag + "/delta3", delta(depth_pred, depth_truth, mask, 1.25 ** 3).item(), it)
-        # rel_abs_diff
-        writer.add_scalar(tag + "/rel_abs_diff", rel_abs_diff(depth_pred, depth_truth, mask).item(), it)
-        # rel_sqr_diff
-        writer.add_scalar(tag + "/rel_sqr_diff", rel_sqr_diff(depth_pred, depth_truth, mask).item(), it)
-        # log10
-        writer.add_scalar(tag + "/log10", log10(depth_pred, depth_truth, mask).item(), it)
-        # rmse
-        writer.add_scalar(tag + "/rmse", rmse(depth_pred, depth_truth, mask).item(), it)
-        # rmse(log)
-        writer.add_scalar(tag + "/log_rmse", rmse(torch.log(depth_pred),
-                                                  torch.log(depth_truth),
-                                                  mask).item(), it)
+        mask = input_["mask"]
+        metrics = self.get_metrics(depth_pred, depth_truth, mask)
+
+        # write metrics
+        for metric_name in metrics:
+            writer.add_scalar(tag + "/{}".format(metric_name), metrics[metric_name], it)
 
         # min/max
         writer.add_scalar(tag + "depth_min", torch.min(depth_pred).item(), it)
         writer.add_scalar(tag + "depth_max", torch.max(depth_pred).item(), it)
 
         # Images
+        # RGB
+        rgb_orig = vutils.make_grid(input_["rgb_orig"] / 255, nrow=4)
+        writer.add_image(tag + "/rgb_orig", rgb_orig, it)
+        # SID ground truth
+        depth_sid_truth = self.sid_obj.get_value_from_sid_index(input_["rawdepth_sid_index"])
+        depth_sid_truth = vutils.make_grid(depth_sid_truth, nrow=4,
+                                               normalize=True, range=(self.min_depth, self.max_depth))
+        writer.add_image(tag + "/depth_sid_truth", depth_sid_truth, it)
+        # Original raw depth image
+        depth_truth = vutils.make_grid(input_["rawdepth"], nrow=4,
+                                       normalize=True, range=(self.min_depth, self.max_depth))
+        writer.add_image(tag + "/depth_truth", depth_truth, it)
+        # Output depth image
+        depth_output = vutils.make_grid(depth_pred, nrow=4,
+                                        normalize=True, range=(self.min_depth, self.max_depth))
+        writer.add_image(tag + "/depth_output", depth_output, it)
+        # Depth mask
+        depth_mask = vutils.make_grid(input_["mask"], nrow=4, normalize=False)
+        writer.add_image(tag + "/depth_mask", depth_mask, it)
 
-    def write_eval(self, data, output_file, device):
-        pass
+    def write_eval(self, data, path, device):
+        _, logprobs = self.get_loss(data, device)
+        depth_map = self.ord_decode(logprobs, self.sid_obj)
+        gt = data["rawdepth"]
+        mask = data["mask"]
+        out = {"depth_map": depth_map,
+               "gt": gt,
+               "mask": mask,
+               "logprobs": logprobs}
+        safe_makedir(os.path.dirname(path))
+        torch.save(out, path)
+
 
     def evaluate_dir(self, output_dir, device):
-        pass
+        """Get average losses over all data files"""
+        num_pixels = 0.
+        avg_losses = defaultdict(float)
+        for (dirname, dirnames, filenames) in os.walk(output_dir, topdown=False, followlinks=True):
+            if len(filenames):
+                for torchfile in filenames:
+                    metrics, data = self.evaluate_file(torchfile)
+                    num_valid_pixels = torch.sum(data["mask"]).item()
+                    num_pixels += num_valid_pixels
+                    for metric_name in metrics:
+                        avg_losses[metric_name] += num_valid_pixels * metrics[metric_name]
+
+        for metric_name in metrics:
+            avg_losses[metric_name] /= num_pixels
+        print(avg_losses)
+        return avg_losses
+
+    def evaluate_file(self, torchfile):
+        data = torch.load(torchfile)
+        metrics = self.get_metrics(data["depth_map"],
+                                   data["gt"],
+                                   data["mask"])
+        return metrics, data
+
+    @staticmethod
+    def get_metrics(depth_pred, depth_truth, mask):
+        metrics = dict()
+        # deltas
+        metrics["delta1"] = delta(depth_pred, depth_truth, mask, 1.25).item()
+        metrics["delta2"] = delta(depth_pred, depth_truth, mask, 1.25 ** 2).item()
+        metrics["delta3"] = delta(depth_pred, depth_truth, mask, 1.25 ** 3).item()
+        # rel_abs_diff
+        metrics["rel_abs_diff"] = rel_abs_diff(depth_pred, depth_truth, mask).item()
+        # rel_sqr_diff
+        metrics["rel_sqr_diff"] = rel_sqr_diff(depth_pred, depth_truth, mask).item()
+        # log10
+        metrics["log10"] = log10(depth_pred, depth_truth, mask).item()
+        # rmse
+        metrics["rmse"] = rmse(depth_pred, depth_truth, mask).item()
+        # rmse(log)
+        metrics["log_rmse"] = rmse(torch.log(depth_pred),
+                                   torch.log(depth_truth),
+                                   mask).item()
+        return metrics
 
     def make_layers(self, in_channels, in_height, in_width, sid_bins):
         """

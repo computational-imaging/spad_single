@@ -1,3 +1,4 @@
+import torch
 import numpy as np
 
 
@@ -7,6 +8,8 @@ class SID:
 
     Bonus: Includes support for when the index is -1 (in which case the value should be min_val)
     and when it is sid_bins (in which case the value should be max_val).
+
+    Works in numpy.
     """
     def __init__(self, sid_bins, min_val, max_val, offset):
         self.sid_bins = sid_bins
@@ -36,7 +39,7 @@ class SID:
         """
         sid_index = np.floor(self.sid_bins * (np.log(arr + self.offset) - np.log(self.alpha)) /
                                              (np.log(self.beta) - np.log(self.alpha))).astype(np.int32)
-        sid_index = np.clip(sid_index, -1, self.sid_bins)
+        sid_index = np.clip(sid_index, a_min=-1, a_max=self.sid_bins)
         # An index of -1 indicates min_val, while self.sid_bins indicates max_val
         return sid_index
 
@@ -49,6 +52,59 @@ class SID:
         """
         return np.take(self.sid_bin_values, sid_index)
 
+
+class SIDTorch:
+    """
+    Implements Spacing-Increasing Discretization as described in the DORN paper.
+
+    Bonus: Includes support for when the index is -1 (in which case the value should be min_val)
+    and when it is sid_bins (in which case the value should be max_val).
+
+    Works in pytorch.
+    """
+    def __init__(self, sid_bins, min_val, max_val, offset):
+        self.sid_bins = sid_bins
+        self.min_val = min_val
+        self.max_val = max_val
+        self.offset = offset
+
+        # Derived quantities
+        self.alpha = min_val + offset
+        self.beta = max_val + offset
+        bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
+        self.sid_bin_edges = torch.tensor(np.exp(np.log(self.alpha) +
+                                             bin_edges / self.sid_bins * np.log(self.beta / self.alpha)))
+        self.sid_bin_values = (self.sid_bin_edges[:-1] + self.sid_bin_edges[1:]) / 2 - self.offset
+        self.sid_bin_values = torch.cat([self.sid_bin_values,
+                                         torch.tensor([self.max_val, self.min_val])], 0)
+        # Do the above so that:
+        # self.sid_bin_values[-1] = self.min_val < self.sid_bin_values[0]
+        # and
+        # self.sid_bin_values[sid_bins] = self.max_val > self.sid_bin_values[sid_bins-1]
+
+    def get_sid_index_from_value(self, arr):
+        """
+        Given an array of values in the range [min_val, max_val], return the
+        indices of the bins they correspond to
+        :param arr: The array to turn into indices.
+        :return: The array of indices.
+        """
+        print(arr + self.offset)
+        temp = torch.tensor(self.sid_bins * (np.log(arr + self.offset) - np.log(self.alpha)) /
+                                            (np.log(self.beta) - np.log(self.alpha)))
+        sid_index = torch.floor(temp).long()
+        sid_index = torch.clamp(sid_index, min=-1, max=self.sid_bins)
+        # An index of -1 indicates min_val, while self.sid_bins indicates max_val
+        return sid_index
+
+    def get_value_from_sid_index(self, sid_index):
+        """
+        Given an array of indices in the range {-1, 0,...,sid_bins},
+        return the representative value of the selected bin.
+        :param sid_index: The array of indices.
+        :return: The array of values correspondding to those indices
+        """
+        return torch.take(self.sid_bin_values, sid_index)
 
 class AddSIDDepth:
     """Creates a copy of the depth image where the depth value has been replaced
@@ -111,6 +167,27 @@ if __name__ == '__main__':
     print(beta)
 
     sid_nyuv2_dorn = SID(K, alpha, beta, 0.)
+    print(sid_nyuv2_dorn.sid_bin_edges)
+    print(sid_nyuv2_dorn.sid_bin_values)
+    arr = np.array([0., 0.4, 2, 9, 10])
+
+    sid_index = sid_nyuv2_dorn.get_sid_index_from_value(arr)
+    print(sid_index)
+    values = sid_nyuv2_dorn.get_value_from_sid_index(sid_index)
+    print(values)
+
+    ###
+    K = 68
+    bin_edges = np.array(range(K + 1)).astype(np.float32)
+    dorn_decode = np.exp((bin_edges - 1) / 25 - 0.36)
+    d0 = dorn_decode[0]
+    d1 = dorn_decode[1]
+    alpha = (2 * d0 ** 2) / (d1 + d0)
+    print(alpha)
+    beta = alpha * np.exp(K * np.log(2 * d0 / alpha - 1))
+    print(beta)
+
+    sid_nyuv2_dorn = SIDTorch(K, alpha, beta, 0.)
     print(sid_nyuv2_dorn.sid_bin_edges)
     print(sid_nyuv2_dorn.sid_bin_values)
     arr = np.array([0., 0.4, 2, 9, 10])
