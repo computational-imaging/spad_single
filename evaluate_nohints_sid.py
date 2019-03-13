@@ -19,7 +19,7 @@ ex = Experiment('eval_nohints_sid', ingredients=[nyuv2_nohints_sid_ingredient])
 
 @ex.config
 def cfg(data_config):
-    model_config = {
+    model_config = {                            # Load pretrained model for testing
         "model_name": "DORN_nyu",
         "model_params": {
             "in_channels": 3,
@@ -35,7 +35,7 @@ def cfg(data_config):
         },
         "model_state_dict_fn": None
     }
-    ckpt_file = None
+    ckpt_file = None                            # Keep as None
     eval_config = {
         "dataset": "val",                       # {val, test}
         "mode": "save_outputs",                 # {save_outputs, evaluate_metrics}
@@ -83,11 +83,12 @@ def main(model_config,
         # Run the model on everything and save everything to disk.
         safe_makedir(eval_config["output_dir"])
         with torch.no_grad():
+            model.eval()
             for i, data in enumerate(dataloader):
                 print("Evaluating {}".format(i))
                 model.write_eval(data,
                                  os.path.join(eval_config["output_dir"],
-                                              "{}_out.npy".format(i)),
+                                              "{}_out.pt".format(data["entry"])),
                                  device)
 
     elif eval_config["mode"] == "evaluate_metrics":
