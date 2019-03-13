@@ -1,6 +1,7 @@
 import torch
 from torch.nn import MSELoss, L1Loss
 
+
 ##################
 # Loss functions #
 ##################
