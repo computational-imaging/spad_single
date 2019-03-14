@@ -48,9 +48,13 @@ def make_optimizer(model, optim_name, optim_params, optim_state_dict_fn):
 
 def make_scheduler(optimizer, scheduler_name, scheduler_params, last_epoch):
     scheduler_class = getattr(optim.lr_scheduler, scheduler_name)
-    scheduler = scheduler_class(optimizer,
-                                last_epoch=last_epoch,
-                                **scheduler_params)
+    if scheduler_name is "ReduceLROnPlateau":
+        scheduler = scheduler_class(optimizer,
+                                    **scheduler_params)
+    else:
+        scheduler = scheduler_class(optimizer,
+                                    last_epoch=last_epoch,
+                                    **scheduler_params)
     return scheduler
 
 
@@ -121,7 +125,8 @@ def train(model,
         for it, input_ in enumerate(train_loader):
             trainloss, output = model.get_loss(input_, device)
             with torch.no_grad():
-                model.write_updates(writer, input_, output, trainloss, it, "train")
+                if not it % 100:
+                    model.write_updates(writer, input_, output, trainloss, it, "train")
             scheduler.optimizer.zero_grad()
             trainloss.backward()
             scheduler.optimizer.step()
@@ -147,7 +152,15 @@ def train(model,
                 valloss, output = model.get_loss(input_, device)
                 model.write_updates(writer, input_, output, valloss, it, "val")
             print("End epoch {}\tval_loss: {}".format(epoch, valloss))
+            if type(scheduler).__name__ == "ReduceLROnPlateau":
+                scheduler.step(valloss)
+            else:
+                scheduler.step()
             del input_, valloss  # Clean up
+        elif type(scheduler).__name__ == "ReduceLROnPlateau":
+            raise RuntimeWarning("ReduceLROnPlateau scheduler used with no validation - using last training loss.")
+            scheduler.step(trainloss)
+
 
         # Save checkpoint
         state = {
