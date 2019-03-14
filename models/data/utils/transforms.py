@@ -169,32 +169,7 @@ class ToTensorAll(): # pylint: disable=too-few-public-methods
         return sample
 
 
-class AddDepthHist(): # pylint: disable=too-few-public-methods
-    """Takes a depth map and computes a histogram of depths as well"""
-    def __init__(self, use_albedo=True, use_squared_falloff=True, **kwargs):
-        """
-        kwargs - passthrough to np.histogram
-        """
-        self.use_albedo = use_albedo
-        self.use_squared_falloff = use_squared_falloff
-        self.hist_kwargs = kwargs
 
-    def __call__(self, sample):
-        depth = sample["depth"]
-        if "mask" in sample:
-            mask = sample["mask"]
-            depth = depth[mask > 0]
-        weights = np.ones(depth.shape)
-        if self.use_albedo:
-            weights = weights * np.mean(sample["albedo"]) # Attenuate by the average albedo
-        if self.use_squared_falloff:
-            weights[depth == 0] = 0.
-            weights[depth != 0] = weights[depth != 0] / (depth[depth != 0]**2)
-        if not self.use_albedo and not self.use_squared_falloff:
-            sample["hist"], _ = np.histogram(depth, **self.hist_kwargs)
-        else:
-            sample["hist"], _ = np.histogram(depth, weights=weights, **self.hist_kwargs)
-        return sample
 
 
 
