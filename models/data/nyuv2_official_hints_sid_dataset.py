@@ -3,19 +3,21 @@ import os
 import numpy as np
 
 from torchvision import transforms
+
 from models.data.utils.transforms import (Save, ResizeAll, RandomHorizontalFlipAll, Normalize,
                                           AddDepthMask, ToTensorAll)
-from models.data.utils.sid_utils import AddSIDDepth
+from models.data.utils.sid_utils import AddSIDDepth, SID
+from models.data.nyuv2_official_nohints_dataset import NYUDepthv2Dataset
+from models.data.utils.spad_utils import spad_ingredient, SimulateSpad
+
 
 from sacred import Experiment
 
-from models.data.nyuv2_official_nohints_dataset import NYUDepthv2Dataset
-
-nyuv2_nohints_sid_ingredient = Experiment('data_config')
+nyuv2_hints_sid_ingredient = Experiment('data_config', ingredients=[spad_ingredient])
 
 
-@nyuv2_nohints_sid_ingredient.config
-def cfg():
+@nyuv2_hints_sid_ingredient.config
+def cfg(spad_config):
     data_name = "nyu_depth_v2"
     # Paths should be specified relative to the train script, not this file.
     root_dir = os.path.join("data", "nyu_depth_v2_scaled16")
@@ -46,9 +48,8 @@ def cfg():
     # Complex procedure to calculate min and max depths
     # to conform to DORN standards
     # i.e. make it so that doing exp(i/25 - 0.36) is the right way to decode depth from a bin value i.
-    min_depth = alpha
-    max_depth = beta
-    del alpha, beta
+    min_depth = 0.
+    max_depth = 10.
     use_dorn_normalization = True # Sets specific normalization if using DORN network.
                                   # If False, defaults to using the empirical mean and variance from train set.
 
@@ -56,13 +57,14 @@ def cfg():
 #############
 # Load data #
 #############
-@nyuv2_nohints_sid_ingredient.capture
+@nyuv2_hints_sid_ingredient.capture
 def load_data(train_file, train_dir,
               val_file, val_dir,
               test_file, test_dir,
               min_depth, max_depth, use_dorn_normalization,
               sid_bins, alpha, beta, offset,
-              blacklist_file):
+              blacklist_file,
+              spad_config):
     """Generates training and validation datasets from
     text files and directories. Sets up datasets with transforms.py.
     *_file - string - a text file containing info for DepthDataset to load the images
@@ -81,8 +83,9 @@ def load_data(train_file, train_dir,
     -------
     train, val, test - torch.utils.data.Dataset objects containing the relevant splits
     """
+    print(spad_config)
     train = NYUDepthv2Dataset(train_file, train_dir, transform=None,
-                              file_types=["rgb", "rawdepth"],
+                              file_types=["rgb", "albedo", "rawdepth"],
                               min_depth=min_depth, max_depth=max_depth)
 
     train.rgb_mean, train.rgb_var = train.get_mean_and_var()
@@ -101,38 +104,44 @@ def load_data(train_file, train_dir,
 
     train_transform = transforms.Compose([
         AddDepthMask(min_depth, max_depth, "rawdepth"),
-        Save(["rgb", "mask", "rawdepth"], "_orig"),
+        Save(["rgb", "mask", "albedo", "rawdepth"], "_orig"),
         Normalize(transform_mean, transform_var, key="rgb"),
-        ResizeAll((353, 257), keys=["rgb", "rawdepth"]), #
-        RandomHorizontalFlipAll(flip_prob=0.5, keys=["rgb", "rawdepth"]),
+        ResizeAll((353, 257), keys=["rgb", "albedo", "rawdepth"]),
+        RandomHorizontalFlipAll(flip_prob=0.5, keys=["rgb", "albedo", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"), # "mask"
         AddSIDDepth(sid_bins, alpha, beta, offset, "rawdepth"), # "rawdepth_sid"  "rawdepth_sid_index"
-        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_orig",
-                          "rawdepth_sid", "rawdepth_sid_index", "mask", "mask_orig"])
+        SimulateSpad("rawdepth", "albedo", "mask", "spad", min_depth, max_depth,
+                     **spad_config, sid_obj=SID(sid_bins, alpha, beta, offset)),
+        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_orig", "albedo", "albedo_orig",
+                          "rawdepth_sid", "rawdepth_sid_index", "mask", "mask_orig", "spad"])
         ]
     )
 
     val_transform = transforms.Compose([
         AddDepthMask(min_depth, min_depth, "rawdepth"),
-        Save(["rgb", "mask", "rawdepth"], "_orig"),
+        Save(["rgb", "mask", "albedo", "rawdepth"], "_orig"),
         Normalize(transform_mean, transform_var, key="rgb"),
-        ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
+        ResizeAll((353, 257), keys=["rgb", "albedo", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"),
         AddSIDDepth(sid_bins, alpha, beta, offset, "rawdepth"),
-        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_orig",
-                          "rawdepth_sid", "rawdepth_sid_index", "mask", "mask_orig"])
+        SimulateSpad("rawdepth", "albedo", "mask", "spad", min_depth, max_depth,
+                     **spad_config, sid_obj=SID(sid_bins, alpha, beta, offset)),
+        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_orig", "albedo", "albedo_orig",
+                          "rawdepth_sid", "rawdepth_sid_index", "mask", "mask_orig", "spad"])
         ]
     )
 
     test_transform = transforms.Compose([
         AddDepthMask(min_depth, min_depth, "rawdepth"),
-        Save(["rgb", "mask", "rawdepth"], "_orig"),
+        Save(["rgb", "mask", "albedo", "rawdepth"], "_orig"),
         Normalize(transform_mean, transform_var, key="rgb"),
-        ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
+        ResizeAll((353, 257), keys=["rgb", "albedo", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"),
         AddSIDDepth(sid_bins, alpha, beta, offset, "rawdepth"),
-        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_orig",
-                          "rawdepth_sid", "rawdepth_sid_index", "mask", "mask_orig"])
+        SimulateSpad("rawdepth", "albedo", "mask", "spad", min_depth, max_depth,
+                     **spad_config, sid_obj=SID(sid_bins, alpha, beta, offset)),
+        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_orig", "albedo", "albedo_orig",
+                          "rawdepth_sid", "rawdepth_sid_index", "mask", "mask_orig", "spad"])
         ]
     )
     train.transform = train_transform
@@ -159,9 +168,9 @@ def load_data(train_file, train_dir,
 ###########
 # Testing #
 ###########
-@nyuv2_nohints_sid_ingredient.automain
+@nyuv2_hints_sid_ingredient.automain
 def test_load_data(min_depth, max_depth):
     train, val, test = load_data()
     sample = train.get_item_by_id("dining_room_0001a/0001")
-    print(sample["rawdepth_sid"].size())
+    print(sample["spad"])
 
