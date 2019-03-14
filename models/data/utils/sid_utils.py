@@ -6,41 +6,45 @@ class SID:
     """
     Implements Spacing-Increasing Discretization as described in the DORN paper.
 
-    Bonus: Includes support for when the index is -1 (in which case the value should be min_val)
-    and when it is sid_bins (in which case the value should be max_val).
+    Discretizes the region [alpha, beta]
+    Offset controls spacing even further by discretizing [alpha + offset, beta + offset] and then
+    subtracting offset from all bin edges.
+
+    Bonus: Includes support for when the index is -1 (in which case the value should be alpha)
+    and when it is sid_bins (in which case the value should be beta).
 
     Works in numpy.
     """
-    def __init__(self, sid_bins, min_val, max_val, offset):
+    def __init__(self, sid_bins, alpha, beta, offset):
         self.sid_bins = sid_bins
-        self.min_val = min_val
-        self.max_val = max_val
+        self.alpha = alpha
+        self.beta = beta
         self.offset = offset
 
         # Derived quantities
-        self.alpha = min_val + offset
-        self.beta = max_val + offset
+        self.alpha_star = self.alpha + offset
+        self.beta_star = self.beta + offset
         bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
-        self.sid_bin_edges = np.array(np.exp(np.log(self.alpha) +
-                                             bin_edges / self.sid_bins * np.log(self.beta / self.alpha)))
+        self.sid_bin_edges = np.array(np.exp(np.log(self.alpha_star) +
+                                             bin_edges / self.sid_bins * np.log(self.beta_star / self.alpha_star)))
         self.sid_bin_values = (self.sid_bin_edges[:-1] + self.sid_bin_edges[1:]) / 2 - self.offset
-        self.sid_bin_values = np.append(self.sid_bin_values, [self.max_val, self.min_val])
+        self.sid_bin_values = np.append(self.sid_bin_values, [self.alpha, self.beta])
         # Do the above so that:
-        # self.sid_bin_values[-1] = self.min_val < self.sid_bin_values[0]
+        # self.sid_bin_values[-1] = self.alpha < self.sid_bin_values[0]
         # and
-        # self.sid_bin_values[sid_bins] = self.max_val > self.sid_bin_values[sid_bins-1]
+        # self.sid_bin_values[sid_bins] = self.beta > self.sid_bin_values[sid_bins-1]
 
     def get_sid_index_from_value(self, arr):
         """
-        Given an array of values in the range [min_val, max_val], return the
+        Given an array of values in the range [alpha, beta], return the
         indices of the bins they correspond to
         :param arr: The array to turn into indices.
         :return: The array of indices.
         """
-        sid_index = np.floor(self.sid_bins * (np.log(arr + self.offset) - np.log(self.alpha)) /
-                                             (np.log(self.beta) - np.log(self.alpha))).astype(np.int32)
+        sid_index = np.floor(self.sid_bins * (np.log(arr + self.offset) - np.log(self.alpha_star)) /
+                                             (np.log(self.beta_star) - np.log(self.alpha_star))).astype(np.int32)
         sid_index = np.clip(sid_index, a_min=-1, a_max=self.sid_bins)
-        # An index of -1 indicates min_val, while self.sid_bins indicates max_val
+        # An index of -1 indicates alpha, while self.sid_bins indicates beta
         return sid_index
 
     def get_value_from_sid_index(self, sid_index):
@@ -57,30 +61,30 @@ class SIDTorch:
     """
     Implements Spacing-Increasing Discretization as described in the DORN paper.
 
-    Bonus: Includes support for when the index is -1 (in which case the value should be min_val)
-    and when it is sid_bins (in which case the value should be max_val).
+    Bonus: Includes support for when the index is -1 (in which case the value should be alpha)
+    and when it is sid_bins (in which case the value should be beta).
 
     Works in pytorch.
     """
-    def __init__(self, sid_bins, min_val, max_val, offset):
+    def __init__(self, sid_bins, alpha, beta, offset):
         self.sid_bins = sid_bins
-        self.min_val = min_val
-        self.max_val = max_val
+        self.alpha = alpha
+        self.beta = beta
         self.offset = offset
 
         # Derived quantities
-        self.alpha = min_val + offset
-        self.beta = max_val + offset
+        self.alpha_star = self.alpha + offset
+        self.beta_star = self.beta + offset
         bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
-        self.sid_bin_edges = torch.tensor(np.exp(np.log(self.alpha) +
-                                             bin_edges / self.sid_bins * np.log(self.beta / self.alpha)))
+        self.sid_bin_edges = torch.tensor(np.exp(np.log(self.alpha_star) +
+                                             bin_edges / self.sid_bins * np.log(self.beta_star / self.alpha_star)))
         self.sid_bin_values = (self.sid_bin_edges[:-1] + self.sid_bin_edges[1:]) / 2 - self.offset
         self.sid_bin_values = torch.cat([self.sid_bin_values,
-                                         torch.tensor([self.max_val, self.min_val])], 0)
+                                         torch.tensor([self.beta, self.alpha])], 0)
         # Do the above so that:
-        # self.sid_bin_values[-1] = self.min_val < self.sid_bin_values[0]
+        # self.sid_bin_values[-1] = self.alpha < self.sid_bin_values[0]
         # and
-        # self.sid_bin_values[sid_bins] = self.max_val > self.sid_bin_values[sid_bins-1]
+        # self.sid_bin_values[sid_bins] = self.beta > self.sid_bin_values[sid_bins-1]
 
     def to(self, device):
         self.sid_bin_values = self.sid_bin_values.to(device)
@@ -88,17 +92,17 @@ class SIDTorch:
 
     def get_sid_index_from_value(self, arr):
         """
-        Given an array of values in the range [min_val, max_val], return the
+        Given an array of values in the range [alpha, beta], return the
         indices of the bins they correspond to
         :param arr: The array to turn into indices.
         :return: The array of indices.
         """
         print(arr + self.offset)
-        temp = torch.tensor(self.sid_bins * (np.log(arr + self.offset) - np.log(self.alpha)) /
-                                            (np.log(self.beta) - np.log(self.alpha)))
+        temp = torch.tensor(self.sid_bins * (np.log(arr + self.offset) - np.log(self.alpha_star)) /
+                                            (np.log(self.beta_star) - np.log(self.alpha_star)))
         sid_index = torch.floor(temp).long()
         sid_index = torch.clamp(sid_index, min=-1, max=self.sid_bins)
-        # An index of -1 indicates min_val, while self.sid_bins indicates max_val
+        # An index of -1 indicates alpha, while self.sid_bins indicates beta
         return sid_index
 
     def get_value_from_sid_index(self, sid_index):
@@ -126,13 +130,13 @@ class AddSIDDepth:
     offset is a shift term that we subtract from alpha
     """
 
-    def __init__(self, sid_bins, min_val, max_val, offset, key):
+    def __init__(self, sid_bins, alpha, beta, offset, key):
         """
         :param sid_obj: The SID object to use to convert between indices and depth values and vice versa
         :param key: The key (in sample) of the depth map to use.
         """
         self.key = key  # Key of the depth image to convert to SID form.
-        self.sid_obj = SID(sid_bins, min_val, max_val, offset)
+        self.sid_obj = SID(sid_bins, alpha, beta, offset)
 
     def __call__(self, sample):
         """Computes an array with indices, and also an array with

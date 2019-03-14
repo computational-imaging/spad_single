@@ -11,7 +11,7 @@ from sacred import Experiment
 
 from models.data.nyuv2_official_nohints_dataset import NYUDepthv2Dataset
 
-nyuv2_nohints_sid_ingredient = Experiment('data_config')
+nyuv2_hints_ingredient = Experiment('data_config')
 
 
 @nyuv2_nohints_sid_ingredient.config
@@ -31,7 +31,11 @@ def cfg():
     # Set relative to the directory from which the dataset is being loaded.
     blacklist_file = "blacklist.txt"
 
-    # Calculate alpha and beta
+    #
+    hist_bins = 1024
+    min_depth = 0. # Defaults for NYUv2
+    max_depth = 10.
+
     sid_bins = 68   # Number of bins (network outputs 2x this number of channels)
     bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
     dorn_decode = np.exp((bin_edges - 1) / 25 - 0.36)
@@ -99,7 +103,6 @@ def load_data(train_file, train_dir,
     else:
         transform_mean = train.rgb_mean
         transform_var = train.rgb_var
-
     train_transform = transforms.Compose([
         AddDepthMask(min_depth, max_depth, "rawdepth"),
         Save(["rgb", "mask", "rawdepth"], "_orig"),
@@ -164,5 +167,5 @@ def load_data(train_file, train_dir,
 def test_load_data(min_depth, max_depth):
     train, val, test = load_data()
     sample = train.get_item_by_id("dining_room_0001a/0001")
-
+    print(sample["rawdepth_sid"].size())
 

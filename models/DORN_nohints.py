@@ -10,7 +10,7 @@ from collections import defaultdict
 from models.core.checkpoint import safe_makedir
 from models.core.model_core import Model
 from models.data.utils.sid_utils import SIDTorch
-from models.loss import delta, rmse, rel_abs_diff, rel_sqr_diff, log10
+from models.loss import delta, mse, rmse, rel_abs_diff, rel_sqr_diff, log10
 
 
 class DORN_nyu_nohints(Model):
@@ -23,7 +23,8 @@ class DORN_nyu_nohints(Model):
     """
     def __init__(self, in_channels=3, in_height=257, in_width=353,
                  sid_bins=68, offset=0.,
-                 min_depth=0.6569154266167957, max_depth=9.972175646365525,
+                 min_depth = 0., max_depth = 10.,
+                 alpha=0.6569154266167957, beta=9.972175646365525,
                  frozen=True, pretrained=True,
                  state_dict_file=os.path.join("models", "torch_params_nyuv2_BGR.pth.tar")):
         super(Model, self).__init__()
@@ -36,8 +37,9 @@ class DORN_nyu_nohints(Model):
         self.sid_bins = sid_bins
         self.min_depth = min_depth
         self.max_depth = max_depth
-        self.sid_obj = SIDTorch(sid_bins, min_depth, max_depth, offset)
-
+        self.alpha = alpha
+        self.beta = beta
+        self.sid_obj = SIDTorch(self.sid_bins, self.alpha, self.beta, self.offset)
 
         self.frozen = frozen
         self.pretrained = pretrained
@@ -242,6 +244,8 @@ class DORN_nyu_nohints(Model):
         metrics["rel_sqr_diff"] = rel_sqr_diff(depth_pred, depth_truth, mask).item()
         # log10
         metrics["log10"] = log10(depth_pred, depth_truth, mask).item()
+        # mse
+        metrics["mse"] = mse(depth_pred, depth_truth, mask).item()
         # rmse
         metrics["rmse"] = rmse(depth_pred, depth_truth, mask).item()
         # rmse(log)
@@ -1957,7 +1961,7 @@ class DORN_nyu_nohints(Model):
         zoom_factor = 8
         height_out = x.size(2) + (x.size(2)-1) * (zoom_factor-1)
         width_out = x.size(3) + (x.size(3)-1) * (zoom_factor-1)
-        x = F.interpolate(x, size=(height_out, width_out), mode="bilinear", align_corners=False)
+        x = F.interpolate(x, size=(height_out, width_out), mode="bilinear", align_corners=True)
 
         return x
 
@@ -1994,9 +1998,8 @@ if __name__ == "__main__":
     # Complex procedure to calculate min and max depths
     # to conform to DORN standards
     # i.e. make it so that doing exp(i/25 - 0.36) is the right way to decode depth from a bin value i.
-    min_depth = alpha
-    max_depth = beta
-    del alpha, beta
+    min_depth = 0.
+    max_depth = 10.
     use_dorn_normalization = True # Sets specific normalization if using DORN network.
                                   # If False, defaults to using the empirical mean and variance from train set.
     # if use_dorn_normalization:
@@ -2076,7 +2079,7 @@ if __name__ == "__main__":
               val_file, val_dir,
               test_file, test_dir,
               min_depth, max_depth, use_dorn_normalization,
-              sid_bins, offset,
+              sid_bins, alpha, beta, offset,
               blacklist_file)
     dataloader = DataLoader(train, batch_size=1, shuffle=False, num_workers=1)
     model = DORN_nyu_nohints()

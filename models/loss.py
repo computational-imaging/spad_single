@@ -77,34 +77,24 @@ def delta(prediction, target, mask, threshold):
     c = torch.max(prediction[mask > 0]/target[mask > 0], target[mask > 0]/prediction[mask > 0])
     return torch.sum((c < threshold).float())/(torch.sum(mask))
 
+def mse(prediction, target, mask):
+    """
+    Return the RMSE of prediction and target
+    """
+    diff = prediction - target
+    squares = (diff[mask > 0]).pow(2)
+    out = torch.sum(squares)
+    total = torch.sum(mask).item()
+    if total > 0:
+        return (1. / torch.sum(mask)) * out
+    else:
+        return torch.zeros(1)
 
 def rmse(prediction, target, mask):
     """
     Return the RMSE of prediction and target
     """
-    # print("prediction nans (rmse): {}".format(torch.isnan(prediction).any()))
-    # print("target nans (rmse): {}".format(torch.isnan(target).any()))
-    diff = prediction - target
-    squares = (diff[mask > 0]).pow(2)
-    # rawmaxidx = squares.view(-1).max(0)[1]
-    # idx = []
-    # for adim in list(squares.size())[::-1]:
-    #     idx.append((rawmaxidx%adim).item())
-    #     rawmaxidx = rawmaxidx / adim
-    # # print(idx)
-    # idx.reverse()
-    # idx = tuple(idx)
-    # print(idx)
-    # print(torch.max(squares))
-    # print(squares[idx])
-    # print(prediction[idx])
-    # print(target[idx])
-    out = torch.sum(squares)
-    total = torch.sum(mask).item()
-    if total > 0:
-        return torch.sqrt((1. / torch.sum(mask)) * out)
-    else:
-        return torch.zeros(1)
+    return torch.sqrt(mse(prediction, target, mask))
 
 
 def log10(prediction, target, mask, size_average=True):

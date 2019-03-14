@@ -26,6 +26,8 @@ def cfg(data_config):
             "offset": data_config["offset"],
             "min_depth": data_config["min_depth"],
             "max_depth": data_config["max_depth"],
+            "alpha": data_config["alpha"],
+            "beta": data_config["beta"],
             "frozen": True,
             "pretrained": True,
             "state_dict_file": os.path.join("models", "torch_params_nyuv2_BGR.tar"),

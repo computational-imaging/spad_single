@@ -29,6 +29,8 @@ def cfg(data_config):
             "offset": data_config["offset"],
             "min_depth": data_config["min_depth"],
             "max_depth": data_config["max_depth"],
+            "alpha": data_config["alpha"],
+            "beta": data_config["beta"],
             "frozen": True,
             "pretrained": True,
             "state_dict_file": os.path.join("models", "torch_params_nyuv2_BGR.pth.tar"),
@@ -39,7 +41,8 @@ def cfg(data_config):
     eval_config = {
         "dataset": "val",                       # {val, test}
         "mode": "save_outputs",                 # {save_outputs, evaluate_metrics}
-        "output_dir": "./data/dorn_nohints_eval"
+        "output_dir": "./data/dorn_nohints_eval",
+        "entry": None                           # If we want to evaluate on a single entry
     }
     seed = 95290421
 
@@ -78,7 +81,7 @@ def main(model_config,
     dataloader = DataLoader(dataset,
                             batch_size=1,
                             shuffle=False,
-                            num_workers=2,
+                            num_workers=4,
                             pin_memory=True,
                             worker_init_fn=worker_init_randomness)
     if eval_config["mode"] == "save_outputs":
@@ -93,13 +96,17 @@ def main(model_config,
                                               "{}_out.pt".format(data["entry"][0])),
                                  device)
                 # TESTING
-                if i == 9:
-                    break
+                # if i == 9:
+                #     break
 
     elif eval_config["mode"] == "evaluate_metrics":
         # Load things and call the model's evaluate function on them.
         metrics = model.evaluate_dir(eval_config["output_dir"], device)
         with open(os.path.join(eval_config["output_dir"], "metrics.json"), "w") as f:
             json.dump(metrics, f)
+
+    elif eval_config["mode"] == "save_file":
+        safe_makedir(eval_config["output_dir"])
+
     else:
         print("Unrecognized mode: {}".format(eval_config["mode"]))
