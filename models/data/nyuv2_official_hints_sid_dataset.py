@@ -31,7 +31,6 @@ def cfg():
     # Set relative to the directory from which the dataset is being loaded.
     blacklist_file = "blacklist.txt"
 
-    # Calculate alpha and beta
     sid_bins = 68   # Number of bins (network outputs 2x this number of channels)
     bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
     dorn_decode = np.exp((bin_edges - 1) / 25 - 0.36)
@@ -47,8 +46,9 @@ def cfg():
     # Complex procedure to calculate min and max depths
     # to conform to DORN standards
     # i.e. make it so that doing exp(i/25 - 0.36) is the right way to decode depth from a bin value i.
-    min_depth = 0.
-    max_depth = 10.
+    min_depth = alpha
+    max_depth = beta
+    del alpha, beta
     use_dorn_normalization = True # Sets specific normalization if using DORN network.
                                   # If False, defaults to using the empirical mean and variance from train set.
 
@@ -83,8 +83,7 @@ def load_data(train_file, train_dir,
     """
     train = NYUDepthv2Dataset(train_file, train_dir, transform=None,
                               file_types=["rgb", "rawdepth"],
-                              min_depth=min_depth, max_depth=max_depth,
-                              blacklist_file=blacklist_file)
+                              min_depth=min_depth, max_depth=max_depth)
 
     train.rgb_mean, train.rgb_var = train.get_mean_and_var()
 
@@ -114,7 +113,7 @@ def load_data(train_file, train_dir,
     )
 
     val_transform = transforms.Compose([
-        AddDepthMask(min_depth, max_depth, "rawdepth"),
+        AddDepthMask(min_depth, min_depth, "rawdepth"),
         Save(["rgb", "mask", "rawdepth"], "_orig"),
         Normalize(transform_mean, transform_var, key="rgb"),
         ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
@@ -126,7 +125,7 @@ def load_data(train_file, train_dir,
     )
 
     test_transform = transforms.Compose([
-        AddDepthMask(min_depth, max_depth, "rawdepth"),
+        AddDepthMask(min_depth, min_depth, "rawdepth"),
         Save(["rgb", "mask", "rawdepth"], "_orig"),
         Normalize(transform_mean, transform_var, key="rgb"),
         ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
@@ -164,5 +163,5 @@ def load_data(train_file, train_dir,
 def test_load_data(min_depth, max_depth):
     train, val, test = load_data()
     sample = train.get_item_by_id("dining_room_0001a/0001")
-
+    print(sample["rawdepth_sid"].size())
 

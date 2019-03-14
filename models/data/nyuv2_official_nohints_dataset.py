@@ -183,9 +183,11 @@ def load_data(train_file, train_dir,
     -------
     train, val, test - torch.utils.data.Dataset objects containing the relevant splits
     """
+
     train = NYUDepthv2Dataset(train_file, train_dir, transform=None,
                               file_types=["rgb", "rawdepth"],
-                              min_depth=min_depth, max_depth=max_depth)
+                              min_depth=min_depth, max_depth=max_depth,
+                              blacklist_file=blacklist_file)
 
     train.rgb_mean, train.rgb_var = train.get_mean_and_var()
 
@@ -200,6 +202,7 @@ def load_data(train_file, train_dir,
     else:
         transform_mean = train.rgb_mean
         transform_var = train.rgb_var
+
     train_transform = transforms.Compose([
         ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"), # introduces "mask"
