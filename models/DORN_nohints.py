@@ -147,7 +147,7 @@ class DORN_nyu_nohints(Model):
         :return: A depth map, as a torch.tensor.
         """
         log_probs, _ = prediction
-        depth_index = torch.sum((log_probs >= np.log(0.5)), dim=1).long().unsqueeze(1)
+        depth_index = torch.sum((log_probs >= np.log(0.5)), dim=1).long().unsqueeze(1).cpu()
         depth_map = sid_obj.get_value_from_sid_index(depth_index)
         # print(depth_vals.size())
         return depth_map
@@ -158,9 +158,9 @@ class DORN_nyu_nohints(Model):
         writer.add_scalar(tag + "/ord_reg_loss", loss.item(), it)
 
         # Get predicted depth image
-        depth_pred = self.ord_decode(output, self.sid_obj)
-        depth_truth = input_["rawdepth"]
-        mask = input_["mask"]
+        depth_pred = self.ord_decode(output, self.sid_obj).cpu()
+        depth_truth = input_["rawdepth"].cpu()
+        mask = input_["mask"].cpu()
         metrics = self.get_metrics(depth_pred, depth_truth, mask)
 
         # write metrics
@@ -176,7 +176,7 @@ class DORN_nyu_nohints(Model):
         rgb_orig = vutils.make_grid(input_["rgb_orig"] / 255, nrow=4)
         writer.add_image(tag + "/rgb_orig", rgb_orig, it)
         # SID ground truth
-        depth_sid_truth = self.sid_obj.get_value_from_sid_index(input_["rawdepth_sid_index"])
+        depth_sid_truth = self.sid_obj.get_value_from_sid_index(input_["rawdepth_sid_index"].cpu().long())
         depth_sid_truth = vutils.make_grid(depth_sid_truth, nrow=4,
                                                normalize=True, range=(self.min_depth, self.max_depth))
         writer.add_image(tag + "/depth_sid_truth", depth_sid_truth, it)
@@ -195,8 +195,8 @@ class DORN_nyu_nohints(Model):
     def write_eval(self, data, path, device):
         _, logprobs = self.get_loss(data, device, resize_output=True)
         depth_map = self.ord_decode(logprobs, self.sid_obj)
-        gt = data["rawdepth_orig"].to(device)
-        mask = data["mask_orig"].to(device)
+        gt = data["rawdepth_orig"].cpu()
+        mask = data["mask_orig"].cpu()
         out = {"depth_map": depth_map,
                "gt": gt,
                "mask": mask,
@@ -233,6 +233,13 @@ class DORN_nyu_nohints(Model):
 
     @staticmethod
     def get_metrics(depth_pred, depth_truth, mask):
+        """
+        Takes torch tensors.
+        :param depth_pred: Depth prediction
+        :param depth_truth: Ground truth
+        :param mask: Masks off invalid pixels
+        :return: Dictionary of metrics
+        """
         metrics = dict()
         # deltas
         metrics["delta1"] = delta(depth_pred, depth_truth, mask, 1.25).item()
@@ -252,7 +259,7 @@ class DORN_nyu_nohints(Model):
         metrics["log_rmse"] = rmse(torch.log(depth_pred),
                                    torch.log(depth_truth),
                                    mask).item()
-        print(metrics)
+        # print(metrics)
         return metrics
 
     def make_layers(self, in_channels, in_height, in_width, sid_bins):

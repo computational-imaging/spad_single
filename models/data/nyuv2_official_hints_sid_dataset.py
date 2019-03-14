@@ -17,7 +17,7 @@ nyuv2_hints_sid_ingredient = Experiment('data_config', ingredients=[spad_ingredi
 
 
 @nyuv2_hints_sid_ingredient.config
-def cfg(spad_config):
+def cfg():
     data_name = "nyu_depth_v2"
     # Paths should be specified relative to the train script, not this file.
     root_dir = os.path.join("data", "nyu_depth_v2_scaled16")
@@ -53,6 +53,9 @@ def cfg(spad_config):
     use_dorn_normalization = True # Sets specific normalization if using DORN network.
                                   # If False, defaults to using the empirical mean and variance from train set.
 
+# @nyuv2_hints_sid_ingredient.capture
+# def load_config(spad_config):
+#     return config
 
 #############
 # Load data #
@@ -149,14 +152,14 @@ def load_data(train_file, train_dir,
     val = None
     if val_file is not None:
         val = NYUDepthv2Dataset(val_file, val_dir, transform=val_transform,
-                                file_types = ["rgb", "rawdepth"],
+                                file_types = ["rgb", "albedo", "rawdepth"],
                                 min_depth=min_depth, max_depth=max_depth)
         val.rgb_mean, val.rgb_var = train.rgb_mean, train.rgb_var
         print("Loaded val dataset from {} with size {}.".format(val_file, len(val)))
     test = None
     if test_file is not None:
         test = NYUDepthv2Dataset(test_file, test_dir, transform=test_transform,
-                                 file_types = ["rgb", "rawdepth"],
+                                 file_types = ["rgb", "albedo", "rawdepth"],
                                  min_depth=min_depth, max_depth=max_depth)
         test.rgb_mean, test.rgb_var = train.rgb_mean, train.rgb_var
         print("Loaded test dataset from {} with size {}.".format(test_file, len(test)))

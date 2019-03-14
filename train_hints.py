@@ -10,38 +10,53 @@ from sacred import Experiment
 from datetime import datetime
 
 # Dataset
-from models.data.noisy_cifar10_dataset import noisy_cifar10_ingredient, load_data
+from models.data.nyuv2_official_hints_sid_dataset import nyuv2_hints_sid_ingredient, load_data
 
-ex = Experiment('train_cifar10', ingredients=[noisy_cifar10_ingredient])
+ex = Experiment('train_hints', ingredients=[nyuv2_hints_sid_ingredient])
 
 @ex.config
 def cfg(data_config):
     model_config = {
-        "model_name": "DenoisingUnetModel",
+        "model_name": "DORN_nyu_hints",
         "model_params": {
-            "img_sidelength": 32
+            "in_channels": 3,
+            "in_height": 257,
+            "in_width": 353,
+            "sid_bins": 68,
+            "offset": data_config["offset"],
+            "min_depth": data_config["min_depth"],
+            "max_depth": data_config["max_depth"],
+            "alpha": data_config["alpha"],
+            "beta": data_config["beta"],
+            "frozen": True,
+            "pretrained": True,
+            "state_dict_file": os.path.join("models", "torch_params_nyuv2_BGR.pth.tar"),
+
+            # New for hints
+            "hints_len": 68,
+            "spad_weight": 1.,
         },
         "model_state_dict_fn": None
     }
     train_config = {
-        "batch_size": 20,                       # Batch size to use for a single train step
-        "batch_size_val": 40,                   # Batch size for a single validation step
+        "batch_size": 12,                       # Batch size to use for a single train step
+        "batch_size_val": 12,                   # Batch size for a single validation step
         "optim_name": "Adam",
         "optim_params": {
             "lr": 1e-2,                         # Learning rate (initial)
             "weight_decay": 1e-8,               # Strength of L2 regularization (weights only)
         },
         "optim_state_dict_fn": None,            # Function for getting the state dict
-        "scheduler_name": "MultiStepLR",
+        "scheduler_name": "ReduceLROnPlateau",
         "scheduler_params": {
-            "milestones": [10, 20],             # Learning rate milestone epochs
-            "gamma": 0.1,                       # Gamma of MultistepLR decay
+            "factor": 0.1,
+            "patience": 2,
         },
-        "last_epoch": -1,
         "global_it": 0,
-        "num_epochs": 2,
+        "num_epochs": 10,
+        "last_epoch": -1,
     }
-    comment = "denoising_unet"
+    comment = "hints"
 
     ckpt_config = {
         "ckpt_file": None,
@@ -85,6 +100,8 @@ def main(model_config,
     model, scheduler = make_training(model_config,
                                      train_config,
                                      device)
+    model.to(device)
+    # model.sid_obj.to(device)
     # print(network)
     # Load data
     train_set, val_set, _ = load_data()
@@ -95,14 +112,14 @@ def main(model_config,
                               batch_size=train_config["batch_size"],
                               shuffle=True,
                               num_workers=4,
-                              pin_memory=False,
+                              pin_memory=True,
                               worker_init_fn=worker_init_randomness)
 
     val_loader = DataLoader(val_set,
                             batch_size=train_config["batch_size_val"],
                             shuffle=False,
                             num_workers=1,
-                            pin_memory=False,
+                            pin_memory=True,
                             worker_init_fn=worker_init_randomness)
 
     config = {
