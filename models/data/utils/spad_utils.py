@@ -137,7 +137,8 @@ class SimulateSpad:
                                             sample[self.mask_key])
         if self.sid_obj is not None:
             spad_counts = rescale_bins(spad_counts, self.min_depth, self.max_depth, self.sid_obj)
-        sample[self.spad_key] = spad_counts
+        sample[self.spad_key] = spad_counts/np.sum(spad_counts)
+
         return sample
 
 
