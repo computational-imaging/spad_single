@@ -118,6 +118,8 @@ def train(model,
     num_epochs = train_config["num_epochs"]
     global_it = train_config["global_it"]
 
+    its_per_epoch = len(train_loader.dataset)//train_loader.batch_size + 1
+
     val_loader_iter = iter(val_loader)
     for epoch in range(start_epoch, start_epoch + num_epochs):
         model.train()
@@ -125,17 +127,18 @@ def train(model,
         for it, input_ in enumerate(train_loader):
             trainloss, output = model.get_loss(input_, device)
             with torch.no_grad():
-                if not it % 100:
-                    model.write_updates(writer, input_, output, trainloss, it, "train")
+                if not it % 10:
+                    model.write_updates(writer, input_, output, trainloss, global_it, "train")
             scheduler.optimizer.zero_grad()
             trainloss.backward()
             scheduler.optimizer.step()
-            global_it += 1
 
             if not it % 10:
-                print("Iter {:07d}   Epoch {:03d}   train_loss {:0.4f}".format(
-                    it, epoch, trainloss)
+                print("Global_Iter {:07d}   Iter {:04d}/{}   Epoch {:03d}   train_loss {:0.4f}".format(
+                    global_it, it, its_per_epoch,  epoch, trainloss)
                 )
+            global_it += 1
+
             if test_run: # Stop after 5 batches
                 if it == 5:
                     break
@@ -150,8 +153,8 @@ def train(model,
             with torch.no_grad():
                 model.eval()
                 valloss, output = model.get_loss(input_, device)
-                model.write_updates(writer, input_, output, valloss, it, "val")
-            print("End epoch {}\tval_loss: {}".format(epoch, valloss))
+                model.write_updates(writer, input_, output, valloss, epoch, "val")
+            print("End epoch {:03d}   val_loss: {:0.4f}".format(epoch, valloss))
             if type(scheduler).__name__ == "ReduceLROnPlateau":
                 scheduler.step(valloss)
             else:
@@ -160,6 +163,8 @@ def train(model,
         elif type(scheduler).__name__ == "ReduceLROnPlateau":
             raise RuntimeWarning("ReduceLROnPlateau scheduler used with no validation - using last training loss.")
             scheduler.step(trainloss)
+        else:
+            scheduler.step()
 
 
         # Save checkpoint

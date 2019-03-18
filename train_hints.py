@@ -39,11 +39,12 @@ def cfg(data_config):
         "model_state_dict_fn": None
     }
     train_config = {
-        "batch_size": 12,                       # Batch size to use for a single train step
-        "batch_size_val": 12,                   # Batch size for a single validation step
+        "batch_size": 5,                       # Batch size to use for a single train step
+        "batch_size_val": 5,                   # Batch size for a single validation step
         "optim_name": "Adam",
         "optim_params": {
-            "lr": 1e-2,                         # Learning rate (initial)
+            "lr": 1e-3,                         # Learning rate (initial)
+            # "momentum": 0.9,
             "weight_decay": 1e-8,               # Strength of L2 regularization (weights only)
         },
         "optim_state_dict_fn": None,            # Function for getting the state dict
@@ -101,6 +102,9 @@ def main(model_config,
                                      train_config,
                                      device)
     model.to(device)
+    # Apply custom learning rates
+    optimizer = scheduler.optimizer
+
     # model.sid_obj.to(device)
     # print(network)
     # Load data

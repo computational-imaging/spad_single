@@ -50,12 +50,13 @@ class DORN_nyu_nohints(Model):
         if frozen:
             for param in self.parameters():
                 param.requires_grad = False
+            self.eval()
 
     def get_loss(self, input_, device, resize_output=False):
         """
         :param input_: Dictionary from dataloader
         :param device: Device to run on (e.g. "cpu", "cuda")
-        :return: A tuple of (ordinal regression loss, log_probs) containing the loss
+        :return: A tuple of (ordinal regression loss, logprobs) containing the loss
         computed on the image and the tuple of (log_ord_c, log_ord_c_comp) that is the prediction.
         """
         rgb = input_["rgb"].to(device)
@@ -82,6 +83,8 @@ class DORN_nyu_nohints(Model):
         """
         Compute the output log probabilities using the same method as in DORN_pytorch.
         :param x: The activations from the last layer: N x (2*sid_bins) x H x W
+            x[:, ::2, :, :] correspond to the probabilities P(l <= k)
+            x[:, 1::2, :, :] correspond to the probabilities P(l > k)
         :return:
             log_ord_c: Per pixel, a vector with the numbers log P(l > k)
             log_ord_c_comp: Per pixel, a vector with the numbers log (1 - P(l > k))
@@ -168,8 +171,8 @@ class DORN_nyu_nohints(Model):
             writer.add_scalar(tag + "/{}".format(metric_name), metrics[metric_name], it)
 
         # min/max
-        writer.add_scalar(tag + "depth_min", torch.min(depth_pred).item(), it)
-        writer.add_scalar(tag + "depth_max", torch.max(depth_pred).item(), it)
+        writer.add_scalar(tag + "/depth_min", torch.min(depth_pred).item(), it)
+        writer.add_scalar(tag + "/depth_max", torch.max(depth_pred).item(), it)
 
         # Images
         # RGB
