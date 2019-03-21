@@ -169,10 +169,6 @@ class ToTensorAll(): # pylint: disable=too-few-public-methods
         return sample
 
 
-
-
-
-
 class AddRawDepthMask(): # pylint: disable=too-few-public-methods
     """Creates a mask according to the original paper Eigen et. al.
     Assigns a 0 to pixels where the minimum or maximum depth is attained.

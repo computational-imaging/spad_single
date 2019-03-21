@@ -4,8 +4,10 @@ import torch.nn.functional as F
 import torchvision.utils as vutils
 import numpy as np
 
+from time import perf_counter
 import os
 from collections import defaultdict
+from time import perf_counter
 
 from models.core.checkpoint import safe_makedir
 from models.core.model_core import Model
@@ -59,15 +61,20 @@ class DORN_nyu_nohints(Model):
         :return: A tuple of (ordinal regression loss, logprobs) containing the loss
         computed on the image and the tuple of (log_ord_c, log_ord_c_comp) that is the prediction.
         """
+        # one = perf_counter()
         rgb = input_["rgb"].to(device)
         mask = input_["mask"].to(device)
         target = input_["rawdepth_sid"].to(device)
         # print("dataloader: model input")
         # print(rgb[:,:,50:55,50:55])
+        # two = perf_counter()
         depth_pred = self.forward(rgb)
+        # three = perf_counter()
+        # print("Forward pass: {}".format(three - two))
         logprobs = self.to_logprobs(depth_pred)
         if resize_output:
             original_size = input_["rgb_orig"].size()[-2:]
+            # Note: align_corners=False gives same behavior as cv2.resize
             depth_pred_full = F.interpolate(depth_pred, size=original_size,
                                             mode="bilinear", align_corners=False)
             logprobs_full = self.to_logprobs(depth_pred_full)
@@ -129,12 +136,12 @@ class DORN_nyu_nohints(Model):
         """
         log_ord_c, log_ord_c_comp = logprobs
         # nbins = log_ord_c.size(1)
-        mask_L = ((target > 0) & (mask > 0))
-        mask_U = (((1. - target) > 0) & (mask > 0))
+        mask_L = target * mask
+        mask_U = (1. - target) * mask
 
-        out = -(torch.sum(log_ord_c[mask_L]) + torch.sum(log_ord_c_comp[mask_U]))
+        out = -(torch.sum(log_ord_c*mask_L) + torch.sum(log_ord_c_comp*mask_U))
         if size_average:
-            total = torch.sum(mask).item()
+            total = torch.sum(mask)
             if total > 0:
                 return (1. / torch.sum(mask)) * out
             else:
@@ -196,16 +203,26 @@ class DORN_nyu_nohints(Model):
         writer.add_image(tag + "/depth_mask", depth_mask, it)
 
     def write_eval(self, data, path, device):
+        # one = perf_counter()
         _, logprobs = self.get_loss(data, device, resize_output=True)
+        # two = perf_counter()
+        # print("\tget_loss: {}".format(two - one))
         depth_map = self.ord_decode(logprobs, self.sid_obj)
+        # three = perf_counter()
+        # print("\tord_decode: {}".format(three - two))
         gt = data["rawdepth_orig"].cpu()
         mask = data["mask_orig"].cpu()
         out = {"depth_map": depth_map,
                "gt": gt,
                "mask": mask,
-               "logprobs": logprobs}
+              }
+               # "logprobs": logprobs}
         safe_makedir(os.path.dirname(path))
+        # four = perf_counter()
+        # print("\tto cpu: {}".format(four - three))
         torch.save(out, path)
+        # five = perf_counter()
+        # print("\ttorch.save: {}".format(five - four))
 
     def evaluate_dir(self, output_dir, device):
         """Get average losses over all data files"""
@@ -216,9 +233,12 @@ class DORN_nyu_nohints(Model):
                 for torchfile in filenames:
                     if not torchfile.endswith(".pt"):
                         continue
+                    print(torchfile)
                     metrics, data = self.evaluate_file(os.path.join(dirname, torchfile))
                     num_valid_pixels = torch.sum(data["mask"]).item()
+                    # print(data["mask"])
                     num_pixels += num_valid_pixels
+                    # print(num_pixels)
                     for metric_name in metrics:
                         avg_losses[metric_name] += num_valid_pixels * metrics[metric_name]
 
@@ -2091,36 +2111,20 @@ if __name__ == "__main__":
               min_depth, max_depth, use_dorn_normalization,
               sid_bins, alpha, beta, offset,
               blacklist_file)
-    dataloader = DataLoader(train, batch_size=1, shuffle=False, num_workers=1)
+    # dataloader = DataLoader(train, batch_size=1, shuffle=False, num_workers=1)
+    dataset = train
+    device = torch.device("cuda")
     model = DORN_nyu_nohints()
+    model.to(device)
     model.eval()
-    for i, input_ in enumerate(dataloader):
-        print(train.data[i])
-        # Save the rgb image
-        # rgb = input_["rgb_orig"]
-        # print("dataloader: before normalizing")
-        # print(input_["rgb_orig"][:,0,50:55, 50:55])
-        # print("dataloader: after normalizing")
-        # print(input_["rgb"][:, 0, 50:55, 50:55])
-        # loss, pred = model.get_loss(input_, device="cpu")
-        loss, pred = model.get_loss(input_, device="cpu", resize_output=True)
-        # print("dataloader: network output")
-        # print(depth_out[:,30:32,50:55,50:55])
-        # pred = decode_ord(depth_out)
-        # print("dataloader: after decoding")
-        # print(pred[:,:,50:55,50:55])
-        # pred = pred[0, 0, :, :] - 1.0
-        # pred = pred / 25.0 - 0.36
-        # pred = np.exp(pred)
-        # print("dataloader: after exp")
-        # print(pred[50:55,50:55])
+    input_ = dataset[0]
+    input_["rgb"] = input_["rgb"].unsqueeze(0)
+    input_["rawdepth"] = input_["rawdepth_sid"].unsqueeze(0)
+    input_["mask"] = input_["mask"].unsqueeze(0)
 
-        # ord_score = cv2.resize(pred, (W, H), interpolation=cv2.INTER_LINEAR)
-        depth_out = model.ord_decode(pred, model.sid_obj)
 
-        # depth_out = torch.tensor(pred)
-        # print(pred[:,:,50:55,50:55])
-        utils.save_image(depth_out/10., os.path.join("models", "test_{}.png".format(i)))
+    loss, pred = model.get_loss(input_, device=device, resize_output=True)
+    # ord_score = cv2.resize(pred, (W, H), interpolation=cv2.INTER_LINEAR)
+    depth_out = model.ord_decode(pred, model.sid_obj)
+    # utils.save_image(depth_out/10., os.path.join("models", "test_{}.png".format(i)))
 
-        if i == 0:
-            break

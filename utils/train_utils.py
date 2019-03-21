@@ -6,7 +6,7 @@ import torch.backends.cudnn as cudnn
 import random
 import numpy as np
 
-from models import make_model, split_params_weight_bias
+from models import make_model
 from models.core.checkpoint import save_checkpoint
 
 
@@ -39,8 +39,8 @@ def worker_init_randomness(worker_id):
 
 def make_optimizer(model, optim_name, optim_params, optim_state_dict_fn):
     opt_class = getattr(optim, optim_name)
-    split_params = split_params_weight_bias(model)
-    optimizer = opt_class(params=split_params, **optim_params)
+    param_groups = model.get_param_groups()
+    optimizer = opt_class(params=param_groups, **optim_params)
     if optim_state_dict_fn is not None:
         optimizer.load_state_dict(optim_state_dict_fn())
     return optimizer

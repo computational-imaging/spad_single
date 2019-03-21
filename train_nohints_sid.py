@@ -40,7 +40,6 @@ def cfg(data_config):
         "optim_name": "Adam",
         "optim_params": {
             "lr": 1e-2,                         # Learning rate (initial)
-            "weight_decay": 1e-8,               # Strength of L2 regularization (weights only)
         },
         "optim_state_dict_fn": None,            # Function for getting the state dict
         "scheduler_name": "MultiStepLR",
@@ -60,7 +59,8 @@ def cfg(data_config):
         "run_id": os.path.join(datetime.now().strftime('%b%d'),
                                datetime.now().strftime('%H-%M-%S_')) +
                                model_config["model_name"] + "_" +
-                               data_config["data_name"],
+                               data_config["data_name"] + "_" +
+                               comment,
         "log_dir": "runs",
     }
 
