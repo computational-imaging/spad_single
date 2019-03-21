@@ -121,7 +121,7 @@ def load_data(train_file, train_dir,
     )
 
     val_transform = transforms.Compose([
-        AddDepthMask(min_depth, min_depth, "rawdepth"),
+        AddDepthMask(min_depth, max_depth, "rawdepth"),
         Save(["rgb", "mask", "albedo", "rawdepth"], "_orig"),
         Normalize(transform_mean, transform_var, key="rgb"),
         ResizeAll((353, 257), keys=["rgb", "albedo", "rawdepth"]),
@@ -135,7 +135,7 @@ def load_data(train_file, train_dir,
     )
 
     test_transform = transforms.Compose([
-        AddDepthMask(min_depth, min_depth, "rawdepth"),
+        AddDepthMask(min_depth, max_depth, "rawdepth"),
         Save(["rgb", "mask", "albedo", "rawdepth"], "_orig"),
         Normalize(transform_mean, transform_var, key="rgb"),
         ResizeAll((353, 257), keys=["rgb", "albedo", "rawdepth"]),

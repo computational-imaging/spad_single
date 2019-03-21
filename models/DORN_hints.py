@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import torchvision.utils as vutils
 
 import numpy as np
+from time import perf_counter
 
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
@@ -80,7 +81,6 @@ class BayesianHintsUnet(nn.Module):
         return x
 
 
-
 class DORN_nyu_hints(Model):
     def __init__(self, hints_len=68, spad_weight=1.,
                  in_channels=3, in_height=257, in_width=353,
@@ -107,9 +107,11 @@ class DORN_nyu_hints(Model):
                              frozen, pretrained,
                              state_dict_file)
         self.sid_obj = SIDTorch(sid_bins, alpha, beta, offset)
-        # self.hints_extractor = BayesianHints(hints_len, sid_bins)
-        self.hints_extractor = BayesianHintsUnet(hints_len, sid_bins, 256, 352)
+        self.hints_extractor = BayesianHints(hints_len, sid_bins)
+        # self.hints_extractor = BayesianHintsUnet(hints_len, sid_bins, 256, 352)
 
+    # Don't call .train() or eval on the feature extractor, since it should
+    # always remain in eval mode.
     def train(self):
         self.hints_extractor.train()
 
@@ -118,18 +120,26 @@ class DORN_nyu_hints(Model):
 
     def forward(self, rgb, spad):
         img_features = self.feature_extractor(rgb)
-        spad_features = self.hints_extractor(rgb, spad)
+        spad_features = self.hints_extractor(spad)
         spad_features = spad_features.expand(-1, -1, img_features.size(2), img_features.size(3))
         img_features.add_(self.spad_weight * torch.log_(spad_features + 1e-5))
         return img_features
 
     def get_loss(self, input_, device, resize_output=False):
+        one = perf_counter()
         rgb = input_["rgb"].to(device)
         spad = input_["spad"].to(device)
         target = input_["rawdepth_sid"].to(device)
         mask = input_["mask"].to(device)
+        two = perf_counter()
+        print("Move data to device: {}".format(two - one))
         depth_pred = self.forward(rgb, spad)
+        # torch.cuda.synchronize()
+        three = perf_counter()
+        print("Forward pass: {}".format(three - two))
         logprobs = self.to_logprobs(depth_pred)
+        four = perf_counter()
+        print("To logprobs: {}".format(four - three))
         if resize_output:
             original_size = input_["rgb_orig"].size()[-2:]
             depth_pred_full = F.interpolate(depth_pred, size=original_size,
@@ -202,6 +212,31 @@ DORN_nyu_hints.evaluate_file = DORN_nyu_nohints.evaluate_file
 # DORN_nyu_hints.write_updates = DORN_nyu_nohints.write_updates
 
 
+class DORN_nyu_hints_Unet(DORN_nyu_hints):
+    def __init__(self, hints_len=68, spad_weight=1.,
+                 in_channels=3, in_height=257, in_width=353,
+                 sid_bins=68, offset=0.,
+                 min_depth=0., max_depth=10.,
+                 alpha=0.6569154266167957, beta=9.972175646365525,
+                 frozen=True, pretrained=True,
+                 state_dict_file=os.path.join("models", "torch_params_nyuv2_BGR.pth.tar")):
+        super(DORN_nyu_hints_Unet, self).__init__(hints_len=hints_len, spad_weight=spad_weight,
+                 in_channels=in_channels, in_height=in_height, in_width=in_width,
+                 sid_bins=sid_bins, offset=offset,
+                 min_depth=min_depth, max_depth=max_depth,
+                 alpha=alpha, beta=beta,
+                 frozen=frozen, pretrained=pretrained,
+                 state_dict_file=state_dict_file)
+        self.hints_extractor = BayesianHintsUnet(hints_len, sid_bins, 256, 352)
+
+    def forward(self, rgb, spad):
+        img_features = self.feature_extractor(rgb)
+        spad_features = self.hints_extractor(rgb, spad)
+        spad_features = spad_features.expand(-1, -1, img_features.size(2), img_features.size(3))
+        img_features.add_(self.spad_weight * torch.log_(spad_features + 1e-5))
+        return img_features
+
+
 if __name__ == "__main__":
     import os
     import numpy as np
@@ -213,12 +248,6 @@ if __name__ == "__main__":
     # print(config)
     # print(spad_config)
     del data_config["data_name"]
-    train, _, _ = load_data(**data_config, spad_config=spad_config)
-
-    dataloader = DataLoader(train)
-    input_ = next(iter(dataloader))
-    print(input_["entry"])
-
     model = DORN_nyu_hints(
             in_channels=3,
             in_height=257,
@@ -235,7 +264,14 @@ if __name__ == "__main__":
             hints_len=68,
             spad_weight=1.
     )
-    print(model.hints_extractor[0].weight)
+    train, _, _ = load_data(**data_config, spad_config=spad_config)
 
+    dataloader = DataLoader(train)
+    start = perf_counter()
+    input_ = next(iter(dataloader))
+    data_load_time = perf_counter() - start
+    print("dataloader: {}".format(data_load_time))
+    # print(input_["entry"])
+    # print(model.hints_extractor[0].weight)
     loss, output = model.get_loss(input_, "cpu")
     print(loss)

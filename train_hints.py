@@ -60,12 +60,13 @@ def cfg(data_config):
     comment = "hints"
 
     ckpt_config = {
-        "ckpt_file": None,
+        "ckpt_file": "checkpoints/Mar15/04-10-54_DORN_nyu_hints_nyu_depth_v2",
         "ckpt_dir": "checkpoints",
         "run_id": os.path.join(datetime.now().strftime('%b%d'),
                                datetime.now().strftime('%H-%M-%S_')) +
                                model_config["model_name"] + "_" +
-                               data_config["data_name"],
+                               data_config["data_name"] + "_" +
+                               comment,
         "log_dir": "runs",
     }
 

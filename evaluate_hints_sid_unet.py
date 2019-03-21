@@ -7,11 +7,12 @@ from utils.train_utils import init_randomness, worker_init_randomness
 from models.core.checkpoint import load_checkpoint, safe_makedir
 from models import make_model
 from sacred import Experiment
+from time import perf_counter
 
 # Dataset
-from models.data.nyuv2_official_nohints_sid_dataset import nyuv2_nohints_sid_ingredient, load_data
+from models.data.nyuv2_official_hints_sid_dataset import nyuv2_hints_sid_ingredient, load_data
 
-ex = Experiment('eval_nohints_sid', ingredients=[nyuv2_nohints_sid_ingredient])
+ex = Experiment('eval_hints_sid_unet', ingredients=[nyuv2_hints_sid_ingredient])
 
 
 # Tensorboardx
@@ -20,8 +21,10 @@ ex = Experiment('eval_nohints_sid', ingredients=[nyuv2_nohints_sid_ingredient])
 @ex.config
 def cfg(data_config):
     model_config = {                            # Load pretrained model for testing
-        "model_name": "DORN_nyu_nohints",
+        "model_name": "DORN_nyu_hints_Unet",
         "model_params": {
+            "hints_len": 68,
+            "spad_weight": 1.,
             "in_channels": 3,
             "in_height": 257,
             "in_width": 353,
@@ -37,11 +40,12 @@ def cfg(data_config):
         },
         "model_state_dict_fn": None
     }
-    ckpt_file = None                            # Keep as None
+    ckpt_file = "checkpoints/Mar15/04-10-54_DORN_nyu_hints_nyu_depth_v2/checkpoint_epoch_9_name_fixed.pth.tar"
+    # ckpt_file = None # Bayesian hints eval
     eval_config = {
         "dataset": "test",                       # {val, test}
         "mode": "save_outputs",                 # {save_outputs, evaluate_metrics}
-        "output_dir": "./data/dorn_nohints_test",
+        "output_dir": "./data/dorn_hints_unet_test",
         "entry": None                           # If we want to evaluate on a single entry
     }
     seed = 95290421
@@ -85,20 +89,27 @@ def main(model_config,
                             pin_memory=True,
                             worker_init_fn=worker_init_randomness)
     if eval_config["mode"] == "save_outputs":
+        print("Evaluating the model on {}".format(eval_config["dataset"]))
         # Run the model on everything and save everything to disk.
         safe_makedir(eval_config["output_dir"])
         with torch.no_grad():
             model.eval()
+            # start = perf_counter()
+            # total_eval = 0.
             for i, data in enumerate(dataloader):
                 print("Evaluating {}".format(data["entry"][0]))
+                # start_eval = perf_counter()
                 model.write_eval(data,
                                  os.path.join(eval_config["output_dir"],
                                               "{}_out.pt".format(data["entry"][0])),
                                  device)
                 # TESTING
-                # if i == 9:
+                # if i == 99:
                 #     break
-
+                # total_eval += perf_counter() - start_eval
+            # total = perf_counter() - start
+            # print("avg time over 100 iters: {}".format(total/100.))
+            # print("single eval: {}".format(total_eval/100.))
     elif eval_config["mode"] == "evaluate_metrics":
         # Load things and call the model's evaluate function on them.
         metrics = model.evaluate_dir(eval_config["output_dir"], device)
