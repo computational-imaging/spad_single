@@ -211,10 +211,13 @@ class DORN_nyu_nohints(Model):
         # three = perf_counter()
         # print("\tord_decode: {}".format(three - two))
         gt = data["rawdepth_orig"].cpu()
+        rgb = data["rgb_orig"].cpu()
         mask = data["mask_orig"].cpu()
         out = {"depth_map": depth_map,
                "gt": gt,
                "mask": mask,
+               "rgb": rgb,
+               "entry": data["entry"][0]
               }
                # "logprobs": logprobs}
         safe_makedir(os.path.dirname(path))
@@ -228,6 +231,7 @@ class DORN_nyu_nohints(Model):
         """Get average losses over all data files"""
         num_pixels = 0.
         avg_losses = defaultdict(float)
+        losses = defaultdict(dict)
         for (dirname, dirnames, filenames) in os.walk(output_dir, topdown=False, followlinks=True):
             if len(filenames):
                 for torchfile in filenames:
@@ -241,11 +245,11 @@ class DORN_nyu_nohints(Model):
                     # print(num_pixels)
                     for metric_name in metrics:
                         avg_losses[metric_name] += num_valid_pixels * metrics[metric_name]
-
+                        losses[data["entry"]][metric_name] = metrics[metric_name]
         for metric_name in metrics:
             avg_losses[metric_name] /= num_pixels
         print(avg_losses)
-        return avg_losses
+        return avg_losses, losses
 
     def evaluate_file(self, torchfile):
         data = torch.load(torchfile)

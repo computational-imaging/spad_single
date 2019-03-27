@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 from mpl_toolkits.mplot3d import Axes3D
 
+from models.core.checkpoint import safe_makedir
 from models.core.model_core import Model
 from models.DORN_nohints import DORN_nyu_nohints
 from models.data.utils.sid_utils import SIDTorch
@@ -132,14 +133,14 @@ class DORN_nyu_hints(Model):
         target = input_["rawdepth_sid"].to(device)
         mask = input_["mask"].to(device)
         two = perf_counter()
-        print("Move data to device: {}".format(two - one))
+        # print("Move data to device: {}".format(two - one))
         depth_pred = self.forward(rgb, spad)
         # torch.cuda.synchronize()
         three = perf_counter()
-        print("Forward pass: {}".format(three - two))
+        # print("Forward pass: {}".format(three - two))
         logprobs = self.to_logprobs(depth_pred)
         four = perf_counter()
-        print("To logprobs: {}".format(four - three))
+        # print("To logprobs: {}".format(four - three))
         if resize_output:
             original_size = input_["rgb_orig"].size()[-2:]
             depth_pred_full = F.interpolate(depth_pred, size=original_size,
@@ -201,12 +202,30 @@ class DORN_nyu_hints(Model):
         depth_mask = vutils.make_grid(input_["mask"], nrow=4, normalize=False)
         writer.add_image(tag + "/depth_mask", depth_mask, it)
 
+    def write_eval(self, data, path, device):
+        _, logprobs = self.get_loss(data, device, resize_output=True)
+        depth_map = self.ord_decode(logprobs, self.sid_obj)
+        gt = data["rawdepth_orig"].cpu()
+        rgb = data["rgb_orig"].cpu()
+        spad = data["spad"].cpu()
+        mask = data["mask_orig"].cpu()
+        out = {"depth_map": depth_map,
+               "gt": gt,
+               "mask": mask,
+               "spad": spad,
+               "rgb": rgb,
+               "entry": data["entry"][0]
+              }
+        safe_makedir(os.path.dirname(path))
+        torch.save(out, path)
+
+
 # Steal methods from nohints
 DORN_nyu_hints.get_metrics = staticmethod(DORN_nyu_nohints.get_metrics)
 DORN_nyu_hints.ord_decode = staticmethod(DORN_nyu_nohints.ord_decode)
 DORN_nyu_hints.ord_reg_loss = staticmethod(DORN_nyu_nohints.ord_reg_loss)
 DORN_nyu_hints.to_logprobs = staticmethod(DORN_nyu_nohints.to_logprobs)
-DORN_nyu_hints.write_eval = DORN_nyu_nohints.write_eval
+# DORN_nyu_hints.write_eval = DORN_nyu_nohints.write_eval
 DORN_nyu_hints.evaluate_dir = DORN_nyu_nohints.evaluate_dir
 DORN_nyu_hints.evaluate_file = DORN_nyu_nohints.evaluate_file
 # DORN_nyu_hints.write_updates = DORN_nyu_nohints.write_updates
