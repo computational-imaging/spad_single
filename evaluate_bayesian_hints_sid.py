@@ -44,7 +44,8 @@ def cfg(data_config):
     ckpt_file = None # Bayesian hints eval
     eval_config = {
         "dataset": "test",                       # {val, test}
-        "mode": "save_outputs",                 # {save_outputs, evaluate_metrics}
+        "save_outputs": True,
+        "evaluate_metrics": True,
         "output_dir": "./data/dorn_hints_bayesian_test",
         "entry": None                           # If we want to evaluate on a single entry
     }
@@ -88,7 +89,7 @@ def main(model_config,
                             num_workers=4,
                             pin_memory=True,
                             worker_init_fn=worker_init_randomness)
-    if eval_config["mode"] == "save_outputs":
+    if eval_config["save_outputs"]:
         print("Evaluating the model on {}".format(eval_config["dataset"]))
         # Run the model on everything and save everything to disk.
         safe_makedir(eval_config["output_dir"])
@@ -112,15 +113,11 @@ def main(model_config,
             # print("single eval: {}".format(total_eval/100.))
         print("Dataset: {} Output dir: {}".format(eval_config["dataset"],
                                                   eval_config["output_dir"]))
-    elif eval_config["mode"] == "evaluate_metrics":
+    if eval_config["evaluate_metrics"]:
         # Load things and call the model's evaluate function on them.
         metrics = model.evaluate_dir(eval_config["output_dir"], device)
         out_file = os.path.join(eval_config["output_dir"], "metrics.json")
         with open(out_file, "w") as f:
             json.dump(metrics, f)
         print("Saved metrics to {}".format(out_file))
-    elif eval_config["mode"] == "save_file":
-        safe_makedir(eval_config["output_dir"])
 
-    else:
-        print("Unrecognized mode: {}".format(eval_config["mode"]))

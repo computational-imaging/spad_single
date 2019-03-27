@@ -9,14 +9,14 @@ import os
 
 # from models.core.model_core import Model
 
-from .DORN_nohints import DORN_nyu_nohints
+from models.DORN_nohints import DORN_nyu_nohints
 
 class DORN_bayesian_opt:
     """
     Performs SGD to optimize the depth map further after being given an initial depth map
     estimate from DORN.
     """
-    def __init__(self, sgd_iters=20, lr=1e-3, hints_len=68, spad_weight=1.,
+    def __init__(self, sgd_iters=1, lr=1e-3, hints_len=68, spad_weight=1.,
                  in_channels=3, in_height=257, in_width=353,
                  sid_bins=68, offset=0.,
                  min_depth=0., max_depth=10.,
@@ -43,10 +43,10 @@ class DORN_bayesian_opt:
                              alpha, beta,
                              frozen, pretrained,
                              state_dict_file)
-        self.feature_extractor.eval()
+        self.feature_extractor.eval()    # Only use DORN in eval mode.
 
         self.sid_obj = SIDTorch(sid_bins, alpha, beta, offset)
-        self.one_over_depth_squared = 1./(SIDTorch.sid_bin_values ** 2)
+        self.one_over_depth_squared = 1./(self.sid_obj.sid_bin_values[:-2] ** 2)
         self.one_over_depth_squared.requires_grad = False
 
 
@@ -65,29 +65,77 @@ class DORN_bayesian_opt:
         gt_hist = input_["spad"].to(device)
         albedo = input_["albedo"].to(device)
         N, C, W, H = log_depth_probs_init.size()
-        albedo_expanded = albedo.expand(N, C, W, H)
+        albedo_expanded = albedo[:,1,:,:].expand(N, C, W, H)
         albedo_expanded.requires_grad = False
-        log_probs = torch.tensor(log_depth_probs_init, requires_grad=True)
+        log_probs = log_depth_probs_init.clone().detach().requires_grad_(True)
         optimizer = SGD([log_probs], lr=self.lr)
+        self.zero_pad = torch.zeros((N, 1, W, H), requires_grad=False).to(device)
+        self.one_over_depth_squared = self.one_over_depth_squared.to(device)
+        # self.zero_pad.requires_grad = False
         for it in range(self.sgd_iters):
             output_hist = self.spad_forward(log_probs, albedo_expanded)
             loss_val = self.loss(gt_hist, output_hist)
             optimizer.zero_grad()
             loss_val.backward()
+            print(torch.norm(log_probs.grad))
             optimizer.step()
         return log_probs
 
     def spad_forward(self, log_probs, albedo_expanded):
         """Perform the forward simulation of a model"""
-        N, _, W, H = log_probs.size()
+        N, C, W, H = log_probs.size()
         probs = torch.exp(log_probs)
+        # Get histogram from 1-cdf
         probs = probs[:, :-1, :, :] - probs[:, 1:, :, :]
-        probs = torch.cat([torch.zeros((N, 1, W, H)), probs], dim=1)
+        # print(torch.sum(probs[0,:,0,0]))
+        probs = torch.cat([self.zero_pad, probs], dim=1)
         # Use probs to get the weighted sum of albedo/depth^2
-        weights = probs * self.one_over_depth_squared * albedo_expanded
+        one_over_depth_squared_unsqueezed = self.one_over_depth_squared.unsqueeze(-1).unsqueeze(-1).unsqueeze(0)
+        # print(probs.shape)
+        # print(self.one_over_depth_squared.expand(N, C, W, H).shape)
+        # print(albedo_expanded.shape)
+        weights = probs * \
+                  one_over_depth_squared_unsqueezed * \
+                  albedo_expanded
         simulated_spad = torch.sum(weights, dim=(2, 3), keepdim=True)
+        simulated_spad /= torch.sum(simulated_spad)
         return simulated_spad
 
-
-
 DORN_bayesian_opt.to_logprobs = staticmethod(DORN_nyu_nohints.to_logprobs)
+DORN_bayesian_opt.ord_decode = staticmethod(DORN_nyu_nohints.ord_decode)
+
+
+if __name__ == "__main__":
+    import os
+    import numpy as np
+    from torch.utils.data import DataLoader
+    from models.data.nyuv2_official_hints_sid_dataset import load_data, cfg
+    from models.data.utils.spad_utils import cfg as spad_cfg
+    import torchvision.utils as vutils
+    data_config = cfg()
+    # print(data_config)
+    # data_config["normalization"] = "dorn"
+    spad_config = spad_cfg()
+    # print(config)
+    # print(spad_config)
+    del data_config["data_name"]
+    device = torch.device("cuda")
+    _, val, _ = load_data(**data_config, spad_config=spad_config)
+    input_ = val[1]
+    for key in ["rgb", "albedo", "spad", "mask"]:
+        input_[key] = input_[key].unsqueeze(0)
+    print(input_["entry"])
+
+    for sgd_iters in range(5):
+        print("Running with {} iters of SGD...".format(sgd_iters))
+        model = DORN_bayesian_opt(sgd_iters=sgd_iters, lr=1e5)
+        model.feature_extractor.to(device)
+        log_depth_probs_init = model.initialize(input_, device)
+        output_depth_probs = model.optimize_depth_map(log_depth_probs_init, input_, device)
+        output_dir = "."
+        outfile = os.path.join(output_dir, "{}_pred_{}.png".format(input_["entry"].replace("/", "_"), sgd_iters))
+        output_depth = model.ord_decode((output_depth_probs, None), model.sid_obj)
+        # print(output_depth)
+
+        vutils.save_image(output_depth, outfile, nrow=1, normalize=True, range=(model.min_depth, model.max_depth))
+
