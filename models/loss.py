@@ -74,6 +74,9 @@ def delta(prediction, target, mask, threshold):
     such that
     max(prediction[i]/target[i], target[i]/prediction[i]) < threshold
     """
+    # print(prediction.dtype)
+    # print(mask.dtype)
+    # print(target.dtype)
     c = torch.max(prediction[mask > 0]/target[mask > 0], target[mask > 0]/prediction[mask > 0])
     return torch.sum((c < threshold).float())/(torch.sum(mask))
 

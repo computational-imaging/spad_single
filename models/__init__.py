@@ -1,6 +1,6 @@
 from .denoising_unet import DenoisingUnetModel
 from .DORN_nohints import DORN_nyu_nohints
-from .DORN_hints import DORN_nyu_hints, DORN_nyu_hints_Unet
+from .DORN_hints import DORN_nyu_hints, DORN_nyu_hints_Unet, DORN_nyu_histogram_matching
 from .DORN_bayesian_opt import DORN_bayesian_opt
 # import future models here
 

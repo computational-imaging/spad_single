@@ -14,9 +14,13 @@ def cfg():
     dc_count = 0.1*photon_count     # Simulates ambient + dark count (additional to photon_count
     fwhm_ps = 70.                   # Full-width-at-half-maximum of (Gaussian) SPAD jitter, in picoseconds
 
+    use_albedo = True
+    use_squared_falloff = True
+
 
 def simulate_spad(depth_truth, albedo, mask, min_depth, max_depth,
-                  spad_bins, photon_count, dc_count, fwhm_ps):
+                  spad_bins, photon_count, dc_count, fwhm_ps,
+                  use_albedo, use_squared_falloff):
     """
 
     :param depth_truth: The ground truth depth map (z, not distance...)
@@ -28,17 +32,24 @@ def simulate_spad(depth_truth, albedo, mask, min_depth, max_depth,
     :param photon_count: The number of photons to collect
     :param dc_count: The additional fraction of photons to add to account for dark count + ambient light
     :param fwhm_ps: The full-width-at-half-maximum of the laser pulse jitter
+    :param use_albedo: Whether or not to take the albedo into account when simulating.
+    :param use_squared_falloff: Whether or not to take the squared depth into account when simulating
     :return: A simulated spad.
     """
     # Only use the green channel to simulate
-    weights = (albedo[..., 1] / (depth_truth ** 2 + 1e-6)) * mask
+    weights = mask
+    if use_albedo:
+        weights = weights * albedo[..., 1]
+    if use_squared_falloff:
+        weights = weights / (depth_truth ** 2 + 1e-6)
+    # weights = (albedo[..., 1] / (depth_truth ** 2 + 1e-6)) * mask
     depth_hist, _ = np.histogram(depth_truth, bins=spad_bins, range=(min_depth, max_depth), weights=weights)
 
     # Scale by number of photons
     spad_counts = depth_hist * (photon_count / np.sum(depth_hist))
 
     # Add ambient/dark counts (dc_count)
-    spad_counts += dc_count / spad_bins * np.ones(len(spad_counts))
+    spad_counts += np.ones(len(spad_counts)) * (dc_count / spad_bins)
 
     # Convolve with PSF
     bin_width_m = float(max_depth - min_depth) / spad_bins  # meters/bin
@@ -46,8 +57,9 @@ def simulate_spad(depth_truth, albedo, mask, min_depth, max_depth,
     fwhm_bin = fwhm_ps / bin_width_ps
     psf = makeGaussianPSF(len(spad_counts), fwhm=fwhm_bin)
     spad_counts = fftconvolve(psf, spad_counts)[:int(spad_bins)]
-
+    spad_counts = np.clip(spad_counts, a_min=0., a_max=None)
     # Apply poisson
+    # print(np.min(spad_counts))
     spad_counts = np.random.poisson(spad_counts)
     return spad_counts
 
@@ -105,7 +117,8 @@ def rescale_bins(spad_counts, min_depth, max_depth, sid_obj):
 
 class SimulateSpad:
     def __init__(self, depth_truth_key, albedo_key, mask_key, spad_key, min_depth, max_depth,
-                 spad_bins, photon_count, dc_count, fwhm_ps, sid_obj=None):
+                 spad_bins, photon_count, dc_count, fwhm_ps, use_albedo, use_squared_falloff,
+                 sid_obj=None):
         """
 
         :param depth_truth_key: Key for ground truth depth in sample.
@@ -127,9 +140,11 @@ class SimulateSpad:
         self.min_depth = min_depth
         self.max_depth = max_depth
         self.sid_obj = sid_obj
+        self.use_albedo = use_albedo
+        self.use_squared_falloff = use_squared_falloff
         self.simulate_spad_fn = \
             lambda d, a, m: simulate_spad(d, a, m, min_depth, max_depth, spad_bins, photon_count, dc_count,
-                                          fwhm_ps)
+                                          fwhm_ps, use_albedo, use_squared_falloff)
 
     def __call__(self, sample):
         spad_counts = self.simulate_spad_fn(sample[self.depth_truth_key],

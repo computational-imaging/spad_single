@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.utils as vutils
+import skimage
 
 import numpy as np
 from time import perf_counter
@@ -254,6 +255,153 @@ class DORN_nyu_hints_Unet(DORN_nyu_hints):
         spad_features = spad_features.expand(-1, -1, img_features.size(2), img_features.size(3))
         img_features.add_(self.spad_weight * torch.log_(spad_features + 1e-5))
         return img_features
+
+
+class DORN_nyu_histogram_matching(DORN_nyu_nohints):
+    def __init__(self, hints_len=68,
+                 in_channels=3, in_height=257, in_width=353,
+                 sid_bins=68, offset=0.,
+                 min_depth=0., max_depth=10.,
+                 alpha=0.6569154266167957, beta=9.972175646365525,
+                 frozen=True, pretrained=True,
+                 state_dict_file=os.path.join("models", "torch_params_nyuv2_BGR.pth.tar")):
+        """
+        :param hints_len: Uniformly spaced noisy depth hints (i.e. raw SPAD data)
+        :param num_hints_layers: The number of layers for performing upsampling
+        """
+        super(DORN_nyu_histogram_matching, self).__init__(in_channels, in_height, in_width,
+                                                          sid_bins, offset,
+                                                          min_depth, max_depth,
+                                                          alpha, beta,
+                                                          frozen, pretrained,
+                                                          state_dict_file)
+        self.hints_len = hints_len
+
+    def write_eval(self, data, path, device):
+        # one = perf_counter()
+        _, logprobs = self.get_loss(data, device, resize_output=True)
+
+        # Ordinal decoding to index
+        log_probs, _ = logprobs
+        depth_index = torch.sum(log_probs >= np.log(0.5) ,dim=1, keepdim=True).long().cpu()
+
+        # Histogram matching
+        spad = data["spad"].numpy().squeeze()
+        # Histogram denoising
+        spad = self.denoise_hist(spad)
+
+        depth_rescaled_index = torch.from_numpy(self.hist_match(depth_index.numpy(), spad)).long()
+        # print(torch.min(depth_rescaled_index))
+        # print(torch.max(depth_rescaled_index))
+
+        # Finish ordinal decoding
+        depth_map_rescaled = self.sid_obj.get_value_from_sid_index(depth_rescaled_index)
+        depth_map_orig = self.sid_obj.get_value_from_sid_index(depth_index)
+
+        gt = data["rawdepth_orig"].cpu()
+        rgb = data["rgb_orig"].cpu()
+        albedo = data["albedo_orig"].cpu()
+        mask = data["mask_orig"].cpu()
+        spad = data["spad"].cpu()
+        out = {"depth_map": depth_map_rescaled,
+               "depth_map_no_rescale": depth_map_orig,
+               "gt": gt,
+               "mask": mask,
+               "rgb": rgb,
+               "albedo": albedo,
+               "spad": spad,
+               "entry": data["entry"][0]
+              }
+               # "logprobs": logprobs}
+        safe_makedir(os.path.dirname(path))
+        torch.save(out, path)
+
+    def denoise_hist(self, sid_hist, snr_threshold=0.2):
+        """
+        :param sid_hist: Numpy array
+        :return:
+        """
+        # Normalize by bin width
+        bin_widths = (self.sid_obj.sid_bin_edges[1:] - self.sid_obj.sid_bin_edges[:-1]).numpy()
+        sid_hist = sid_hist / bin_widths
+        # print(np.min(sid_hist))
+        # print(np.max(sid_hist))
+
+        # Threshold out all values less than threshold of total count
+        # total_count = np.sum(sid_hist)
+        # sid_hist[sid_hist < snr_threshold * total_count/len(sid_hist)] = 0.
+
+        # Keep snr_threshold fraction of bins with the largest counts
+        # i.e. zero out bottom (1 - snr_threshold) of bins
+        # kth = int(np.ceil((1 - snr_threshold)*len(sid_hist)))
+        # smallest_k = np.argpartition(sid_hist, kth)[:kth]
+        # sid_hist[smallest_k] = 0.
+
+        # Adaptively find snr_threshold by looking for largest decrease in the 1-cdf of the histogram
+        # of the counts histogram (!)
+        hist_of_hist, bin_edges = np.histogram(sid_hist, bins = 100)
+        hist_of_hist = hist_of_hist / np.sum(hist_of_hist)
+        one_m_cdf = 1. - np.cumsum(hist_of_hist)
+        d_one_m_cdf = one_m_cdf[1:] - one_m_cdf[:-1]
+        min_i = np.argmin(d_one_m_cdf)
+        threshold = bin_edges[min_i]
+
+        sid_hist[sid_hist < threshold] = 0.
+
+        # Remultiply by bin width
+        sid_hist = sid_hist * bin_widths
+        return sid_hist
+
+    @staticmethod
+    def hist_match(source_depth_sid_index, histogram_target):
+        """
+        https://stackoverflow.com/questions/32655686/histogram-matching-of-two-images-in-python-2-x
+
+        Adjust the pixel values of a grayscale image such that its histogram
+        matches that of a target image
+
+        Arguments:
+        -----------
+            source: np.ndarray
+                Image to transform; the histogram is computed over the flattened
+                array
+            template: np.ndarray
+                Template image; can have different dimensions to source
+        Returns:
+        -----------
+            matched: np.ndarray
+                The transformed output image
+        """
+
+        oldshape = source_depth_sid_index.shape
+        source = source_depth_sid_index.ravel()
+        # template = template.ravel()
+
+        # get the set of unique pixel values and their corresponding indices and
+        # counts
+        s_values, bin_idx, s_counts = np.unique(source, return_inverse=True,
+                                                return_counts=True)
+        # take the cumsum of the counts and normalize by the number of pixels to
+        # get the empirical cumulative distribution functions for the source and
+        # template images (maps pixel value --> quantile)
+        s_quantiles = np.cumsum(s_counts).astype(np.float32)
+        s_quantiles /= s_quantiles[-1]
+
+        # print(histogram_target)
+        t_quantiles = np.cumsum(histogram_target).astype(np.float32)
+        t_quantiles /= t_quantiles[-1]
+        # print(np.min(t_quantiles))
+        # print(np.max(t_quantiles))
+
+        t_values = np.array(range(len(t_quantiles))).astype(np.float32)
+        # print(len(t_quantiles))
+        # print(len(t_values))
+        # interpolate linearly to find the pixel values in the template image
+        # that correspond most closely to the quantiles in the source image
+        interp_t_values = np.round(np.interp(s_quantiles, t_quantiles, t_values))
+
+        return interp_t_values[bin_idx].reshape(oldshape)
+
 
 
 if __name__ == "__main__":
