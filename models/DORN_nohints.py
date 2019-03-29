@@ -228,7 +228,7 @@ class DORN_nyu_nohints(Model):
         # print("\ttorch.save: {}".format(five - four))
 
     def evaluate_dir(self, output_dir, device):
-        """Get average losses over all data files"""
+        """Get average losses and per-image losses over all data files"""
         num_pixels = 0.
         avg_losses = defaultdict(float)
         losses = defaultdict(dict)
@@ -237,8 +237,9 @@ class DORN_nyu_nohints(Model):
                 for torchfile in filenames:
                     if not torchfile.endswith(".pt"):
                         continue
-                    print(torchfile)
+                    print("Evaluating {}".format(os.path.join(dirname, torchfile)))
                     metrics, data = self.evaluate_file(os.path.join(dirname, torchfile))
+                    print(metrics)
                     num_valid_pixels = torch.sum(data["mask"]).item()
                     # print(data["mask"])
                     num_pixels += num_valid_pixels
