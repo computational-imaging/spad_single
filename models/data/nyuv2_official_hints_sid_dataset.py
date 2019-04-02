@@ -86,7 +86,7 @@ def load_data(train_file, train_dir,
     -------
     train, val, test - torch.utils.data.Dataset objects containing the relevant splits
     """
-    print(spad_config)
+    # print(spad_config)
     train = NYUDepthv2Dataset(train_file, train_dir, transform=None,
                               file_types=["rgb", "albedo", "rawdepth"],
                               min_depth=min_depth, max_depth=max_depth)
@@ -100,9 +100,11 @@ def load_data(train_file, train_dir,
     # Var is set to np.ones((1,1,3)) to conform to DORN conventions
     if normalization == "dorn":
         # Use normalization as in the github code for DORN.
+        print("Using DORN normalization.")
         transform_mean = np.array([[[103.0626, 115.9029, 123.1516]]]).astype(np.float32)
         transform_var = np.ones((1, 1, 3))
     elif normalization == "none":
+        print("No normalization.")
         transform_mean = np.zeros((1, 1, 3))
         transform_var = np.ones((1, 1, 3))
     else:

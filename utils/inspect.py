@@ -21,7 +21,7 @@ def show_hist(hist, min_depth, max_depth):
     In particular, this does NOT compute a histogram on hist before displaying: it assumes
     that bar-graphing hist is what will produce the histogram.
     """
-    fig = plt.figure(figsize=(50, 20))
+    fig = plt.figure(figsize=(5, 2))
     ax = fig.add_subplot(111)
     ax.bar(np.linspace(min_depth, max_depth, len(hist)), hist, width=(max_depth - min_depth) / len(hist))
 

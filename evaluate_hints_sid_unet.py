@@ -66,9 +66,11 @@ def cfg(data_config):
 
 @ex.automain
 def main(model_config,
+         dataset_type,
          eval_config,
          data_config,
          seed,
+         small_run,
          device):
     # Load the model
     model = make_model(**model_config)
@@ -105,8 +107,8 @@ def main(model_config,
                                               "{}_out.pt".format(data["entry"][0])),
                                  device)
                 # TESTING
-                # if i == 99:
-                #     break
+                if small_run and i == 9:
+                    break
                 # total_eval += perf_counter() - start_eval
             # total = perf_counter() - start
             # print("avg time over 100 iters: {}".format(total/100.))

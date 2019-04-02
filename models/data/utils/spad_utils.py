@@ -22,7 +22,7 @@ def simulate_spad(depth_truth, albedo, mask, min_depth, max_depth,
                   spad_bins, photon_count, dc_count, fwhm_ps,
                   use_albedo, use_squared_falloff):
     """
-
+    Works in numpy.
     :param depth_truth: The ground truth depth map (z, not distance...)
     :param albedo: The albedo map, aligned with the ground truth depth map.
     :param mask: The mask of valid pixels

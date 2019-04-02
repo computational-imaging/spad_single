@@ -39,13 +39,18 @@ def cfg(data_config):
         "model_state_dict_fn": None             # Keep as None
     }
     ckpt_file = None                            # Keep as None
+    dataset_type = "val"
     eval_config = {
-        "dataset": "test",                       # {val, test}
-        "mode": "save_outputs",                 # {save_outputs, evaluate_metrics}
-        "output_dir": "./data/dorn_bayesian_opt_test",
+        "save_outputs": True,
+        "evaluate_metrics": True,
+        "output_dir": os.path.join("data",
+                                   "results",
+                                   model_config["model_name"],
+                                   dataset_type),
         "entry": None                           # If we want to evaluate on a single entry
     }
     seed = 95290421
+    small_run = False
 
     cuda_device = "0"                       # The gpu index to run on. Should be a string
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
@@ -64,6 +69,7 @@ def main(model_config,
          eval_config,
          data_config,
          seed,
+         small_run,
          device):
     # Load the model
     model = make_model(**model_config)
@@ -98,8 +104,8 @@ def main(model_config,
                                               "{}_out.pt".format(data["entry"][0])),
                                  device)
                 # TESTING
-                # if i == 9:
-                #     break
+                if small_run and i == 9:
+                    break
         print("Dataset: {} Output dir: {}".format(eval_config["dataset"],
                                                   eval_config["output_dir"]))
     elif eval_config["mode"] == "evaluate_metrics":

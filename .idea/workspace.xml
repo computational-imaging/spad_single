@@ -2,14 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ebb10411-0152-4c74-83b8-0064780d50e4" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/evaluate_hints_histogram_matching.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/evaluate_bayesian_hints_sid.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_bayesian_hints_sid.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/evaluate_dorn_bayesian_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_dorn_bayesian_opt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/evaluate_hints_histogram_matching.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_hints_histogram_matching.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/evaluate_hints_sid_unet.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_hints_sid_unet.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/evaluate_nohints_sid.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_nohints_sid.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/DORN_hints.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/DORN_hints.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/DORN_nohints.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/DORN_nohints.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/data/nyuv2_official_hints_sid_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/nyuv2_official_hints_sid_dataset.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/data/utils/spad_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/utils/spad_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/loss.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/loss.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper/DepthNet.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/paper/DepthNet.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/inspect.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/inspect.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -22,22 +24,10 @@
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/evaluate_hints_sid_unet.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1005">
-                  <caret line="67" column="22" lean-forward="true" selection-start-line="67" selection-start-column="22" selection-end-line="67" selection-end-column="22" />
-                  <folding>
-                    <element signature="e#23#32#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/models/DORN_hints.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="812">
-                  <caret line="299" lean-forward="true" selection-start-line="299" selection-end-line="299" />
+                <state relative-caret-position="197">
+                  <caret line="324" selection-start-line="324" selection-end-line="325" selection-end-column="40" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -48,8 +38,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_hints_sid_dataset.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="754">
-                  <caret line="89" column="16" lean-forward="true" selection-start-line="89" selection-start-column="16" selection-end-line="89" selection-end-column="16" />
+                <state relative-caret-position="373">
+                  <caret line="89" column="14" lean-forward="true" selection-start-line="89" selection-start-column="14" selection-end-line="89" selection-end-column="14" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -58,9 +48,18 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/utils/inspect.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="315">
+                  <caret line="23" column="34" lean-forward="true" selection-start-line="23" selection-start-column="34" selection-end-line="23" selection-end-column="34" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/models/data/utils/sid_utils.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-295">
+                <state relative-caret-position="1230">
                   <caret line="82" column="25" selection-start-line="82" selection-start-column="25" selection-end-line="82" selection-end-column="25" />
                   <folding>
                     <element signature="e#0#12#0" expanded="true" />
@@ -72,8 +71,20 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/evaluate_hints_histogram_matching.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="45">
-                  <caret line="14" column="46" selection-start-line="14" selection-start-column="46" selection-end-line="14" selection-end-column="46" />
+                <state relative-caret-position="615">
+                  <caret line="52" column="5" selection-start-line="52" selection-start-column="5" selection-end-line="52" selection-end-column="5" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/evaluate_dorn_bayesian_opt.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="684">
+                  <caret line="107" column="25" selection-start-line="107" selection-start-column="25" selection-end-line="107" selection-end-column="25" />
+                  <folding>
+                    <element signature="e#23#32#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
             </entry>
@@ -81,8 +92,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/models/data/utils/spad_utils.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="675">
-                  <caret line="45" column="56" lean-forward="true" selection-start-line="45" selection-start-column="56" selection-end-line="45" selection-end-column="56" />
+                <state relative-caret-position="136">
+                  <caret line="20" column="4" selection-start-line="20" selection-start-column="4" selection-end-line="22" selection-end-column="51" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -91,10 +102,22 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_dataset.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-1095">
+                  <caret line="41" column="8" selection-start-line="41" selection-start-column="8" selection-end-line="41" selection-end-column="8" />
+                  <folding>
+                    <element signature="e#0#9#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/evaluate_nohints_sid.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="182">
-                  <caret line="47" column="19" selection-start-line="47" selection-start-column="19" selection-end-line="47" selection-end-column="19" />
+                <state relative-caret-position="339">
+                  <caret line="40" selection-start-line="40" selection-end-line="49" selection-end-column="5" />
                   <folding>
                     <element signature="e#23#32#0" expanded="true" />
                   </folding>
@@ -107,42 +130,24 @@
       <split-second>
         <leaf>
           <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/models/core/model_core.py">
+            <entry file="file://$PROJECT_DIR$/evaluate_hints_sid_unet.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="640">
-                  <caret line="47" column="105" selection-start-line="47" selection-start-column="105" selection-end-line="47" selection-end-column="105" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/models/DORN_nohints.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="800">
-                  <caret line="234" column="19" selection-start-line="234" selection-start-column="19" selection-end-line="234" selection-end-column="19" />
+                <state relative-caret-position="683">
+                  <caret line="68" column="22" selection-start-line="68" selection-start-column="22" selection-end-line="68" selection-end-column="22" />
                   <folding>
-                    <element signature="e#0#12#0" expanded="true" />
+                    <element signature="e#23#32#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/models/loss.py">
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/evaluate_nohints_sid.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="630">
-                  <caret line="108" column="16" lean-forward="true" selection-start-line="108" selection-start-column="16" selection-end-line="108" selection-end-column="16" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/models/__init__.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="615">
-                  <caret line="41" lean-forward="true" selection-start-line="41" selection-end-line="41" />
+                <state relative-caret-position="677">
+                  <caret line="73" column="17" lean-forward="true" selection-start-line="73" selection-start-column="17" selection-end-line="73" selection-end-column="17" />
                   <folding>
-                    <element signature="e#0#46#0" expanded="true" />
+                    <element signature="e#23#32#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -161,7 +166,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>print</find>
       <find>logprobsa</find>
       <find>model input</find>
       <find>size</find>
@@ -191,6 +195,7 @@
       <find>clip</find>
       <find>&quot;dataset</find>
       <find>&quot;dataset&quot;</find>
+      <find>eval_config[&quot;dataset&quot;]</find>
     </findStrings>
     <replaceStrings>
       <replace>prediction</replace>
@@ -199,6 +204,7 @@
       <replace>upsampling_mode</replace>
       <replace>alpha</replace>
       <replace>beta</replace>
+      <replace>dataset_type</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -244,34 +250,71 @@
         <option value="$PROJECT_DIR$/models/DORN_hints_upsampling.py" />
         <option value="$PROJECT_DIR$/models/data/utils/transforms.py" />
         <option value="$PROJECT_DIR$/evaluate_hints_sid.py" />
-        <option value="$PROJECT_DIR$/models/data/nyuv2_official_hints_sid_dataset.py" />
-        <option value="$PROJECT_DIR$/utils/inspect.py" />
         <option value="$PROJECT_DIR$/models/DORN_bayesian_opt.py" />
-        <option value="$PROJECT_DIR$/evaluate_dorn_bayesian_opt.py" />
-        <option value="$PROJECT_DIR$/evaluate_bayesian_hints_sid.py" />
-        <option value="$PROJECT_DIR$/evaluate_hints_sid_unet.py" />
         <option value="$PROJECT_DIR$/models/__init__.py" />
         <option value="$PROJECT_DIR$/data/train_test_split_nyu.py" />
         <option value="$PROJECT_DIR$/models/loss.py" />
         <option value="$PROJECT_DIR$/models/DORN_nohints.py" />
         <option value="$PROJECT_DIR$/models/data/utils/spad_utils.py" />
+        <option value="$PROJECT_DIR$/models/data/nyuv2_official_hints_sid_dataset.py" />
         <option value="$PROJECT_DIR$/models/DORN_hints.py" />
+        <option value="$PROJECT_DIR$/utils/inspect.py" />
         <option value="$PROJECT_DIR$/evaluate_nohints_sid.py" />
+        <option value="$PROJECT_DIR$/evaluate_bayesian_hints_sid.py" />
+        <option value="$PROJECT_DIR$/evaluate_dorn_bayesian_opt.py" />
+        <option value="$PROJECT_DIR$/evaluate_hints_sid_unet.py" />
         <option value="$PROJECT_DIR$/evaluate_hints_histogram_matching.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
-    <option name="x" value="1146" />
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="y" value="23" />
-    <option name="width" value="2293" />
-    <option name="height" value="1417" />
+    <option name="width" value="1080" />
+    <option name="height" value="877" />
   </component>
   <component name="ProjectView">
     <navigator currentView="Scope" currentSubView="Scope 'Project Files'; set:Project Files; class com.intellij.psi.search.scope.ProjectFilesScope" proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+              <item name="data" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+              <item name="depthnet" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+              <item name="depthnet" type="462c0819:PsiDirectoryNode" />
+              <item name="model" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+              <item name="models" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+              <item name="models" type="462c0819:PsiDirectoryNode" />
+              <item name="data" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
       <pane id="Scope">
         <subPane subId="Scope 'Project Files'; set:Project Files; class com.intellij.psi.search.scope.ProjectFilesScope">
           <expand>
@@ -312,44 +355,6 @@
               <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
               <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
               <item name="utils" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
-              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
-              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
-              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
-              <item name="depthnet" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
-              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
-              <item name="depthnet" type="462c0819:PsiDirectoryNode" />
-              <item name="model" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
-              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
-              <item name="models" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
-              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
-              <item name="models" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -435,18 +440,20 @@
       <workItem from="1553030904140" duration="3616000" />
       <workItem from="1553111626661" duration="12604000" />
       <workItem from="1553287397052" duration="10785000" />
-      <workItem from="1553668807606" duration="18373000" />
+      <workItem from="1553668807606" duration="19170000" />
+      <workItem from="1554075923046" duration="394000" />
+      <workItem from="1554079251897" duration="4404000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="318225000" />
+    <option name="totallyTimeSpent" value="323820000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1146" y="23" width="2293" height="1417" extended-state="0" />
+    <frame x="0" y="23" width="1920" height="1057" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15873721" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.195629" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -458,7 +465,7 @@
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" weight="0.3299363" />
-      <window_info anchor="bottom" id="File Transfer" order="9" weight="0.58415097" />
+      <window_info anchor="bottom" id="File Transfer" order="9" weight="0.5834197" />
       <window_info anchor="bottom" id="Database Changes" order="10" />
       <window_info anchor="bottom" id="Terminal" order="11" weight="0.3299363" />
       <window_info anchor="bottom" id="Event Log" order="12" side_tool="true" />
@@ -581,13 +588,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_cifar10.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="708">
-          <caret line="69" column="20" selection-start-line="69" selection-start-column="20" selection-end-line="69" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/models/DORN_parallel_hints.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -705,16 +705,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="92">
-          <caret line="101" selection-start-line="101" selection-end-line="101" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/depthnet/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-436">
@@ -742,30 +732,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_dataset.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="450">
-          <caret line="41" column="8" selection-start-line="41" selection-start-column="8" selection-end-line="41" selection-end-column="8" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utils/inspect.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="690">
-          <caret line="48" column="72" selection-start-line="48" selection-start-column="72" selection-end-line="48" selection-end-column="72" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_bayesian_hints_sid.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1173">
-          <caret line="122" lean-forward="true" selection-start-line="122" selection-end-line="122" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/models/DORN_bayesian_opt.py">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -773,13 +739,6 @@
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/core/model_core.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="640">
-          <caret line="47" column="105" selection-start-line="47" selection-start-column="105" selection-end-line="47" selection-end-column="105" />
         </state>
       </provider>
     </entry>
@@ -803,16 +762,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_dorn_bayesian_opt.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1114">
-          <caret line="103" column="77" selection-start-line="103" selection-start-column="77" selection-end-line="103" selection-end-column="77" />
-          <folding>
-            <element signature="e#23#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/models/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="615">
@@ -823,16 +772,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/loss.py">
+    <entry file="file://$PROJECT_DIR$/models/core/model_core.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="630">
-          <caret line="108" column="16" lean-forward="true" selection-start-line="108" selection-start-column="16" selection-end-line="108" selection-end-column="16" />
+        <state relative-caret-position="690">
+          <caret line="47" column="105" selection-start-line="47" selection-start-column="105" selection-end-line="47" selection-end-column="105" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/models/DORN_nohints.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="800">
+        <state relative-caret-position="3300">
           <caret line="234" column="19" selection-start-line="234" selection-start-column="19" selection-end-line="234" selection-end-column="19" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
@@ -840,30 +789,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/utils/sid_utils.py">
+    <entry file="file://$PROJECT_DIR$/models/loss.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-295">
-          <caret line="82" column="25" selection-start-line="82" selection-start-column="25" selection-end-line="82" selection-end-column="25" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="1605">
+          <caret line="108" column="16" selection-start-line="108" selection-start-column="16" selection-end-line="108" selection-end-column="16" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/utils/spad_utils.py">
+    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_sid_dataset.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="675">
-          <caret line="45" column="56" lean-forward="true" selection-start-line="45" selection-start-column="56" selection-end-line="45" selection-end-column="56" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_hints_sid_dataset.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="754">
-          <caret line="89" column="16" lean-forward="true" selection-start-line="89" selection-start-column="16" selection-end-line="89" selection-end-column="16" />
+        <state relative-caret-position="92">
+          <caret line="101" selection-start-line="101" selection-end-line="101" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
@@ -872,18 +808,79 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/models/DORN_hints.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="812">
-          <caret line="299" lean-forward="true" selection-start-line="299" selection-end-line="299" />
+        <state relative-caret-position="197">
+          <caret line="324" selection-start-line="324" selection-end-line="325" selection-end-column="40" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_nohints_sid.py">
+    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_hints_sid_dataset.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="182">
-          <caret line="47" column="19" selection-start-line="47" selection-start-column="19" selection-end-line="47" selection-end-column="19" />
+        <state relative-caret-position="373">
+          <caret line="89" column="14" lean-forward="true" selection-start-line="89" selection-start-column="14" selection-end-line="89" selection-end-column="14" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/inspect.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="23" column="34" lean-forward="true" selection-start-line="23" selection-start-column="34" selection-end-line="23" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_nohints_dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1095">
+          <caret line="41" column="8" selection-start-line="41" selection-start-column="8" selection-end-line="41" selection-end-column="8" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/data/utils/spad_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="20" column="4" selection-start-line="20" selection-start-column="4" selection-end-line="22" selection-end-column="51" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/evaluate_bayesian_hints_sid.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="820">
+          <caret line="76" column="19" selection-start-line="76" selection-start-column="19" selection-end-line="76" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/evaluate_cifar10.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="885">
+          <caret line="69" column="20" selection-start-line="69" selection-start-column="20" selection-end-line="69" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/data/utils/sid_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1230">
+          <caret line="82" column="25" selection-start-line="82" selection-start-column="25" selection-end-line="82" selection-end-column="25" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/evaluate_dorn_bayesian_opt.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="684">
+          <caret line="107" column="25" selection-start-line="107" selection-start-column="25" selection-end-line="107" selection-end-column="25" />
           <folding>
             <element signature="e#23#32#0" expanded="true" />
           </folding>
@@ -892,8 +889,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/evaluate_hints_sid_unet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1005">
-          <caret line="67" column="22" lean-forward="true" selection-start-line="67" selection-start-column="22" selection-end-line="67" selection-end-column="22" />
+        <state relative-caret-position="683">
+          <caret line="68" column="22" selection-start-line="68" selection-start-column="22" selection-end-line="68" selection-end-column="22" />
           <folding>
             <element signature="e#23#32#0" expanded="true" />
           </folding>
@@ -902,8 +899,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/evaluate_hints_histogram_matching.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
-          <caret line="14" column="46" selection-start-line="14" selection-start-column="46" selection-end-line="14" selection-end-column="46" />
+        <state relative-caret-position="615">
+          <caret line="52" column="5" selection-start-line="52" selection-start-column="5" selection-end-line="52" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/evaluate_nohints_sid.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="677">
+          <caret line="73" column="17" lean-forward="true" selection-start-line="73" selection-start-column="17" selection-end-line="73" selection-end-column="17" />
+          <folding>
+            <element signature="e#23#32#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
