@@ -42,7 +42,10 @@ def cfg(data_config):
     eval_config = {
         "save_outputs": True,
         "evaluate_metrics": True,
-        "output_dir": "./data/{}_{}".format(model_config["model_name"], dataset_type),
+        "output_dir": os.path.join("data",
+                                   "results",
+                                   model_config["model_name"],
+                                   dataset_type),
         "entry": None                           # If we want to evaluate on a single entry
     }
     seed = 95290421
