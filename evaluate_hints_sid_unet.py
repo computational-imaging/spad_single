@@ -42,14 +42,18 @@ def cfg(data_config):
     }
     ckpt_file = "checkpoints/Mar15/04-10-54_DORN_nyu_hints_nyu_depth_v2/checkpoint_epoch_9_name_fixed.pth.tar"
     # ckpt_file = None # Bayesian hints eval
+    dataset_type = "val"
     eval_config = {
-        "dataset": "test",                       # {val, test}
         "save_outputs": True,
         "evaluate_metrics": True,
-        "output_dir": "./data/dorn_hints_unet_test",
+        "output_dir": os.path.join("data",
+                                   "results",
+                                   model_config["model_name"],
+                                   dataset_type),
         "entry": None                           # If we want to evaluate on a single entry
     }
     seed = 95290421
+    small_run = False
 
     cuda_device = "0"                       # The gpu index to run on. Should be a string
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
