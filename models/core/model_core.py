@@ -63,22 +63,12 @@ class Model(nn.Module):
         """
         raise NotImplementedError
 
-    def write_eval(self, data, output_file, device):
+    def evaluate(self, data, device):
         """
-        Write model outputs to disk for later evaluation.
+        Run model on data and calculate figures of merit
         :param data: A data entry to evaluate
-        :param output_file: The output file for this input.
-        :param device: The device to run on
-        :return: None
-        """
-        raise NotImplementedError
-
-    def evaluate_dir(self, output_dir, device):
-        """
-        Load model outputs from directory and calculate figures of merit
-        :param output_dir: The directory containing the model outputs.
         :param device: The device to run things on.
-        :return: A dictionary of all the things to save.
+        :return: Anything you might want to save/inspect later.
         """
         raise NotImplementedError
 

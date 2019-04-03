@@ -66,6 +66,7 @@ def cfg(data_config):
 
 @ex.automain
 def main(model_config,
+         dataset_type,
          eval_config,
          data_config,
          seed,
@@ -80,7 +81,7 @@ def main(model_config,
 
     # Load the data
     _, val, test = load_data()
-    dataset = test if eval_config["dataset"] == "test" else val
+    dataset = test if dataset_type == "test" else val
 
     init_randomness(seed)
 
@@ -91,8 +92,8 @@ def main(model_config,
                             num_workers=4,
                             pin_memory=True,
                             worker_init_fn=worker_init_randomness)
-    if eval_config["mode"] == "save_outputs":
-        print("Evaluating the model on {}".format(eval_config["dataset"]))
+    if eval_config["save_outputs"]:
+        print("Evaluating the model on {}".format(dataset_type))
         # Run the model on everything and save everything to disk.
         safe_makedir(eval_config["output_dir"])
         with torch.no_grad():
@@ -106,16 +107,10 @@ def main(model_config,
                 # TESTING
                 if small_run and i == 9:
                     break
-        print("Dataset: {} Output dir: {}".format(eval_config["dataset"],
+        print("Dataset: {} Output dir: {}".format(dataset_type,
                                                   eval_config["output_dir"]))
-    elif eval_config["mode"] == "evaluate_metrics":
+    if eval_config["evaluate_metrics"]:
         # Load things and call the model's evaluate function on them.
         metrics = model.evaluate_dir(eval_config["output_dir"], device)
         with open(os.path.join(eval_config["output_dir"], "metrics.json"), "w") as f:
             json.dump(metrics, f)
-
-    elif eval_config["mode"] == "save_file":
-        safe_makedir(eval_config["output_dir"])
-
-    else:
-        print("Unrecognized mode: {}".format(eval_config["mode"]))

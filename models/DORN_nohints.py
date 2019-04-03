@@ -202,28 +202,35 @@ class DORN_nyu_nohints(Model):
         depth_mask = vutils.make_grid(input_["mask"], nrow=4, normalize=False)
         writer.add_image(tag + "/depth_mask", depth_mask, it)
 
-    def write_eval(self, data, path, device):
+    def evaluate(self, data, device):
+
+    # def write_eval(self, data, path, device):
         # one = perf_counter()
         _, logprobs = self.get_loss(data, device, resize_output=True)
         # two = perf_counter()
         # print("\tget_loss: {}".format(two - one))
-        depth_map = self.ord_decode(logprobs, self.sid_obj)
+        pred = self.ord_decode(logprobs, self.sid_obj)
         # three = perf_counter()
         # print("\tord_decode: {}".format(three - two))
         gt = data["rawdepth_orig"].cpu()
-        rgb = data["rgb_orig"].cpu()
+        # rgb = data["rgb_orig"].cpu()
         mask = data["mask_orig"].cpu()
-        out = {"depth_map": depth_map,
-               "gt": gt,
-               "mask": mask,
-               "rgb": rgb,
-               "entry": data["entry"][0]
-              }
+        # out = {"depth_map": depth_map,
+        #        "gt": gt,
+        #        "mask": mask,
+        #        "rgb": rgb,
+        #        "entry": data["entry"][0]
+        #       }
+
+        metrics = self.get_metrics(pred,
+                                   gt,
+                                   mask)
+        return pred, metrics
                # "logprobs": logprobs}
-        safe_makedir(os.path.dirname(path))
+        # safe_makedir(os.path.dirname(path))
         # four = perf_counter()
         # print("\tto cpu: {}".format(four - three))
-        torch.save(out, path)
+        # torch.save(out, path)
         # five = perf_counter()
         # print("\ttorch.save: {}".format(five - four))
 
