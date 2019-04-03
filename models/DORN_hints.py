@@ -203,33 +203,12 @@ class DORN_nyu_hints(Model):
         depth_mask = vutils.make_grid(input_["mask"], nrow=4, normalize=False)
         writer.add_image(tag + "/depth_mask", depth_mask, it)
 
-    def write_eval(self, data, path, device):
-        _, logprobs = self.get_loss(data, device, resize_output=True)
-        depth_map = self.ord_decode(logprobs, self.sid_obj)
-        gt = data["rawdepth_orig"].cpu()
-        rgb = data["rgb_orig"].cpu()
-        spad = data["spad"].cpu()
-        mask = data["mask_orig"].cpu()
-        out = {"depth_map": depth_map,
-               "gt": gt,
-               "mask": mask,
-               "spad": spad,
-               "rgb": rgb,
-               "entry": data["entry"][0]
-              }
-        safe_makedir(os.path.dirname(path))
-        torch.save(out, path)
-
-
 # Steal methods from nohints
 DORN_nyu_hints.get_metrics = staticmethod(DORN_nyu_nohints.get_metrics)
 DORN_nyu_hints.ord_decode = staticmethod(DORN_nyu_nohints.ord_decode)
 DORN_nyu_hints.ord_reg_loss = staticmethod(DORN_nyu_nohints.ord_reg_loss)
 DORN_nyu_hints.to_logprobs = staticmethod(DORN_nyu_nohints.to_logprobs)
-# DORN_nyu_hints.write_eval = DORN_nyu_nohints.write_eval
-DORN_nyu_hints.evaluate_dir = DORN_nyu_nohints.evaluate_dir
-DORN_nyu_hints.evaluate_file = DORN_nyu_nohints.evaluate_file
-# DORN_nyu_hints.write_updates = DORN_nyu_nohints.write_updates
+DORN_nyu_hints.evaluate = DORN_nyu_nohints.evaluate
 
 
 class DORN_nyu_hints_Unet(DORN_nyu_hints):
@@ -277,7 +256,7 @@ class DORN_nyu_histogram_matching(DORN_nyu_nohints):
                                                           state_dict_file)
         self.hints_len = hints_len
 
-    def write_eval(self, data, path, device):
+    def evaluate(self, data, device):
         # one = perf_counter()
         _, logprobs = self.get_loss(data, device, resize_output=True)
 
@@ -295,26 +274,28 @@ class DORN_nyu_histogram_matching(DORN_nyu_nohints):
         # print(torch.max(depth_rescaled_index))
 
         # Finish ordinal decoding
-        depth_map_rescaled = self.sid_obj.get_value_from_sid_index(depth_rescaled_index)
-        depth_map_orig = self.sid_obj.get_value_from_sid_index(depth_index)
+        pred = self.sid_obj.get_value_from_sid_index(depth_rescaled_index)
+        # depth_map_orig = self.sid_obj.get_value_from_sid_index(depth_index)
 
         gt = data["rawdepth_orig"].cpu()
-        rgb = data["rgb_orig"].cpu()
-        albedo = data["albedo_orig"].cpu()
+        # rgb = data["rgb_orig"].cpu()
+        # albedo = data["albedo_orig"].cpu()
         mask = data["mask_orig"].cpu()
-        spad = data["spad"].cpu()
-        out = {"depth_map": depth_map_rescaled,
-               "depth_map_no_rescale": depth_map_orig,
-               "gt": gt,
-               "mask": mask,
-               "rgb": rgb,
-               "albedo": albedo,
-               "spad": spad,
-               "entry": data["entry"][0]
-              }
-               # "logprobs": logprobs}
-        safe_makedir(os.path.dirname(path))
-        torch.save(out, path)
+        # spad = data["spad"].cpu()
+        # out = {"depth_map": depth_map_rescaled,
+        #        "depth_map_no_rescale": depth_map_orig,
+        #        "gt": gt,
+        #        "mask": mask,
+        #        "rgb": rgb,
+        #        "albedo": albedo,
+        #        "spad": spad,
+        #        "entry": data["entry"][0]
+        #       }
+        #        # "logprobs": logprobs}
+        metrics = self.get_metrics(pred,
+                                   gt,
+                                   mask)
+        return pred, metrics
 
     def denoise_hist(self, sid_hist, snr_threshold=0.2):
         """

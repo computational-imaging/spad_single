@@ -7,6 +7,7 @@ from utils.train_utils import init_randomness, worker_init_randomness
 from models.core.checkpoint import load_checkpoint, safe_makedir
 from models import make_model
 from sacred import Experiment
+from utils.eval_utils import evaluate_model_on_dataset
 from time import perf_counter
 
 # Dataset
@@ -43,15 +44,12 @@ def cfg(data_config):
     # ckpt_file = "checkpoints/Mar15/04-10-54_DORN_nyu_hints_nyu_depth_v2/checkpoint_epoch_9_name_fixed.pth.tar"
     ckpt_file = None # Bayesian hints eval
     dataset_type = "val"
-    eval_config = {
-        "save_outputs": True,
-        "evaluate_metrics": True,
-        "output_dir": os.path.join("data",
-                                   "results",
-                                   model_config["model_name"],
-                                   dataset_type),
-        "entry": None  # If we want to evaluate on a single entry
-    }
+    save_outputs = True
+    output_dir = os.path.join("results",
+                              data_config["data_name"],
+                              model_config["model_name"],
+                              dataset_type)
+
     seed = 95290421
     small_run = False
 
@@ -71,7 +69,8 @@ def cfg(data_config):
 @ex.automain
 def main(model_config,
          dataset_type,
-         eval_config,
+         save_outputs,
+         output_dir,
          data_config,
          seed,
          small_run,
@@ -87,42 +86,7 @@ def main(model_config,
     dataset = test if dataset_type == "test" else val
 
     init_randomness(seed)
-
-    # Make dataloader
-    dataloader = DataLoader(dataset,
-                            batch_size=1,
-                            shuffle=False,
-                            num_workers=4,
-                            pin_memory=True,
-                            worker_init_fn=worker_init_randomness)
-    if eval_config["save_outputs"]:
-        print("Evaluating the model on {}".format(dataset_type))
-        # Run the model on everything and save everything to disk.
-        safe_makedir(eval_config["output_dir"])
-        with torch.no_grad():
-            model.eval()
-            # start = perf_counter()
-            # total_eval = 0.
-            for i, data in enumerate(dataloader):
-                print("Evaluating {}".format(data["entry"][0]))
-                # start_eval = perf_counter()
-                model.write_eval(data,
-                                 os.path.join(eval_config["output_dir"],
-                                              "{}_out.pt".format(data["entry"][0])),
-                                 device)
-                # TESTING
-                if small_run and i == 9:
-                    break
-            # total = perf_counter() - start
-            # print("avg time over 100 iters: {}".format(total/100.))
-            # print("single eval: {}".format(total_eval/100.))
-        print("Dataset: {} Output dir: {}".format(dataset_type,
-                                                  eval_config["output_dir"]))
-    if eval_config["evaluate_metrics"]:
-        # Load things and call the model's evaluate function on them.
-        metrics = model.evaluate_dir(eval_config["output_dir"], device)
-        out_file = os.path.join(eval_config["output_dir"], "metrics.json")
-        with open(out_file, "w") as f:
-            json.dump(metrics, f)
-        print("Saved metrics to {}".format(out_file))
+    print("Evaluating the model on {} ({})".format(data_config["data_name"],
+                                                   dataset_type))
+    evaluate_model_on_dataset(model, dataset, small_run, device, save_outputs, output_dir)
 
