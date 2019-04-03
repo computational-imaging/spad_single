@@ -22,7 +22,7 @@ def evaluate_model_on_dataset(model, dataset, small_run, device,
     # Make dataloader
     dataloader = DataLoader(dataset,
                             batch_size=1,
-                            shuffle=False,
+                            shuffle=True,
                             num_workers=4,
                             pin_memory=True,
                             worker_init_fn=worker_init_randomness)
@@ -57,7 +57,7 @@ def evaluate_model_on_dataset(model, dataset, small_run, device,
                 torch.save(save_dict, path)
 
             # TESTING
-            if small_run and i == 9:
+            if small_run and i == 999:
                 break
         for metric_name in avg_metrics:
             avg_metrics[metric_name] /= num_pixels

@@ -203,68 +203,15 @@ class DORN_nyu_nohints(Model):
         writer.add_image(tag + "/depth_mask", depth_mask, it)
 
     def evaluate(self, data, device):
-
-    # def write_eval(self, data, path, device):
-        # one = perf_counter()
+        # Output full-size depth map, so set resize_output=True
         _, logprobs = self.get_loss(data, device, resize_output=True)
-        # two = perf_counter()
-        # print("\tget_loss: {}".format(two - one))
         pred = self.ord_decode(logprobs, self.sid_obj)
-        # three = perf_counter()
-        # print("\tord_decode: {}".format(three - two))
         gt = data["rawdepth_orig"].cpu()
-        # rgb = data["rgb_orig"].cpu()
         mask = data["mask_orig"].cpu()
-        # out = {"depth_map": depth_map,
-        #        "gt": gt,
-        #        "mask": mask,
-        #        "rgb": rgb,
-        #        "entry": data["entry"][0]
-        #       }
-
         metrics = self.get_metrics(pred,
                                    gt,
                                    mask)
         return pred, metrics
-               # "logprobs": logprobs}
-        # safe_makedir(os.path.dirname(path))
-        # four = perf_counter()
-        # print("\tto cpu: {}".format(four - three))
-        # torch.save(out, path)
-        # five = perf_counter()
-        # print("\ttorch.save: {}".format(five - four))
-
-    def evaluate_dir(self, output_dir, device):
-        """Get average losses and per-image losses over all data files"""
-        num_pixels = 0.
-        avg_losses = defaultdict(float)
-        losses = defaultdict(dict)
-        for (dirname, dirnames, filenames) in os.walk(output_dir, topdown=False, followlinks=True):
-            if len(filenames):
-                for torchfile in filenames:
-                    if not torchfile.endswith(".pt"):
-                        continue
-                    print("Evaluating {}".format(os.path.join(dirname, torchfile)))
-                    metrics, data = self.evaluate_file(os.path.join(dirname, torchfile))
-                    print(metrics)
-                    num_valid_pixels = torch.sum(data["mask"]).item()
-                    # print(data["mask"])
-                    num_pixels += num_valid_pixels
-                    # print(num_pixels)
-                    for metric_name in metrics:
-                        avg_losses[metric_name] += num_valid_pixels * metrics[metric_name]
-                        losses[data["entry"]][metric_name] = metrics[metric_name]
-        for metric_name in metrics:
-            avg_losses[metric_name] /= num_pixels
-        print(avg_losses)
-        return avg_losses, losses
-
-    def evaluate_file(self, torchfile):
-        data = torch.load(torchfile)
-        metrics = self.get_metrics(data["depth_map"],
-                                   data["gt"],
-                                   data["mask"])
-        return metrics, data
 
     @staticmethod
     def get_metrics(depth_pred, depth_truth, mask):

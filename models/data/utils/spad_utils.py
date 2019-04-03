@@ -16,6 +16,14 @@ def cfg():
 
     use_albedo = True
     use_squared_falloff = True
+    spad_comment = ""
+
+@spad_ingredient.named_config
+def rawhist():
+    dc_count = 0.
+    use_albedo = False
+    use_squared_falloff = False
+    spad_comment = "rawhist"
 
 
 def simulate_spad(depth_truth, albedo, mask, min_depth, max_depth,
