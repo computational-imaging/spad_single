@@ -85,6 +85,7 @@ def main(model_config,
     # Load the model
     model = make_model(**model_config)
     model.to(device)
+    model.eval()
     # model.sid_obj.to(device)
     print(model)
 
