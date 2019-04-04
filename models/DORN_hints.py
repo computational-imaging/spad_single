@@ -262,7 +262,7 @@ class DORN_nyu_histogram_matching(DORN_nyu_nohints):
 
         # Ordinal decoding to index
         log_probs, _ = logprobs
-        depth_index = torch.sum(log_probs >= np.log(0.5) ,dim=1, keepdim=True).long().cpu()
+        depth_index = torch.sum(log_probs >= np.log(0.5), dim=1, keepdim=True).long().cpu()
 
         # Histogram matching
         spad = data["spad"].numpy().squeeze()

@@ -157,7 +157,7 @@ class DORN_nyu_nohints(Model):
         :return: A depth map, as a torch.tensor.
         """
         log_probs, _ = prediction
-        depth_index = torch.sum((log_probs >= np.log(0.5)), dim=1).long().unsqueeze(1).cpu()
+        depth_index = torch.sum((log_probs >= np.log(0.5)), dim=1, keepdim=True).long().cpu()
         depth_map = sid_obj.get_value_from_sid_index(depth_index)
         # print(depth_vals.size())
         return depth_map
