@@ -88,12 +88,15 @@ class DORN_bayesian_opt:
 
         albedo = albedo[:,1,:,:].requires_grad_(False)
         output = depth_hist.clone().detach().requires_grad_(True)
-        print(output.dtype)
+        # print(output.dtype)
         optimizer = SGD([output], lr=self.lr)
         # self.zero_pad = torch.zeros((N, 1, W, H), requires_grad=False).to(device)
         self.one_over_depth_squared = self.one_over_depth_squared.to(device)
         # self.zero_pad.requires_grad = False
         for it in range(self.sgd_iters):
+            # Renormalize each output pixel's histogram
+            # with torch.no_grad():
+            output = output / torch.sum(output, dim=1, keepdim=True)
             output_hist = self.spad_forward(output, albedo)
 
             if not it % 10:
