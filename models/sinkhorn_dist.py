@@ -57,7 +57,7 @@ def sinkhorn_dist(cost_mat, lam, hist_pred, gt_hist, num_iters=100, eps=1e-3):
 #         print("x min", torch.min(x))
         temp1 = K_T.matmul(1./x) # N x W x H x C x 1
 #         print("temp1 nans", torch.isnan(temp1).any().item())
-        # print(temp1)
+#         print(temp1)
         temp2 = c*(1./temp1)  # N x W x H x C x 1
 #         print("temp2 nans", torch.isnan(temp2).any().item())
         temp3 = K.matmul(temp2)
@@ -68,6 +68,7 @@ def sinkhorn_dist(cost_mat, lam, hist_pred, gt_hist, num_iters=100, eps=1e-3):
         r_diag = torch.diag_embed(torch.transpose(1./r, -1, -2)).squeeze(-3)
 #         print("rdiag nans", torch.isnan(r_diag).any().item())
         x_temp = r_diag.matmul(temp3)
+        # print(x_temp)
 #         print("diff", torch.sum(torch.abs(x - x_temp)))
         x = x_temp
     u = 1./x
@@ -89,51 +90,23 @@ def entropy(p, dim = -1, keepdim=False):
 def optimize_depth_map(x_index_init, sigma, n_bins,
                        cost_mat, lam, spad_hist,
                        lr, num_sgd_iters, num_sinkhorn_iters):
-    x = x_index_init.clone().detach().requires_grad_(True)
+    x = x_index_init.clone().detach().float().requires_grad_(True)
     for i in range(num_sgd_iters):
-    #     x_img.requires_grad_(True)
-    #     print(x_img.shape)
-    #     print(i)
-#         x_vals.append([:,:,0,0].clone().detach().item())
         # Per-pixel depth index to per-pixel histogram
         x_img = kernel_density_estimation(x, sigma, n_bins, eps=1e-1)
-    #     print("x_img min", torch.min(x_img))
-        # per-pixel histogram to full-image histogram
         x_hist = img_to_hist(x_img)
-    #     x_hist_copy = x_hist.clone().detach().numpy().squeeze()
-    #     plt.figure()
-    #     plt.plot(x_hist_copy)
-    #     plt.show()
-        # x_hist.register_hook(plot_squeezed)
-        # Cost Matrix
-        # Calculate Losses
-    #     print(C_th.device)
-    #     print(x_hist.device)
-    #     print(input_["spad"].device)
+        # print(x_hist)
+        # break
         hist_loss, P = sinkhorn_dist(cost_mat, lam,
                                      x_hist, spad_hist,
                                      num_iters=num_sinkhorn_iters)
-
-        # entropy_loss = torch.sum(entropy(x_img, dim=1))
-
-    #     loss = hist_loss + alpha*entropy_loss
         loss = hist_loss
         loss.backward(retain_graph=True)
+        # print(x.grad)
         with torch.no_grad():
-    #         print(torch.max(x.grad))
             x -= lr*x.grad
             x.grad.zero_()
-    #         if torch.isnan(x_img.grad).any().item():
             if torch.isnan(x.grad).any().item():
                 print("nans detected in x.grad")
                 break
-    #         print(torch.max(x_img.grad))
-    #         x_img -= lr*x_img.grad
-    #         x_img = torch.clamp(x_img, min=1e-3)
-    #         x_img = x_img / torch.sum(x_img, dim=1, keepdim=True)
-    #         plt.figure()
-    #         plt.plot(x_img[:,:,0,0].numpy().squeeze())
-    #         plt.plot(x_hist.detach().numpy().squeeze())
-    #         plt.show()
-    #         x_img.grad.zero_()
     return x, x_img, x_hist
