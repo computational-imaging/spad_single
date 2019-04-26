@@ -56,6 +56,8 @@ class SID:
         """
         return np.take(self.sid_bin_values, sid_index)
 
+    def __repr__(self):
+        return repr((self.sid_bins, self.alpha, self.beta, self.offset))
 
 class SIDTorch:
     """
@@ -113,6 +115,9 @@ class SIDTorch:
         :return: The array of values correspondding to those indices
         """
         return torch.take(self.sid_bin_values, sid_index)
+
+    def __repr__(self):
+        return repr((self.sid_bins, self.alpha, self.beta, self.offset))
 
 class AddSIDDepth:
     """Creates a copy of the depth image where the depth value has been replaced
