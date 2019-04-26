@@ -51,6 +51,8 @@ def simulate_spad(depth_truth, albedo, mask, min_depth, max_depth,
     if use_squared_falloff:
         weights = weights / (depth_truth ** 2 + 1e-6)
     # weights = (albedo[..., 1] / (depth_truth ** 2 + 1e-6)) * mask
+    print(depth_truth.shape)
+    print(weights.shape)
     depth_hist, _ = np.histogram(depth_truth, bins=spad_bins, range=(min_depth, max_depth), weights=weights)
 
     # Scale by number of photons
@@ -123,6 +125,27 @@ def rescale_bins(spad_counts, min_depth, max_depth, sid_obj):
     return sid_counts
 
 
+def get_rescale_layer(spad_bins, min_depth, max_depth, sid_obj):
+    """
+    Returns the linear layer that converts the bins and the rescaled bins.
+    Works in torch.
+    :param spad_bins: The number of spad_bins
+    :param min_depth:
+    :param max_depth:
+    :param sid_obj:
+    :return:
+    """
+    weights_matrix = torch.zeros(spad_bins, sid_obj.sid_bins)
+    for i in range(spad_bins):
+        e_i = np.zeros(spad_bins)
+        e_i[i] = 1.
+        out_i = rescale_bins(e_i, min_depth, max_depth, sid_obj)
+        weights_matrix[i, :] = torch.from_numpy(out_i)
+    rescale_layer = torch.nn.Linear(spad_bins, sid_obj.sid_bins, bias=False)
+    rescale_layer.weight.data = weights_matrix
+    return rescale_layer
+
+
 class SimulateSpad:
     def __init__(self, depth_truth_key, albedo_key, mask_key, spad_key, min_depth, max_depth,
                  spad_bins, photon_count, dc_count, fwhm_ps, use_albedo, use_squared_falloff,
@@ -193,4 +216,22 @@ class SimulateSpad:
 #         return sample
 
 if __name__ == "__main__":
-    pass
+    min_depth = 0.
+    max_depth = 10.
+
+    sid_bins = 68   # Number of bins (network outputs 2x this number of channels)
+    bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
+    dorn_decode = np.exp((bin_edges - 1) / 25 - 0.36)
+    d0 = dorn_decode[0]
+    d1 = dorn_decode[1]
+    # Algebra stuff to make the depth bins work out exactly like in the
+    # original DORN code.
+    alpha = (2 * d0 ** 2) / (d1 + d0)
+    beta = alpha * np.exp(sid_bins * np.log(2 * d0 / alpha - 1))
+    del bin_edges, dorn_decode, d0, d1
+    offset = 0.
+
+    from models.data.utils.sid_utils import SID
+    sid_obj = SID(sid_bins, alpha, beta, offset)
+    layer = get_rescale_layer(1024, min_depth, max_depth, sid_obj)
+    print(layer.weight.data[:,0])

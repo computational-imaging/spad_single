@@ -292,6 +292,9 @@ class DORN_nyu_histogram_matching(DORN_nyu_nohints):
         #        "entry": data["entry"][0]
         #       }
         #        # "logprobs": logprobs}
+        # print(pred.shape)
+        # print(gt.shape)
+        # print(mask.shape)
         metrics = self.get_metrics(pred,
                                    gt,
                                    mask)
