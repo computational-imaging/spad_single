@@ -5,6 +5,7 @@ from torch.nn import MSELoss
 import numpy as np
 from models.data.utils.sid_utils import SIDTorch
 from models.sinkhorn_dist import optimize_depth_map
+from models.data.utils.spad_utils import remove_dc_from_spad
 from torch.optim import SGD
 import matplotlib
 # matplotlib.use("TKAgg")
@@ -20,9 +21,9 @@ class DORN_sinkhorn_opt:
     Performs SGD to optimize the depth map further after being given an initial depth map
     estimate from DORN.
     """
-    def __init__(self, sgd_iters=200, sinkhorn_iters=20, sigma=3., lam=1e0,
-                 use_albedo=True, use_squared_falloff=True,
-                 lr=1e4, hints_len=68, spad_weight=1.,
+    def __init__(self, sgd_iters=250, sinkhorn_iters=40, sigma=2., lam=1e-2,
+                 remove_dc=True, use_albedo=True, use_squared_falloff=True,
+                 lr=1e3, hints_len=68,
                  in_channels=3, in_height=257, in_width=353,
                  sid_bins=68, offset=0.,
                  min_depth=0., max_depth=10.,
@@ -30,8 +31,28 @@ class DORN_sinkhorn_opt:
                  frozen=True, pretrained=True,
                  state_dict_file=os.path.join("models", "torch_params_nyuv2_BGR.pth.tar")):
         """
-        :param hints_len: Uniformly spaced noisy depth hints (i.e. raw SPAD data)
-        :param num_hints_layers: The number of layers for performing upsampling
+
+        :param sgd_iters: Number of iters to optimize depth map for.
+        :param sinkhorn_iters: Number of iterations to run sinkhorn per sgd iteration
+        :param sigma: Controls width of gaussian for kernel density estimation
+        :param lam: sinkhorn iteration parameter
+        :param remove_dc: Whether or not to remove any dc component in the spad histogram before denoising.
+        :param use_albedo: Whether or not to use albedo in kernel density estimation
+        :param use_squared_falloff: Whether or not to use squared falloff in kernel density estimation
+        :param lr: Learning rate of sgd for optimizing the depth map
+        :param hints_len: Length of input hints histogram
+        :param in_channels: Number of input channels (input is NxCxHxW)
+        :param in_height: Input height dimension
+        :param in_width: Input width dimension
+        :param sid_bins: Number of sid bins to output
+        :param offset: Parameter for SID object
+        :param min_depth: Minimum depth of a pixel to output (for purpose of displaying images)
+        :param max_depth: Maximum depth of a pixel to output (for purpose of displaying images)
+        :param alpha: Parameter for SID object
+        :param beta: Parameter for SID object
+        :param frozen: Whether or not to freeze the DORN feature extractor
+        :param pretrained: Whether or not to use the pretrained DORN model
+        :param state_dict_file: The file to load the pretrained DORN model from
         """
         self.sgd_iters = sgd_iters
         self.sinkhorn_iters = sinkhorn_iters
@@ -39,16 +60,16 @@ class DORN_sinkhorn_opt:
         self.lam = lam
 
         # Define cost matrix for optimal transport problem
-        C = np.array([[(i - j)**2 for j in range(sid_bins)] for i in range(sid_bins)])
+        C = np.array([[(i - j)**2 for j in range(sid_bins)] for i in range(sid_bins)])/1000.
         self.cost_mat = torch.from_numpy(C).float()
 
+        self.remove_dc = remove_dc
         self.use_albedo = use_albedo
         self.use_squared_falloff = use_squared_falloff
         self.lr = lr
         # self.loss.to(device)
         self.min_depth = min_depth
         self.max_depth = max_depth
-        self.spad_weight = spad_weight
         self.hints_len = hints_len
         self.sid_bins = sid_bins
         self.feature_extractor = \
@@ -78,68 +99,80 @@ class DORN_sinkhorn_opt:
             x = self.feature_extractor(rgb)
             log_probs, _ = self.to_logprobs(x)
             depth_index = torch.sum((log_probs >= np.log(0.5)), dim=1, keepdim=True).long()
-        print(depth_index[:,:,100:105,100:105])
+        # print(depth_index[:,:,100:105,100:105])
         return depth_index
 
-    # def optimize_depth_map(self, depth_hist, input_, device, resize_output=False):
-    def optimize_depth_map(self, depth_index_init, input_, device, resize_output=False):
-        spad_hist = input_["spad"].to(device)
-        # print(spad_hist)
-        depth_index_final, depth_img_final, depth_hist_final = \
-            optimize_depth_map(depth_index_init, self.sigma, self.sid_bins,
-                               self.cost_mat, self.lam, spad_hist,
-                               self.lr, self.sgd_iters, self.sinkhorn_iters)
-        depth_index_final = depth_index_final.detach().long()
 
-        # Get depth maps and compute metrics
-        depth_pred = self.sid_obj.get_value_from_sid_index(depth_index_final)
-        if resize_output:
+    # def optimize_depth_map(self, depth_hist, input_, device, resize_output=False):
+    # def optimize_depth_map(self, depth_index_init, input_, device, resize_output=False):
+    #     spad_hist = input_["spad"].to(device)
+    #     # print(spad_hist)
+    #     depth_index_final, depth_img_final, depth_hist_final = \
+    #         optimize_depth_map(depth_index_init, self.sigma, self.sid_bins,
+    #                            self.cost_mat, self.lam, spad_hist,
+    #                            self.lr, self.sgd_iters, self.sinkhorn_iters)
+    #     depth_index_final = depth_index_final.detach().long()
+    #
+    #     # Get depth maps and compute metrics
+    #     depth_pred = self.sid_obj.get_value_from_sid_index(depth_index_final)
+    #     if resize_output:
+    #         original_size = input_["rgb_orig"].size()[-2:]
+    #         # Note: align_corners=False gives same behavior as cv2.resize
+    #         depth_pred = F.interpolate(depth_pred, size=original_size,
+    #                                    mode="bilinear", align_corners=False)
+    #         # print("resized")
+    #     return depth_pred
+
+
+    def evaluate(self, input_, device):
+        # Run RGB through DORN
+        depth_init = self.initialize(input_, device)
+        # DC Check
+        denoised_spad = input_["spad"].to(device)
+        if self.remove_dc:
+            bin_widths = (self.sid_obj.sid_bin_edges[1:] - self.sid_obj.sid_bin_edges[:-1]).cpu().numpy()
+            denoised_spad = torch.from_numpy(remove_dc_from_spad(denoised_spad.squeeze(-1).squeeze(-1).cpu().numpy(),
+                                                                 bin_widths)).unsqueeze(-1).unsqueeze(-1).to(device)
+        # Albedo check
+        albedo = None
+        if self.use_albedo:
+            albedo = input_["albedo"][:, 1:2, ...].to(device) / 255.
+
+        # Squared depth check
+        inv_squared_depths = None
+        if self.use_squared_falloff:
+            inv_squared_depths = (self.sid_obj.sid_bin_values[:68]**(-2)).unsqueeze(0).unsqueeze(-1).unsqueeze(-1).to(device)
+
+        # Actually run the optimization
+        with torch.enable_grad():
+            depth_index_final, depth_img_final, depth_hist_final = \
+                optimize_depth_map(depth_init, self.sigma, self.sid_bins,
+                                   self.cost_mat, self.lam, denoised_spad,
+                                   self.lr, self.sgd_iters, self.sinkhorn_iters,
+                                   inv_squared_depths=inv_squared_depths,
+                                   albedo=albedo)
+            depth_index_final = depth_index_final.detach().long()
+
+            # Get depth maps and compute metrics
+            depth_pred = self.sid_obj.get_value_from_sid_index(depth_index_final)
             original_size = input_["rgb_orig"].size()[-2:]
             # Note: align_corners=False gives same behavior as cv2.resize
-            depth_pred = F.interpolate(depth_pred, size=original_size,
-                                       mode="bilinear", align_corners=False)
-            print("resized")
-        return depth_pred
+            pred = F.interpolate(depth_pred, size=original_size,
+                                 mode="bilinear", align_corners=False)
 
-    def spad_forward(self, depth_hist, albedo):
-        """Perform the forward simulation of a model"""
-        N, C, W, H = depth_hist.size()
-        # probs = torch.exp(log_probs)
-        # Get histogram from 1-cdf
-        # probs = probs[:, :-1, :, :] - probs[:, 1:, :, :]
-        # print(torch.sum(probs[0,:,0,0]))
-        # probs = torch.cat([self.zero_pad, probs], dim=1)
-        # Use probs to get the weighted sum of albedo/depth^2
-        one_over_depth_squared_unsqueezed = self.one_over_depth_squared.unsqueeze(-1).unsqueeze(-1).unsqueeze(0)
-        # print(probs.shape)
-        # print(self.one_over_depth_squared.expand(N, C, W, H).shape)
-        # print(albedo_expanded.shape)
-
-        weights = depth_hist
-        if self.use_albedo:
-            weights *= albedo
-        if self.use_squared_falloff:
-            weights *= one_over_depth_squared_unsqueezed
-        simulated_spad = torch.sum(weights, dim=(2, 3), keepdim=True)
-        print("simulated scale factor: {}".format(W*H/torch.sum(simulated_spad)))
-        simulated_spad *= W*H/torch.sum(simulated_spad)
-        return simulated_spad
-
-    def evaluate(self, data, device):
-        depth_init = self.initialize(data, device)
-        pred = self.optimize_depth_map(depth_init, data, device, resize_output=False)
         # compute metrics
-        gt = data["rawdepth_orig"].to(device)
-        mask = data["mask_orig"].to(device)
-
-        # gt = data["rawdepth"].to(device)
-        # mask = data["mask"].to(device)
+        gt = input_["rawdepth_orig"].to(device)
+        mask = input_["mask_orig"].to(device)
+        metrics = self.get_metrics(pred, gt, mask)
+        # print("after", metrics)
 
         # Also compute initial metrics:
-        depth_init_map = self.sid_obj.get_value_from_sid_index(depth_init)
-        torch.set_printoptions(profile="full")
-        metrics = self.get_metrics(pred, gt, mask)
-        # before_metrics = self.get_metrics(depth_init_map, gt, mask)
+        # gt_dorn = input_["rawdepth"].to(device)
+        # mask_dorn = input_["mask"].to(device)
+        # depth_init_map = self.sid_obj.get_value_from_sid_index(depth_init)
+        # before_metrics = self.get_metrics(depth_init_map, gt_dorn, mask_dorn)
+        # print("before", before_metrics)
+
         return pred, metrics
 
 DORN_sinkhorn_opt.to_logprobs = staticmethod(DORN_nyu_nohints.to_logprobs)

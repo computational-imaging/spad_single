@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-
+import cvxpy as cp
 from scipy.signal import fftconvolve
 
 from sacred import Experiment
@@ -51,8 +51,8 @@ def simulate_spad(depth_truth, albedo, mask, min_depth, max_depth,
     if use_squared_falloff:
         weights = weights / (depth_truth ** 2 + 1e-6)
     # weights = (albedo[..., 1] / (depth_truth ** 2 + 1e-6)) * mask
-    print(depth_truth.shape)
-    print(weights.shape)
+    # print(depth_truth.shape)
+    # print(weights.shape)
     depth_hist, _ = np.histogram(depth_truth, bins=spad_bins, range=(min_depth, max_depth), weights=weights)
 
     # Scale by number of photons
@@ -188,32 +188,70 @@ class SimulateSpad:
         return sample
 
 
-# class AddDepthHist: # pylint: disable=too-few-public-methods
-#     """Takes a depth map and computes a histogram of depths as well"""
-#     def __init__(self, use_albedo=True, use_squared_falloff=True):
-#         """
-#         kwargs - passthrough to np.histogram
-#         """
-#         self.use_albedo = use_albedo
-#         self.use_squared_falloff = use_squared_falloff
-#         self.hist_kwargs =
-#
-#     def __call__(self, sample):
-#         depth = sample["depth"]
-#         if "mask" in sample:
-#             mask = sample["mask"]
-#             depth = depth[mask > 0]
-#         weights = np.ones(depth.shape)
-#         if self.use_albedo:
-#             weights = weights * np.mean(sample["albedo"]) # Attenuate by the average albedo
-#         if self.use_squared_falloff:
-#             weights[depth == 0] = 0.
-#             weights[depth != 0] = weights[depth != 0] / (depth[depth != 0]**2)
-#         if not self.use_albedo and not self.use_squared_falloff:
-#             sample["hist"], _ = np.histogram(depth, weights= normalize=True)
-#         else:
-#             sample["hist"], _ = np.histogram(depth, weights=weights, normalize=True)
-#         return sample
+def remove_dc_from_spad_batched(noisy_spad, bin_widths, lam=1e-2, eps=1e-5):
+    """
+    Batched, operates of batches of size N
+    WARNING: Batching generally produces noisier answers.
+    Works in numpy.
+    :param noisy_spad: length NxC array with the raw spad histogram to denoise.
+    :param bin_widths: 1xC array with the bin widths in meters of the original bins.
+    """
+    # print(noisy_spad.shape)
+    # print(bin_widths.shape)
+    N, C = noisy_spad.shape
+    # Equalize everything so DC appears uniform
+    #     for i in range(N):
+    #     spad = noisy_spad[i,:]
+    spad_equalized = noisy_spad / bin_widths
+    x = cp.Variable((N, C), "signal")
+    z = cp.Variable((N, 1), "noise")
+    print((x + z).shape)
+    obj = cp.Minimize(cp.sum_squares(spad_equalized - (x + z)) + lam * cp.norm(x, 1))
+    constr = [
+        x >= 0,
+        z >= 0
+    ]
+    prob = cp.Problem(obj, constr)
+    prob.solve(solver=cp.OSQP, verbose=True, eps_abs=eps)
+    signal_hist = x.value
+    signal_hist *= bin_widths
+    return signal_hist
+
+
+def remove_dc_from_spad(noisy_spad, bin_widths, lam=1e-2, eps=1e-5):
+    """
+    Not batched, solves N convex problems where N is the batch size.
+    For some reason, this gives better results.
+    Works in numpy.
+    :param noisy_spad: NxC array with the raw spad histogram to denoise.
+    :param bin_widths: length C array with the bin widths in meters of the original bins.
+    :param lam: float value controlling strength of L1 regularization on the signal
+    :param eps: float value controlling precision of solver
+    """
+    # print(noisy_spad.shape)
+    # print(bin_widths.shape)
+    assert len(noisy_spad.shape) == 2
+    assert len(bin_widths) == noisy_spad.shape[1]
+    N, C = noisy_spad.shape
+    # Equalize everything so DC appears uniform
+    denoised_spad = np.zeros_like(noisy_spad)
+    for i in range(N):
+        #     spad = noisy_spad[i,:]
+        spad_equalized = noisy_spad / bin_widths
+        x = cp.Variable((C,), "signal")
+        z = cp.Variable((1,), "noise")
+        #         print((x+z).shape)
+        obj = cp.Minimize(cp.sum_squares(spad_equalized[i, :] - (x + z)) + lam * cp.norm(x, 1))
+        constr = [
+            x >= 0,
+            z >= 0
+        ]
+        prob = cp.Problem(obj, constr)
+        prob.solve(solver=cp.OSQP, eps_abs=eps)
+        #         signal_hist = x.value
+        denoised_spad[i, :] = x.value * bin_widths
+    return denoised_spad
+
 
 if __name__ == "__main__":
     min_depth = 0.

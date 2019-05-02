@@ -9,13 +9,27 @@ def get_depth_index(model, input_, device):
         depth_index = torch.sum((log_probs >= np.log(0.5)), dim=1, keepdim=True).long()
     return depth_index
 
-def img_to_hist(x):
+
+def img_to_hist(x, inv_squared_depths=None, albedo=None):
     """
     Assumes each pixel of x is normalized to sum to 1.
-    x has shape N x C x W x H.
+    x has shape N x C x H x W.
     """
-    x_hist = torch.sum(x, dim=(0, 2, 3), keepdim=True) / (x.shape[2] * x.shape[3])
+    weights = torch.ones_like(x)
+    if albedo is not None:
+        assert albedo.shape[0] == x.shape[0]
+        assert albedo.shape[1] == 1
+        assert albedo.shape[-2:] == x.shape[-2:]
+        weights = weights * albedo
+    if inv_squared_depths is not None:
+        assert inv_squared_depths.shape[:2] == x.shape[:2] and inv_squared_depths.shape[-2:] == (1,1)
+        weights = weights * inv_squared_depths
+#     x_hist = torch.sum(x, dim=(2, 3), keepdim=True) / (x.shape[2] * x.shape[3])
+    x_hist = torch.sum(x*weights, dim=(2,3), keepdim=True)
+    x_hist = x_hist / torch.sum(x_hist)
+
     return x_hist
+
 
 def threshold_and_normalize_pixels(x, eps=1e-2):
     """
@@ -25,6 +39,7 @@ def threshold_and_normalize_pixels(x, eps=1e-2):
     x = torch.clamp(x, min=eps)
     x = x / torch.sum(x, dim=1, keepdim=True)
     return x
+
 
 def kernel_density_estimation(x, sigma, n_bins, eps=1e-2):
     """
@@ -39,11 +54,12 @@ def kernel_density_estimation(x, sigma, n_bins, eps=1e-2):
     y = threshold_and_normalize_pixels(y, eps=eps)
     return y
 
-def sinkhorn_dist(cost_mat, lam, hist_pred, gt_hist, num_iters=100, eps=1e-3):
+
+def sinkhorn_dist(cost_mat, lam, hist_pred, gt_hist, num_iters=100, eps=1e-1):
     """
     cost_mat: C x C
-    hist_pred: N x C x W x H Should all be nonzero!
-    gt_hist: N x C x W x H
+    hist_pred: N x C x H x W Should all be nonzero!
+    gt_hist: N x C x H x W
     """
     r = hist_pred.permute([0,2,3,1]).unsqueeze(-1) # N x W x H x C x 1
 #     print("r min", torch.min(r))
@@ -53,33 +69,24 @@ def sinkhorn_dist(cost_mat, lam, hist_pred, gt_hist, num_iters=100, eps=1e-3):
     x = torch.ones_like(r)/r.shape[-2] # Initialize histogram to be uniform
     K_T = K.transpose(3, 4)
     for i in range(num_iters):
-#         print("x nans", torch.isnan(x).any().item())
-#         print("x min", torch.min(x))
         temp1 = K_T.matmul(1./x) # N x W x H x C x 1
-#         print("temp1 nans", torch.isnan(temp1).any().item())
-#         print(temp1)
         temp2 = c*(1./temp1)  # N x W x H x C x 1
-#         print("temp2 nans", torch.isnan(temp2).any().item())
         temp3 = K.matmul(temp2)
-#         print("temp3 nans", torch.isnan(temp3).any().item())
-        if torch.isnan(temp3).any().item():
-            print(temp3)
-            print(temp2)
         r_diag = torch.diag_embed(torch.transpose(1./r, -1, -2)).squeeze(-3)
-#         print("rdiag nans", torch.isnan(r_diag).any().item())
         x_temp = r_diag.matmul(temp3)
-        # print(x_temp)
-#         print("diff", torch.sum(torch.abs(x - x_temp)))
+        if torch.sum(torch.abs(x - x_temp)) < eps:
+            break
+#         print("diff", torch.sum(torch.abs(x - x_temp))) # Inspect for convergence
+        if torch.isnan(x_temp).any().item():
+            print("iteration {}".format(i))
+            print(x)
+            break
         x = x_temp
     u = 1./x
     v = c*(1./K_T.matmul(u))
     # Extract the transport matrix as well
-#     print("u", u.shape)
     u_diag = torch.diag_embed(torch.transpose(u, -1, -2)).squeeze(-3)
-#     print("u_diag", u_diag.shape)
-#     print("v", v.shape)
     v_diag = torch.diag_embed(torch.transpose(v, -1, -2)).squeeze(-3)
-#     print("v_diag", v_diag.shape)
     P = u_diag.matmul(K).matmul(v_diag)
     return torch.sum(u*(K*M).matmul(v)), P
 
@@ -89,24 +96,35 @@ def entropy(p, dim = -1, keepdim=False):
 
 def optimize_depth_map(x_index_init, sigma, n_bins,
                        cost_mat, lam, spad_hist,
-                       lr, num_sgd_iters, num_sinkhorn_iters):
+                       lr, num_sgd_iters, num_sinkhorn_iters, eps=1e-2,
+                       inv_squared_depths=None,
+                       albedo=None):
     x = x_index_init.clone().detach().float().requires_grad_(True)
     for i in range(num_sgd_iters):
+
         # Per-pixel depth index to per-pixel histogram
-        x_img = kernel_density_estimation(x, sigma, n_bins, eps=1e-1)
-        x_hist = img_to_hist(x_img)
-        # print(x_hist)
-        # break
+        x_img = kernel_density_estimation(x, sigma, n_bins, eps=eps)
+
+        # per-pixel histogram to full-image histogram
+        x_hist = img_to_hist(x_img, inv_squared_depths=inv_squared_depths, albedo=albedo)
+
         hist_loss, P = sinkhorn_dist(cost_mat, lam,
                                      x_hist, spad_hist,
-                                     num_iters=num_sinkhorn_iters)
+                                     num_iters=num_sinkhorn_iters,
+                                     eps=eps)
+
+        # entropy_loss = torch.sum(entropy(x_img, dim=1))
         loss = hist_loss
         loss.backward(retain_graph=True)
-        # print(x.grad)
         with torch.no_grad():
-            x -= lr*x.grad
-            x.grad.zero_()
             if torch.isnan(x.grad).any().item():
                 print("nans detected in x.grad")
                 break
+            x -= lr*x.grad
+            if torch.sum(torch.abs(lr*x.grad)) < eps:
+                x = torch.clamp(x, min=-1., max=n_bins).requires_grad_(True)
+                return x, x_img, x_hist
+            x.grad.zero_()
+            x = torch.clamp(x, min=-1., max=n_bins).requires_grad_(True)
+    # print("warning: sgd exited before convergence.")
     return x, x_img, x_hist
