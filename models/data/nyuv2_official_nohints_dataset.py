@@ -16,6 +16,7 @@ nyuv2_nohints_ingredient = Experiment('data_config')
 
 @nyuv2_nohints_ingredient.config
 def cfg():
+    data_name = "nyu_depth_v2"
     # Paths should be specified relative to the train script, not this file.
     root_dir = os.path.join("data", "nyu_depth_v2_scaled16")
     train_file = os.path.join(root_dir, "train.json")

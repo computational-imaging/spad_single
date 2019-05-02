@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 import os
 import torch
-from utils.train_utils import init_randomness
-from utils.eval_utils import evaluate_model_on_dataset
-from models.core.checkpoint import load_checkpoint
+import json
+from torch.utils.data import DataLoader
+from utils.train_utils import init_randomness, worker_init_randomness
+from models.core.checkpoint import load_checkpoint, safe_makedir
 from models import make_model
 from sacred import Experiment
+from utils.eval_utils import evaluate_model_on_dataset
+from time import perf_counter
 
 # Dataset
-from models.data.nyuv2_official_nohints_sid_dataset import nyuv2_nohints_sid_ingredient, load_data
+from models.data.nyuv2_official_hints_sid_dataset import nyuv2_hints_sid_ingredient, load_data
 
-ex = Experiment('eval_nohints_sid', ingredients=[nyuv2_nohints_sid_ingredient])
+ex = Experiment('eval_hints_sid_bayesian', ingredients=[nyuv2_hints_sid_ingredient])
 
 
 # Tensorboardx
@@ -19,8 +22,10 @@ ex = Experiment('eval_nohints_sid', ingredients=[nyuv2_nohints_sid_ingredient])
 @ex.config
 def cfg(data_config):
     model_config = {                            # Load pretrained model for testing
-        "model_name": "DORN_nyu_nohints",
+        "model_name": "DORN_nyu_hints",
         "model_params": {
+            "hints_len": 68,
+            "spad_weight": 1.,
             "in_channels": 3,
             "in_height": 257,
             "in_width": 353,
@@ -36,13 +41,15 @@ def cfg(data_config):
         },
         "model_state_dict_fn": None
     }
-    ckpt_file = None                            # Keep as None
+    # ckpt_file = "checkpoints/Mar15/04-10-54_DORN_nyu_hints_nyu_depth_v2/checkpoint_epoch_9_name_fixed.pth.tar"
+    ckpt_file = None # Bayesian hints eval
     dataset_type = "val"
     save_outputs = True
     output_dir = os.path.join("results",
-                              data_config["data_name"],    # e.g. nyu_depth_v2
-                              model_config["model_name"],  # e.g. DORN_nyu_nohints
+                              data_config["data_name"],
+                              model_config["model_name"],
                               dataset_type)
+
     seed = 95290421
     small_run = False
 
@@ -80,9 +87,7 @@ def main(model_config,
     dataset = test if dataset_type == "test" else val
 
     init_randomness(seed)
-
     print("Evaluating the model on {} ({})".format(data_config["data_name"],
                                                    dataset_type))
     evaluate_model_on_dataset(model, dataset, small_run, device, save_outputs, output_dir)
-
 

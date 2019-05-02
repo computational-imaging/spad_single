@@ -2,6 +2,21 @@ import torch
 import torch.nn as nn
 
 
+def split_params_weight_bias(model):
+    """Split parameters into weight and bias terms,
+    in order to apply different regularization."""
+    split_params = [{"params": []}, {"params": [], "weight_decay": 0.0}]
+    for name, param in model.named_parameters():
+        # print(name)
+        # print(param)
+        if "weight" in name:
+            split_params[0]["params"].append(param)
+        elif "bias" in name:
+            split_params[1]["params"].append(param)
+        else:
+            raise ValueError("Unknown param type: {}".format(name))
+    return split_params
+
 class Model(nn.Module):
     """
     A class representing a wrapper around a neural net that includes extra features
@@ -9,6 +24,23 @@ class Model(nn.Module):
     """
     def __init__(self):
         super(Model, self).__init__()
+
+    def get_param_groups(self):
+        """
+        Default: Split parameters into weight and bias groups to apply
+        regularization to weights only.
+        :return: The parameter groups for the optimizer (a list of dicts, each of the form
+        {param: [list of params], other args}
+        """
+        split_params = [{"params": []}, {"params": [], "weight_decay": 0.0}]
+        for name, param in self.named_parameters():
+            if "weight" in name:
+                split_params[0]["params"].append(param)
+            elif "bias" in name:
+                split_params[1]["params"].append(param)
+            else:
+                raise ValueError("Unknown param type: {}".format(name))
+        return split_params
 
     def get_loss(self, input_, device):
         """
@@ -31,22 +63,12 @@ class Model(nn.Module):
         """
         raise NotImplementedError
 
-    def write_eval(self, data, output_file, device):
+    def evaluate(self, data, device):
         """
-        Write model outputs to disk for later evaluation.
+        Run model on data and calculate figures of merit
         :param data: A data entry to evaluate
-        :param output_file: The output file for this input.
-        :param device: The device to run on
-        :return: None
-        """
-        raise NotImplementedError
-
-    def evaluate_dir(self, output_dir, device):
-        """
-        Load model outputs from directory and calculate figures of merit
-        :param output_dir: The directory containing the model outputs.
         :param device: The device to run things on.
-        :return: A dictionary of all the things to save.
+        :return: Anything you might want to save/inspect later.
         """
         raise NotImplementedError
 
