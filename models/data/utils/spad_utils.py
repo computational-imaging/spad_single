@@ -2,7 +2,6 @@ import numpy as np
 import torch
 import cvxpy as cp
 from scipy.signal import fftconvolve
-
 from sacred import Experiment
 
 spad_ingredient = Experiment("spad_config")
@@ -16,15 +15,15 @@ def cfg():
 
     use_albedo = True
     use_squared_falloff = True
-    spad_comment = ""
+    spad_comment = "use_albedo_{}".format(use_albedo) + "_" + \
+                   "use_squared_falloff_{}".format(use_squared_falloff) + "_" + \
+                   "dc_count_{}".format(dc_count)
 
 @spad_ingredient.named_config
 def rawhist():
     dc_count = 0.
     use_albedo = False
     use_squared_falloff = False
-    spad_comment = "rawhist"
-
 
 def simulate_spad(depth_truth, albedo, mask, min_depth, max_depth,
                   spad_bins, photon_count, dc_count, fwhm_ps,

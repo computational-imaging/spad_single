@@ -21,7 +21,8 @@ class DORN_sinkhorn_opt:
     Performs SGD to optimize the depth map further after being given an initial depth map
     estimate from DORN.
     """
-    def __init__(self, sgd_iters=250, sinkhorn_iters=40, sigma=2., lam=1e-2,
+    def __init__(self, sgd_iters=250, sinkhorn_iters=40, sigma=2., lam=1e-2, kde_eps=1e-5,
+                 sinkhorn_eps = 1e-2,
                  remove_dc=True, use_albedo=True, use_squared_falloff=True,
                  lr=1e3, hints_len=68,
                  in_channels=3, in_height=257, in_width=353,
@@ -36,6 +37,8 @@ class DORN_sinkhorn_opt:
         :param sinkhorn_iters: Number of iterations to run sinkhorn per sgd iteration
         :param sigma: Controls width of gaussian for kernel density estimation
         :param lam: sinkhorn iteration parameter
+        :param kde_eps: Epsilon for kernel density estimation, involved in setting floor for the kernel.
+        :param sinkhorn_eps: Epsilon for sinkhorn iterations, controls convergence.
         :param remove_dc: Whether or not to remove any dc component in the spad histogram before denoising.
         :param use_albedo: Whether or not to use albedo in kernel density estimation
         :param use_squared_falloff: Whether or not to use squared falloff in kernel density estimation
@@ -58,6 +61,8 @@ class DORN_sinkhorn_opt:
         self.sinkhorn_iters = sinkhorn_iters
         self.sigma = sigma
         self.lam = lam
+        self.kde_eps = kde_eps
+        self.sinkhorn_eps = sinkhorn_eps
 
         # Define cost matrix for optimal transport problem
         C = np.array([[(i - j)**2 for j in range(sid_bins)] for i in range(sid_bins)])/1000.
@@ -149,6 +154,8 @@ class DORN_sinkhorn_opt:
                 optimize_depth_map(depth_init, self.sigma, self.sid_bins,
                                    self.cost_mat, self.lam, denoised_spad,
                                    self.lr, self.sgd_iters, self.sinkhorn_iters,
+                                   kde_eps=self.kde_eps,
+                                   sinkhorn_eps=self.sinkhorn_eps,
                                    inv_squared_depths=inv_squared_depths,
                                    albedo=albedo)
             depth_index_final = depth_index_final.detach().long()

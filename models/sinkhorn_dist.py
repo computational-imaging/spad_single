@@ -90,20 +90,23 @@ def sinkhorn_dist(cost_mat, lam, hist_pred, gt_hist, num_iters=100, eps=1e-1):
     P = u_diag.matmul(K).matmul(v_diag)
     return torch.sum(u*(K*M).matmul(v)), P
 
+
 def entropy(p, dim = -1, keepdim=False):
     return -torch.where(p > 0, p * p.log(), p.new([0.0])).sum(dim = dim, keepdim = keepdim) # can be a scalar, when PyTorch.supports it
 
 
 def optimize_depth_map(x_index_init, sigma, n_bins,
                        cost_mat, lam, spad_hist,
-                       lr, num_sgd_iters, num_sinkhorn_iters, eps=1e-2,
+                       lr, num_sgd_iters, num_sinkhorn_iters,
+                       kde_eps=1e-5,
+                       sinkhorn_eps=1e-2,
                        inv_squared_depths=None,
                        albedo=None):
     x = x_index_init.clone().detach().float().requires_grad_(True)
     for i in range(num_sgd_iters):
 
         # Per-pixel depth index to per-pixel histogram
-        x_img = kernel_density_estimation(x, sigma, n_bins, eps=eps)
+        x_img = kernel_density_estimation(x, sigma, n_bins, eps=kde_eps)
 
         # per-pixel histogram to full-image histogram
         x_hist = img_to_hist(x_img, inv_squared_depths=inv_squared_depths, albedo=albedo)
@@ -111,7 +114,7 @@ def optimize_depth_map(x_index_init, sigma, n_bins,
         hist_loss, P = sinkhorn_dist(cost_mat, lam,
                                      x_hist, spad_hist,
                                      num_iters=num_sinkhorn_iters,
-                                     eps=eps)
+                                     eps=sinkhorn_eps)
 
         # entropy_loss = torch.sum(entropy(x_img, dim=1))
         loss = hist_loss
@@ -121,10 +124,10 @@ def optimize_depth_map(x_index_init, sigma, n_bins,
                 print("nans detected in x.grad")
                 break
             x -= lr*x.grad
-            if torch.sum(torch.abs(lr*x.grad)) < eps:
-                x = torch.clamp(x, min=-1., max=n_bins).requires_grad_(True)
+            if torch.sum(torch.abs(lr*x.grad)) < sinkhorn_eps: # Reuse sinkhorn eps for sgd convergence.
+                x = torch.clamp(x, min=0., max=n_bins).requires_grad_(True)
                 return x, x_img, x_hist
             x.grad.zero_()
-            x = torch.clamp(x, min=-1., max=n_bins).requires_grad_(True)
+            x = torch.clamp(x, min=0., max=n_bins).requires_grad_(True)
     # print("warning: sgd exited before convergence.")
     return x, x_img, x_hist
