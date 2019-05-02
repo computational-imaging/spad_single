@@ -25,7 +25,7 @@ def evaluate_model_on_dataset(model, dataset, small_run, device,
     dataloader = DataLoader(dataset,
                             batch_size=1,
                             shuffle=True,
-                            num_workers=4,
+                            num_workers=1,
                             pin_memory=True,
                             worker_init_fn=worker_init_randomness)
     # if eval_config["save_outputs"]:
@@ -45,7 +45,7 @@ def evaluate_model_on_dataset(model, dataset, small_run, device,
             num_pixels += num_valid_pixels
             for metric_name in pred_metrics:
                 avg_metrics[metric_name] += num_valid_pixels * pred_metrics[metric_name]
-
+            # print(pred_metrics)
             # Option to save outputs:
             if save_outputs:
                 if output_dir is None:
@@ -59,7 +59,7 @@ def evaluate_model_on_dataset(model, dataset, small_run, device,
                 torch.save(save_dict, path)
 
             # TESTING
-            if small_run and i == 999:
+            if small_run and i == 99:
                 break
         for metric_name in avg_metrics:
             avg_metrics[metric_name] /= num_pixels

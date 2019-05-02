@@ -99,7 +99,7 @@ class SIDTorch:
         :param arr: The array to turn into indices.
         :return: The array of indices.
         """
-        print(arr + self.offset)
+        # print(arr + self.offset)
         temp = torch.tensor(self.sid_bins * (np.log(arr + self.offset) - np.log(self.alpha_star)) /
                                             (np.log(self.beta_star) - np.log(self.alpha_star)))
         sid_index = torch.floor(temp).long()
