@@ -6,7 +6,7 @@ import torch.backends.cudnn as cudnn
 import random
 import numpy as np
 
-from models import make_model, split_params_weight_bias
+from models import make_model
 from models.core.checkpoint import save_checkpoint
 
 
@@ -39,8 +39,8 @@ def worker_init_randomness(worker_id):
 
 def make_optimizer(model, optim_name, optim_params, optim_state_dict_fn):
     opt_class = getattr(optim, optim_name)
-    split_params = split_params_weight_bias(model)
-    optimizer = opt_class(params=split_params, **optim_params)
+    param_groups = model.get_param_groups()
+    optimizer = opt_class(params=param_groups, **optim_params)
     if optim_state_dict_fn is not None:
         optimizer.load_state_dict(optim_state_dict_fn())
     return optimizer
@@ -48,9 +48,13 @@ def make_optimizer(model, optim_name, optim_params, optim_state_dict_fn):
 
 def make_scheduler(optimizer, scheduler_name, scheduler_params, last_epoch):
     scheduler_class = getattr(optim.lr_scheduler, scheduler_name)
-    scheduler = scheduler_class(optimizer,
-                                last_epoch=last_epoch,
-                                **scheduler_params)
+    if scheduler_name is "ReduceLROnPlateau":
+        scheduler = scheduler_class(optimizer,
+                                    **scheduler_params)
+    else:
+        scheduler = scheduler_class(optimizer,
+                                    last_epoch=last_epoch,
+                                    **scheduler_params)
     return scheduler
 
 
@@ -114,6 +118,8 @@ def train(model,
     num_epochs = train_config["num_epochs"]
     global_it = train_config["global_it"]
 
+    its_per_epoch = len(train_loader.dataset)//train_loader.batch_size + 1
+
     val_loader_iter = iter(val_loader)
     for epoch in range(start_epoch, start_epoch + num_epochs):
         model.train()
@@ -121,16 +127,18 @@ def train(model,
         for it, input_ in enumerate(train_loader):
             trainloss, output = model.get_loss(input_, device)
             with torch.no_grad():
-                model.write_updates(writer, input_, output, trainloss, it, "train")
+                if not it % 10:
+                    model.write_updates(writer, input_, output, trainloss, global_it, "train")
             scheduler.optimizer.zero_grad()
             trainloss.backward()
             scheduler.optimizer.step()
-            global_it += 1
 
             if not it % 10:
-                print("Iter {:07d}   Epoch {:03d}   train_loss {:0.4f}".format(
-                    it, epoch, trainloss)
+                print("Global_Iter {:07d}   Iter {:04d}/{}   Epoch {:03d}   train_loss {:0.4f}".format(
+                    global_it, it, its_per_epoch,  epoch, trainloss)
                 )
+            global_it += 1
+
             if test_run: # Stop after 5 batches
                 if it == 5:
                     break
@@ -145,9 +153,19 @@ def train(model,
             with torch.no_grad():
                 model.eval()
                 valloss, output = model.get_loss(input_, device)
-                model.write_updates(writer, input_, output, valloss, it, "val")
-            print("End epoch {}\tval_loss: {}".format(epoch, valloss))
+                model.write_updates(writer, input_, output, valloss, epoch, "val")
+            print("End epoch {:03d}   val_loss: {:0.4f}".format(epoch, valloss))
+            if type(scheduler).__name__ == "ReduceLROnPlateau":
+                scheduler.step(valloss)
+            else:
+                scheduler.step()
             del input_, valloss  # Clean up
+        elif type(scheduler).__name__ == "ReduceLROnPlateau":
+            raise RuntimeWarning("ReduceLROnPlateau scheduler used with no validation - using last training loss.")
+            scheduler.step(trainloss)
+        else:
+            scheduler.step()
+
 
         # Save checkpoint
         state = {

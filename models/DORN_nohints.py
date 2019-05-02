@@ -4,8 +4,10 @@ import torch.nn.functional as F
 import torchvision.utils as vutils
 import numpy as np
 
+from time import perf_counter
 import os
 from collections import defaultdict
+from time import perf_counter
 
 from models.core.checkpoint import safe_makedir
 from models.core.model_core import Model
@@ -50,23 +52,29 @@ class DORN_nyu_nohints(Model):
         if frozen:
             for param in self.parameters():
                 param.requires_grad = False
+            self.eval()
 
     def get_loss(self, input_, device, resize_output=False):
         """
         :param input_: Dictionary from dataloader
         :param device: Device to run on (e.g. "cpu", "cuda")
-        :return: A tuple of (ordinal regression loss, log_probs) containing the loss
+        :return: A tuple of (ordinal regression loss, logprobs) containing the loss
         computed on the image and the tuple of (log_ord_c, log_ord_c_comp) that is the prediction.
         """
+        # one = perf_counter()
         rgb = input_["rgb"].to(device)
         mask = input_["mask"].to(device)
         target = input_["rawdepth_sid"].to(device)
         # print("dataloader: model input")
         # print(rgb[:,:,50:55,50:55])
+        # two = perf_counter()
         depth_pred = self.forward(rgb)
+        # three = perf_counter()
+        # print("Forward pass: {}".format(three - two))
         logprobs = self.to_logprobs(depth_pred)
         if resize_output:
             original_size = input_["rgb_orig"].size()[-2:]
+            # Note: align_corners=False gives same behavior as cv2.resize
             depth_pred_full = F.interpolate(depth_pred, size=original_size,
                                             mode="bilinear", align_corners=False)
             logprobs_full = self.to_logprobs(depth_pred_full)
@@ -82,6 +90,8 @@ class DORN_nyu_nohints(Model):
         """
         Compute the output log probabilities using the same method as in DORN_pytorch.
         :param x: The activations from the last layer: N x (2*sid_bins) x H x W
+            x[:, ::2, :, :] correspond to the probabilities P(l <= k)
+            x[:, 1::2, :, :] correspond to the probabilities P(l > k)
         :return:
             log_ord_c: Per pixel, a vector with the numbers log P(l > k)
             log_ord_c_comp: Per pixel, a vector with the numbers log (1 - P(l > k))
@@ -126,12 +136,12 @@ class DORN_nyu_nohints(Model):
         """
         log_ord_c, log_ord_c_comp = logprobs
         # nbins = log_ord_c.size(1)
-        mask_L = ((target > 0) & (mask > 0))
-        mask_U = (((1. - target) > 0) & (mask > 0))
+        mask_L = target * mask
+        mask_U = (1. - target) * mask
 
-        out = -(torch.sum(log_ord_c[mask_L]) + torch.sum(log_ord_c_comp[mask_U]))
+        out = -(torch.sum(log_ord_c*mask_L) + torch.sum(log_ord_c_comp*mask_U))
         if size_average:
-            total = torch.sum(mask).item()
+            total = torch.sum(mask)
             if total > 0:
                 return (1. / torch.sum(mask)) * out
             else:
@@ -147,7 +157,7 @@ class DORN_nyu_nohints(Model):
         :return: A depth map, as a torch.tensor.
         """
         log_probs, _ = prediction
-        depth_index = torch.sum((log_probs >= np.log(0.5)), dim=1).long().unsqueeze(1)
+        depth_index = torch.sum((log_probs >= np.log(0.5)), dim=1, keepdim=True).long().cpu()
         depth_map = sid_obj.get_value_from_sid_index(depth_index)
         # print(depth_vals.size())
         return depth_map
@@ -158,9 +168,9 @@ class DORN_nyu_nohints(Model):
         writer.add_scalar(tag + "/ord_reg_loss", loss.item(), it)
 
         # Get predicted depth image
-        depth_pred = self.ord_decode(output, self.sid_obj)
-        depth_truth = input_["rawdepth"]
-        mask = input_["mask"]
+        depth_pred = self.ord_decode(output, self.sid_obj).cpu()
+        depth_truth = input_["rawdepth"].cpu()
+        mask = input_["mask"].cpu()
         metrics = self.get_metrics(depth_pred, depth_truth, mask)
 
         # write metrics
@@ -168,15 +178,15 @@ class DORN_nyu_nohints(Model):
             writer.add_scalar(tag + "/{}".format(metric_name), metrics[metric_name], it)
 
         # min/max
-        writer.add_scalar(tag + "depth_min", torch.min(depth_pred).item(), it)
-        writer.add_scalar(tag + "depth_max", torch.max(depth_pred).item(), it)
+        writer.add_scalar(tag + "/depth_min", torch.min(depth_pred).item(), it)
+        writer.add_scalar(tag + "/depth_max", torch.max(depth_pred).item(), it)
 
         # Images
         # RGB
         rgb_orig = vutils.make_grid(input_["rgb_orig"] / 255, nrow=4)
         writer.add_image(tag + "/rgb_orig", rgb_orig, it)
         # SID ground truth
-        depth_sid_truth = self.sid_obj.get_value_from_sid_index(input_["rawdepth_sid_index"])
+        depth_sid_truth = self.sid_obj.get_value_from_sid_index(input_["rawdepth_sid_index"].cpu().long())
         depth_sid_truth = vutils.make_grid(depth_sid_truth, nrow=4,
                                                normalize=True, range=(self.min_depth, self.max_depth))
         writer.add_image(tag + "/depth_sid_truth", depth_sid_truth, it)
@@ -192,47 +202,26 @@ class DORN_nyu_nohints(Model):
         depth_mask = vutils.make_grid(input_["mask"], nrow=4, normalize=False)
         writer.add_image(tag + "/depth_mask", depth_mask, it)
 
-    def write_eval(self, data, path, device):
+    def evaluate(self, data, device):
+        # Output full-size depth map, so set resize_output=True
         _, logprobs = self.get_loss(data, device, resize_output=True)
-        depth_map = self.ord_decode(logprobs, self.sid_obj)
-        gt = data["rawdepth_orig"].to(device)
-        mask = data["mask_orig"].to(device)
-        out = {"depth_map": depth_map,
-               "gt": gt,
-               "mask": mask,
-               "logprobs": logprobs}
-        safe_makedir(os.path.dirname(path))
-        torch.save(out, path)
-
-    def evaluate_dir(self, output_dir, device):
-        """Get average losses over all data files"""
-        num_pixels = 0.
-        avg_losses = defaultdict(float)
-        for (dirname, dirnames, filenames) in os.walk(output_dir, topdown=False, followlinks=True):
-            if len(filenames):
-                for torchfile in filenames:
-                    if not torchfile.endswith(".pt"):
-                        continue
-                    metrics, data = self.evaluate_file(os.path.join(dirname, torchfile))
-                    num_valid_pixels = torch.sum(data["mask"]).item()
-                    num_pixels += num_valid_pixels
-                    for metric_name in metrics:
-                        avg_losses[metric_name] += num_valid_pixels * metrics[metric_name]
-
-        for metric_name in metrics:
-            avg_losses[metric_name] /= num_pixels
-        print(avg_losses)
-        return avg_losses
-
-    def evaluate_file(self, torchfile):
-        data = torch.load(torchfile)
-        metrics = self.get_metrics(data["depth_map"],
-                                   data["gt"],
-                                   data["mask"])
-        return metrics, data
+        pred = self.ord_decode(logprobs, self.sid_obj)
+        gt = data["rawdepth_orig"].cpu()
+        mask = data["mask_orig"].cpu()
+        metrics = self.get_metrics(pred,
+                                   gt,
+                                   mask)
+        return pred, metrics
 
     @staticmethod
     def get_metrics(depth_pred, depth_truth, mask):
+        """
+        Takes torch tensors.
+        :param depth_pred: Depth prediction
+        :param depth_truth: Ground truth
+        :param mask: Masks off invalid pixels
+        :return: Dictionary of metrics
+        """
         metrics = dict()
         # deltas
         metrics["delta1"] = delta(depth_pred, depth_truth, mask, 1.25).item()
@@ -252,7 +241,7 @@ class DORN_nyu_nohints(Model):
         metrics["log_rmse"] = rmse(torch.log(depth_pred),
                                    torch.log(depth_truth),
                                    mask).item()
-        print(metrics)
+        # print(metrics)
         return metrics
 
     def make_layers(self, in_channels, in_height, in_width, sid_bins):
@@ -2081,36 +2070,20 @@ if __name__ == "__main__":
               min_depth, max_depth, use_dorn_normalization,
               sid_bins, alpha, beta, offset,
               blacklist_file)
-    dataloader = DataLoader(train, batch_size=1, shuffle=False, num_workers=1)
+    # dataloader = DataLoader(train, batch_size=1, shuffle=False, num_workers=1)
+    dataset = train
+    device = torch.device("cuda")
     model = DORN_nyu_nohints()
+    model.to(device)
     model.eval()
-    for i, input_ in enumerate(dataloader):
-        print(train.data[i])
-        # Save the rgb image
-        # rgb = input_["rgb_orig"]
-        # print("dataloader: before normalizing")
-        # print(input_["rgb_orig"][:,0,50:55, 50:55])
-        # print("dataloader: after normalizing")
-        # print(input_["rgb"][:, 0, 50:55, 50:55])
-        # loss, pred = model.get_loss(input_, device="cpu")
-        loss, pred = model.get_loss(input_, device="cpu", resize_output=True)
-        # print("dataloader: network output")
-        # print(depth_out[:,30:32,50:55,50:55])
-        # pred = decode_ord(depth_out)
-        # print("dataloader: after decoding")
-        # print(pred[:,:,50:55,50:55])
-        # pred = pred[0, 0, :, :] - 1.0
-        # pred = pred / 25.0 - 0.36
-        # pred = np.exp(pred)
-        # print("dataloader: after exp")
-        # print(pred[50:55,50:55])
+    input_ = dataset[0]
+    input_["rgb"] = input_["rgb"].unsqueeze(0)
+    input_["rawdepth"] = input_["rawdepth_sid"].unsqueeze(0)
+    input_["mask"] = input_["mask"].unsqueeze(0)
 
-        # ord_score = cv2.resize(pred, (W, H), interpolation=cv2.INTER_LINEAR)
-        depth_out = model.ord_decode(pred, model.sid_obj)
 
-        # depth_out = torch.tensor(pred)
-        # print(pred[:,:,50:55,50:55])
-        utils.save_image(depth_out/10., os.path.join("models", "test_{}.png".format(i)))
+    loss, pred = model.get_loss(input_, device=device, resize_output=True)
+    # ord_score = cv2.resize(pred, (W, H), interpolation=cv2.INTER_LINEAR)
+    depth_out = model.ord_decode(pred, model.sid_obj)
+    # utils.save_image(depth_out/10., os.path.join("models", "test_{}.png".format(i)))
 
-        if i == 0:
-            break

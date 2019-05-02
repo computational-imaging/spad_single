@@ -1,8 +1,7 @@
 import numpy as np
 import torch
-
+import cvxpy as cp
 from scipy.signal import fftconvolve
-
 from sacred import Experiment
 
 spad_ingredient = Experiment("spad_config")
@@ -14,11 +13,23 @@ def cfg():
     dc_count = 0.1*photon_count     # Simulates ambient + dark count (additional to photon_count
     fwhm_ps = 70.                   # Full-width-at-half-maximum of (Gaussian) SPAD jitter, in picoseconds
 
+    use_albedo = True
+    use_squared_falloff = True
+    spad_comment = "use_albedo_{}".format(use_albedo) + "_" + \
+                   "use_squared_falloff_{}".format(use_squared_falloff) + "_" + \
+                   "dc_count_{}".format(dc_count)
+
+@spad_ingredient.named_config
+def rawhist():
+    dc_count = 0.
+    use_albedo = False
+    use_squared_falloff = False
 
 def simulate_spad(depth_truth, albedo, mask, min_depth, max_depth,
-                  spad_bins, photon_count, dc_count, fwhm_ps):
+                  spad_bins, photon_count, dc_count, fwhm_ps,
+                  use_albedo, use_squared_falloff):
     """
-
+    Works in numpy.
     :param depth_truth: The ground truth depth map (z, not distance...)
     :param albedo: The albedo map, aligned with the ground truth depth map.
     :param mask: The mask of valid pixels
@@ -28,17 +39,26 @@ def simulate_spad(depth_truth, albedo, mask, min_depth, max_depth,
     :param photon_count: The number of photons to collect
     :param dc_count: The additional fraction of photons to add to account for dark count + ambient light
     :param fwhm_ps: The full-width-at-half-maximum of the laser pulse jitter
+    :param use_albedo: Whether or not to take the albedo into account when simulating.
+    :param use_squared_falloff: Whether or not to take the squared depth into account when simulating
     :return: A simulated spad.
     """
     # Only use the green channel to simulate
-    weights = (albedo[..., 1] / (depth_truth ** 2 + 1e-6)) * mask
+    weights = mask
+    if use_albedo:
+        weights = weights * albedo[..., 1]
+    if use_squared_falloff:
+        weights = weights / (depth_truth ** 2 + 1e-6)
+    # weights = (albedo[..., 1] / (depth_truth ** 2 + 1e-6)) * mask
+    # print(depth_truth.shape)
+    # print(weights.shape)
     depth_hist, _ = np.histogram(depth_truth, bins=spad_bins, range=(min_depth, max_depth), weights=weights)
 
     # Scale by number of photons
     spad_counts = depth_hist * (photon_count / np.sum(depth_hist))
 
     # Add ambient/dark counts (dc_count)
-    spad_counts += dc_count / spad_bins * np.ones(len(spad_counts))
+    spad_counts += np.ones(len(spad_counts)) * (dc_count / spad_bins)
 
     # Convolve with PSF
     bin_width_m = float(max_depth - min_depth) / spad_bins  # meters/bin
@@ -46,8 +66,9 @@ def simulate_spad(depth_truth, albedo, mask, min_depth, max_depth,
     fwhm_bin = fwhm_ps / bin_width_ps
     psf = makeGaussianPSF(len(spad_counts), fwhm=fwhm_bin)
     spad_counts = fftconvolve(psf, spad_counts)[:int(spad_bins)]
-
+    spad_counts = np.clip(spad_counts, a_min=0., a_max=None)
     # Apply poisson
+    # print(np.min(spad_counts))
     spad_counts = np.random.poisson(spad_counts)
     return spad_counts
 
@@ -103,9 +124,31 @@ def rescale_bins(spad_counts, min_depth, max_depth, sid_obj):
     return sid_counts
 
 
+def get_rescale_layer(spad_bins, min_depth, max_depth, sid_obj):
+    """
+    Returns the linear layer that converts the bins and the rescaled bins.
+    Works in torch.
+    :param spad_bins: The number of spad_bins
+    :param min_depth:
+    :param max_depth:
+    :param sid_obj:
+    :return:
+    """
+    weights_matrix = torch.zeros(spad_bins, sid_obj.sid_bins)
+    for i in range(spad_bins):
+        e_i = np.zeros(spad_bins)
+        e_i[i] = 1.
+        out_i = rescale_bins(e_i, min_depth, max_depth, sid_obj)
+        weights_matrix[i, :] = torch.from_numpy(out_i)
+    rescale_layer = torch.nn.Linear(spad_bins, sid_obj.sid_bins, bias=False)
+    rescale_layer.weight.data = weights_matrix
+    return rescale_layer
+
+
 class SimulateSpad:
     def __init__(self, depth_truth_key, albedo_key, mask_key, spad_key, min_depth, max_depth,
-                 spad_bins, photon_count, dc_count, fwhm_ps, sid_obj=None):
+                 spad_bins, photon_count, dc_count, fwhm_ps, use_albedo, use_squared_falloff,
+                 sid_obj=None):
         """
 
         :param depth_truth_key: Key for ground truth depth in sample.
@@ -127,9 +170,11 @@ class SimulateSpad:
         self.min_depth = min_depth
         self.max_depth = max_depth
         self.sid_obj = sid_obj
+        self.use_albedo = use_albedo
+        self.use_squared_falloff = use_squared_falloff
         self.simulate_spad_fn = \
             lambda d, a, m: simulate_spad(d, a, m, min_depth, max_depth, spad_bins, photon_count, dc_count,
-                                          fwhm_ps)
+                                          fwhm_ps, use_albedo, use_squared_falloff)
 
     def __call__(self, sample):
         spad_counts = self.simulate_spad_fn(sample[self.depth_truth_key],
@@ -137,36 +182,93 @@ class SimulateSpad:
                                             sample[self.mask_key])
         if self.sid_obj is not None:
             spad_counts = rescale_bins(spad_counts, self.min_depth, self.max_depth, self.sid_obj)
-        sample[self.spad_key] = spad_counts
+        sample[self.spad_key] = spad_counts/np.sum(spad_counts)
+
         return sample
 
 
-# class AddDepthHist: # pylint: disable=too-few-public-methods
-#     """Takes a depth map and computes a histogram of depths as well"""
-#     def __init__(self, use_albedo=True, use_squared_falloff=True):
-#         """
-#         kwargs - passthrough to np.histogram
-#         """
-#         self.use_albedo = use_albedo
-#         self.use_squared_falloff = use_squared_falloff
-#         self.hist_kwargs =
-#
-#     def __call__(self, sample):
-#         depth = sample["depth"]
-#         if "mask" in sample:
-#             mask = sample["mask"]
-#             depth = depth[mask > 0]
-#         weights = np.ones(depth.shape)
-#         if self.use_albedo:
-#             weights = weights * np.mean(sample["albedo"]) # Attenuate by the average albedo
-#         if self.use_squared_falloff:
-#             weights[depth == 0] = 0.
-#             weights[depth != 0] = weights[depth != 0] / (depth[depth != 0]**2)
-#         if not self.use_albedo and not self.use_squared_falloff:
-#             sample["hist"], _ = np.histogram(depth, weights= normalize=True)
-#         else:
-#             sample["hist"], _ = np.histogram(depth, weights=weights, normalize=True)
-#         return sample
+def remove_dc_from_spad_batched(noisy_spad, bin_widths, lam=1e-2, eps=1e-5):
+    """
+    Batched, operates of batches of size N
+    WARNING: Batching generally produces noisier answers.
+    Works in numpy.
+    :param noisy_spad: length NxC array with the raw spad histogram to denoise.
+    :param bin_widths: 1xC array with the bin widths in meters of the original bins.
+    """
+    # print(noisy_spad.shape)
+    # print(bin_widths.shape)
+    N, C = noisy_spad.shape
+    # Equalize everything so DC appears uniform
+    #     for i in range(N):
+    #     spad = noisy_spad[i,:]
+    spad_equalized = noisy_spad / bin_widths
+    x = cp.Variable((N, C), "signal")
+    z = cp.Variable((N, 1), "noise")
+    print((x + z).shape)
+    obj = cp.Minimize(cp.sum_squares(spad_equalized - (x + z)) + lam * cp.norm(x, 1))
+    constr = [
+        x >= 0,
+        z >= 0
+    ]
+    prob = cp.Problem(obj, constr)
+    prob.solve(solver=cp.OSQP, verbose=True, eps_abs=eps)
+    signal_hist = x.value
+    signal_hist *= bin_widths
+    return signal_hist
+
+
+def remove_dc_from_spad(noisy_spad, bin_widths, lam=1e-2, eps=1e-5):
+    """
+    Not batched, solves N convex problems where N is the batch size.
+    For some reason, this gives better results.
+    Works in numpy.
+    :param noisy_spad: NxC array with the raw spad histogram to denoise.
+    :param bin_widths: length C array with the bin widths in meters of the original bins.
+    :param lam: float value controlling strength of L1 regularization on the signal
+    :param eps: float value controlling precision of solver
+    """
+    # print(noisy_spad.shape)
+    # print(bin_widths.shape)
+    assert len(noisy_spad.shape) == 2
+    assert len(bin_widths) == noisy_spad.shape[1]
+    N, C = noisy_spad.shape
+    # Equalize everything so DC appears uniform
+    denoised_spad = np.zeros_like(noisy_spad)
+    for i in range(N):
+        #     spad = noisy_spad[i,:]
+        spad_equalized = noisy_spad / bin_widths
+        x = cp.Variable((C,), "signal")
+        z = cp.Variable((1,), "noise")
+        #         print((x+z).shape)
+        obj = cp.Minimize(cp.sum_squares(spad_equalized[i, :] - (x + z)) + lam * cp.norm(x, 1))
+        constr = [
+            x >= 0,
+            z >= 0
+        ]
+        prob = cp.Problem(obj, constr)
+        prob.solve(solver=cp.OSQP, eps_abs=eps)
+        #         signal_hist = x.value
+        denoised_spad[i, :] = x.value * bin_widths
+    return denoised_spad
+
 
 if __name__ == "__main__":
-    pass
+    min_depth = 0.
+    max_depth = 10.
+
+    sid_bins = 68   # Number of bins (network outputs 2x this number of channels)
+    bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
+    dorn_decode = np.exp((bin_edges - 1) / 25 - 0.36)
+    d0 = dorn_decode[0]
+    d1 = dorn_decode[1]
+    # Algebra stuff to make the depth bins work out exactly like in the
+    # original DORN code.
+    alpha = (2 * d0 ** 2) / (d1 + d0)
+    beta = alpha * np.exp(sid_bins * np.log(2 * d0 / alpha - 1))
+    del bin_edges, dorn_decode, d0, d1
+    offset = 0.
+
+    from models.data.utils.sid_utils import SID
+    sid_obj = SID(sid_bins, alpha, beta, offset)
+    layer = get_rescale_layer(1024, min_depth, max_depth, sid_obj)
+    print(layer.weight.data[:,0])
