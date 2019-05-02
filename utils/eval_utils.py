@@ -7,8 +7,6 @@ from torch.utils.data import DataLoader
 from utils.train_utils import worker_init_randomness
 from models.core.checkpoint import safe_makedir
 
-
-
 def evaluate_model_on_dataset(model, dataset, small_run, device,
                               save_outputs, output_dir=None):
     """
@@ -30,13 +28,15 @@ def evaluate_model_on_dataset(model, dataset, small_run, device,
                             worker_init_fn=worker_init_randomness)
     # if eval_config["save_outputs"]:
 
-    safe_makedir(output_dir)
     with torch.no_grad():
         # model.eval()
         num_pixels = 0.
         avg_metrics = defaultdict(float)
         metrics = defaultdict(dict)
         for i, data in enumerate(dataloader):
+            # TESTING
+            if small_run and i == small_run:
+                break
             entry = data["entry"][0]
             print("Evaluating {}".format(data["entry"][0]))
             pred, pred_metrics = model.evaluate(data, device)
@@ -58,9 +58,7 @@ def evaluate_model_on_dataset(model, dataset, small_run, device,
                 safe_makedir(os.path.dirname(path))
                 torch.save(save_dict, path)
 
-            # TESTING
-            if small_run and i == 99:
-                break
+
         for metric_name in avg_metrics:
             avg_metrics[metric_name] /= num_pixels
         with open(os.path.join(output_dir, "avg_metrics.json"), "w") as f:
