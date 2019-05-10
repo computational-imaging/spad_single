@@ -99,7 +99,7 @@ def rescale_bins(spad_counts, min_depth, max_depth, sid_obj):
     :param min_depth: The minimum depth of the histogram.
     :param max_depth: The maximum depth of the histogram.
     :param sid_obj: An object representing a SID.
-    :return: A rescaled histogram in time to be according to the SID
+    :return: A rescaled histogram in time to be according to the SIDgit
 
     Assign photons to sid bins proportionally according to the amount of overlap between
     the sid bin range and the spad_count bin.

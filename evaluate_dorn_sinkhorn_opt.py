@@ -22,12 +22,12 @@ def cfg(data_config, spad_config):
     model_config = {                            # Load pretrained model for testing
         "model_name": "DORN_sinkhorn_opt",
         "model_params": {
-            "sgd_iters": 80,
+            "sgd_iters": 100,
             "sinkhorn_iters": 40,
-            "sigma": 2.,
+            "sigma": 0.5,
             "lam": 1e-2,
-            "kde_eps": 1e-5,
-            "sinkhorn_eps": 1e-2,
+            "kde_eps": 1e-4,
+            "sinkhorn_eps": 1e-4,
             "remove_dc": spad_config["dc_count"] > 0.,
             "use_albedo": spad_config["use_albedo"],
             "use_squared_falloff": spad_config["use_squared_falloff"],
@@ -98,7 +98,6 @@ def main(model_config,
          device):
     # Load the model
     model = make_model(**model_config)
-    # model.to(device)
     # model.sid_obj.to(device)
     # print(model)
     model.to(device)

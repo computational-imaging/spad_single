@@ -3,9 +3,10 @@ import os
 import torch
 from utils.train_utils import init_randomness
 from utils.eval_utils import evaluate_model_on_dataset
-from models.core.checkpoint import load_checkpoint
+from models.core.checkpoint import load_checkpoint, safe_makedir
 from models import make_model
 from sacred import Experiment
+from sacred.observers import FileStorageObserver
 
 # Dataset
 from models.data.nyuv2_official_nohints_sid_dataset import nyuv2_nohints_sid_ingredient, load_data
@@ -39,12 +40,21 @@ def cfg(data_config):
     ckpt_file = None                            # Keep as None
     dataset_type = "val"
     save_outputs = True
+    seed = 95290421
+    small_run = 0
+
+    # hyperparams = ["sgd_iters", "sinkhorn_iters", "sigma", "lam", "kde_eps", "sinkhorn_eps"]
+    pdict = model_config["model_params"]
+    del pdict
+
+    # print(data_config.keys())
     output_dir = os.path.join("results",
                               data_config["data_name"],    # e.g. nyu_depth_v2
-                              model_config["model_name"],  # e.g. DORN_nyu_nohints
-                              dataset_type)
-    seed = 95290421
-    small_run = False
+                              "{}_{}".format(dataset_type, small_run),
+                              model_config["model_name"])  # e.g. DORN_nyu_nohints
+
+    safe_makedir(output_dir)
+    ex.observers.append(FileStorageObserver.create(os.path.join(output_dir, "runs")))
 
     cuda_device = "0"                       # The gpu index to run on. Should be a string
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
@@ -70,10 +80,9 @@ def main(model_config,
          device):
     # Load the model
     model = make_model(**model_config)
-    model.to(device)
     model.eval()
+    model.to(device)
     # model.sid_obj.to(device)
-    print(model)
 
     # Load the data
     _, val, test = load_data()
