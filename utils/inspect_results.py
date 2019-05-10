@@ -14,16 +14,18 @@ def show(img):
     plt.imshow(np.transpose(npimg, (1, 2, 0)), interpolation='nearest')
 
 
-def show_hist(hist, min_depth, max_depth):
+def show_hist(hist, min_depth, max_depth, title):
     """Input should be a 1d numpy array with the value for each
     bin specified.
 
     In particular, this does NOT compute a histogram on hist before displaying: it assumes
     that bar-graphing hist is what will produce the histogram.
     """
-    fig = plt.figure(figsize=(5, 2))
+    fig = plt.figure(figsize=(10, 4))
     ax = fig.add_subplot(111)
+    plt.title(title)
     ax.bar(np.linspace(min_depth, max_depth, len(hist)), hist, width=(max_depth - min_depth) / len(hist))
+    plt.show()
 
 
 def get_loss_diffs(nohints_losses, hints_losses):

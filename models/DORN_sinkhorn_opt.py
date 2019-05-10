@@ -8,9 +8,10 @@ from models.sinkhorn_dist import optimize_depth_map
 from models.data.utils.spad_utils import remove_dc_from_spad
 from torch.optim import SGD
 import matplotlib
-# matplotlib.use("TKAgg")
-# import matplotlib.pyplot as plt
+matplotlib.use("TKAgg")
+import matplotlib.pyplot as plt
 import os
+from pdb import set_trace
 
 # from models.core.model_core import Model
 
@@ -65,7 +66,7 @@ class DORN_sinkhorn_opt:
         self.sinkhorn_eps = sinkhorn_eps
 
         # Define cost matrix for optimal transport problem
-        C = np.array([[(i - j)**2 for j in range(sid_bins)] for i in range(sid_bins)])/1000.
+        C = np.array([[(i - j)**2 for j in range(sid_bins)] for i in range(sid_bins)])
         self.cost_mat = torch.from_numpy(C).float()
 
         self.remove_dc = remove_dc
@@ -93,19 +94,20 @@ class DORN_sinkhorn_opt:
     def to(self, device):
         self.feature_extractor.to(device)
         self.cost_mat = self.cost_mat.to(device)
-        self.sid_obj.to(device)
+        # self.sid_obj.to(device)
+
+    def get_depth_index(self, input_, device, resize_output=False):
+        _, prediction = self.feature_extractor.get_loss(input_, device, resize_output=resize_output)
+        log_probs, _ = prediction
+        depth_index = torch.sum((log_probs >= np.log(0.5)), dim=1, keepdim=True).long()
+        return depth_index
 
     def initialize(self, input_, device):
         """Feed rgb through DORN
         :return per-pixel one-hot indicating the depth bin for that pixel.
         """
-        rgb = input_["rgb"].to(device)
-        with torch.no_grad():
-            x = self.feature_extractor(rgb)
-            log_probs, _ = self.to_logprobs(x)
-            depth_index = torch.sum((log_probs >= np.log(0.5)), dim=1, keepdim=True).long()
-        # print(depth_index[:,:,100:105,100:105])
-        return depth_index
+        return self.get_depth_index(input_, device, resize_output=True)
+
 
 
     # def optimize_depth_map(self, depth_hist, input_, device, resize_output=False):
@@ -131,55 +133,76 @@ class DORN_sinkhorn_opt:
 
     def evaluate(self, input_, device):
         # Run RGB through DORN
-        depth_init = self.initialize(input_, device)
+        depth_init = self.initialize(input_, device) # Already resized properly
         # DC Check
+
         denoised_spad = input_["spad"].to(device)
+        plt.figure()
+        plt.plot(denoised_spad.squeeze().clone().detach().cpu().numpy())
+        plt.title("Noisy SPAD")
+        plt.draw()
+        plt.pause(0.001)
         if self.remove_dc:
             bin_widths = (self.sid_obj.sid_bin_edges[1:] - self.sid_obj.sid_bin_edges[:-1]).cpu().numpy()
             denoised_spad = torch.from_numpy(remove_dc_from_spad(denoised_spad.squeeze(-1).squeeze(-1).cpu().numpy(),
                                                                  bin_widths)).unsqueeze(-1).unsqueeze(-1).to(device)
+            denoised_spad = denoised_spad/torch.sum(denoised_spad, dim=1, keepdim=True)
+            # print(torch.sum(denoised_spad, dim=1))
+            plt.figure()
+            plt.plot(denoised_spad.squeeze().clone().detach().cpu().numpy())
+            plt.title("Denoised SPAD")
+            plt.draw()
+            plt.pause(0.001)
+        # Normalize to 1
+        denoised_spad /= torch.sum(denoised_spad)
         # Albedo check
         albedo = None
         if self.use_albedo:
-            albedo = input_["albedo"][:, 1:2, ...].to(device) / 255.
+            albedo = input_["albedo_orig"][:, 1:2, ...].to(device) / 255.
 
         # Squared depth check
         inv_squared_depths = None
         if self.use_squared_falloff:
             inv_squared_depths = (self.sid_obj.sid_bin_values[:68]**(-2)).unsqueeze(0).unsqueeze(-1).unsqueeze(-1).to(device)
-
+        # print(depth_init[:,:,30:50,30:50])
         # Actually run the optimization
+        # set_trace()
         with torch.enable_grad():
             depth_index_final, depth_img_final, depth_hist_final = \
-                optimize_depth_map(depth_init, self.sigma, self.sid_bins,
-                                   self.cost_mat, self.lam, denoised_spad,
-                                   self.lr, self.sgd_iters, self.sinkhorn_iters,
+                optimize_depth_map(depth_init, sigma=self.sigma, n_bins=self.sid_bins,
+                                   cost_mat=self.cost_mat, lam=self.lam, spad_hist=denoised_spad,
+                                   lr=self.lr, num_sgd_iters=self.sgd_iters, num_sinkhorn_iters=self.sinkhorn_iters,
                                    kde_eps=self.kde_eps,
                                    sinkhorn_eps=self.sinkhorn_eps,
                                    inv_squared_depths=inv_squared_depths,
                                    albedo=albedo)
-            depth_index_final = depth_index_final.detach().long()
-
+            depth_index_final = depth_index_final.detach().long().cpu()
+            # print(depth_index_final)
             # Get depth maps and compute metrics
-            depth_pred = self.sid_obj.get_value_from_sid_index(depth_index_final)
-            original_size = input_["rgb_orig"].size()[-2:]
-            # Note: align_corners=False gives same behavior as cv2.resize
-            pred = F.interpolate(depth_pred, size=original_size,
-                                 mode="bilinear", align_corners=False)
-
+            pred = self.sid_obj.get_value_from_sid_index(depth_index_final)
+            # print(pred)
+            # original_size = input_["rgb_orig"].size()[-2:]
+            # # Note: align_corners=False gives same behavior as cv2.resize
+            # pred = F.interpolate(depth_pred, size=original_size,
+            #                      mode="bilinear", align_corners=False)
+        plt.figure()
+        plt.plot(depth_hist_final.squeeze().clone().detach().cpu().numpy())
+        plt.title("Final Histogram")
+        plt.draw()
+        plt.pause(0.001)
         # compute metrics
-        gt = input_["rawdepth_orig"].to(device)
-        mask = input_["mask_orig"].to(device)
+        gt = input_["rawdepth_orig"].cpu()
+        mask = input_["mask_orig"].cpu()
         metrics = self.get_metrics(pred, gt, mask)
         # print("after", metrics)
 
         # Also compute initial metrics:
-        # gt_dorn = input_["rawdepth"].to(device)
-        # mask_dorn = input_["mask"].to(device)
-        # depth_init_map = self.sid_obj.get_value_from_sid_index(depth_init)
-        # before_metrics = self.get_metrics(depth_init_map, gt_dorn, mask_dorn)
-        # print("before", before_metrics)
-
+        _, logprobs = self.feature_extractor.get_loss(input_, device, resize_output=True)
+        depth_init_map = self.feature_extractor.ord_decode(logprobs, self.sid_obj)
+        # print(depth_init_map.device)
+        before_metrics = self.get_metrics(depth_init_map, gt, mask)
+        print("before", before_metrics)
+        input("Press enter to continue.")
         return pred, metrics
 
 DORN_sinkhorn_opt.to_logprobs = staticmethod(DORN_nyu_nohints.to_logprobs)
@@ -194,6 +217,7 @@ if __name__ == "__main__":
     from utils.train_utils import init_randomness
     from models.data.nyuv2_official_hints_sid_dataset import load_data, cfg
     from models.data.utils.spad_utils import cfg as spad_cfg
+    from collections import defaultdict
     data_config = cfg()
     spad_config = spad_cfg()
     spad_config["dc_count"] = 0.
@@ -203,16 +227,17 @@ if __name__ == "__main__":
     # print(config)
     # print(spad_config)
     del data_config["data_name"]
-    model = DORN_sinkhorn_opt(sgd_iters=1,
-                              sinkhorn_iters=1,
-                              use_albedo=spad_config["use_albedo"],
-                              use_squared_falloff=spad_config["use_squared_falloff"])
+    model = DORN_sinkhorn_opt(sgd_iters=100, sinkhorn_iters=40, sigma=.5, lam=1e-2,
+                              kde_eps=1e-4, sinkhorn_eps=1e-4,
+                              remove_dc=spad_config["dc_count"] > 0., use_albedo=spad_config["use_albedo"],
+                              use_squared_falloff=spad_config["use_squared_falloff"],
+                              lr=1e3)
     model.to(device)
     _, _, test = load_data(**data_config, spad_config=spad_config)
 
-    dataloader = DataLoader(test)
+    dataloader = DataLoader(test, shuffle=True)
     start = perf_counter()
-    init_randomness(0)
+    init_randomness(95290421)
     input_ = test.get_item_by_id("living_room_0059/1591")
     for key in ["rgb", "albedo", "rawdepth", "spad", "mask", "rawdepth_orig", "mask_orig"]:
         input_[key] = input_[key].unsqueeze(0)
@@ -220,7 +245,54 @@ if __name__ == "__main__":
     print("dataloader: {}".format(data_load_time))
     # print(input_["entry"])
     # print(model.hints_extractor[0].weight)
-    pred, metrics = model.evaluate(input_, "cuda")
-    # print(before_metrics)
-    print(metrics)
+
+
+    # Checks
+    print(input_["entry"])
+    print("remove_dc: ", model.remove_dc)
+    print("use_albedo: ", model.use_albedo)
+    print("use_squared_falloff: ", model.use_squared_falloff)
+    pred, pred_metrics = model.evaluate(input_, device)
+    print(pred_metrics)
+
+    num_pixels = 0.
+    avg_metrics = defaultdict(float)
+    metrics = defaultdict(dict)
+    # for i, data in enumerate(dataloader):
+    #     # TESTING
+    #     if i == 5:
+    #         break
+    #     entry = data["entry"][0]
+    #     print("Evaluating {}".format(data["entry"][0]))
+    #     pred, pred_metrics = model.evaluate(data, device)
+    #     print(pred_metrics)
+    #     metrics[entry] = pred_metrics
+    #     num_valid_pixels = torch.sum(data["mask_orig"]).item()
+    #     num_pixels += num_valid_pixels
+    #     for metric_name in pred_metrics:
+    #         avg_metrics[metric_name] += num_valid_pixels * pred_metrics[metric_name]
+    #     # print(pred_metrics)
+    #     # Option to save outputs:
+    #     # if save_outputs:
+    #     #     if output_dir is None:
+    #     #         raise ValueError("evaluate_model_on_dataset: output_dir is None")
+    #     #     save_dict = {
+    #     #         "entry": entry,
+    #     #         "pred": pred
+    #     #     }
+    #     #     path = os.path.join(output_dir, "{}_out.pt".format(entry))
+    #     #     safe_makedir(os.path.dirname(path))
+    #     #     torch.save(save_dict, path)
+    #
+    # for metric_name in avg_metrics:
+    #     avg_metrics[metric_name] /= num_pixels
+    # print(avg_metrics)
+
+    #     with open(os.path.join(output_dir, "avg_metrics.json"), "w") as f:
+    #         json.dump(avg_metrics, f)
+    #     with open(os.path.join(output_dir, "metrics.json"), "w") as f:
+    #         json.dump(metrics, f)
+    # # print(before_metrics)
+    # print(metrics)
     # print(model.sid_obj)
+    input("press the enter key to finish.")
