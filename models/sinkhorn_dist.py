@@ -62,6 +62,7 @@ def sinkhorn_dist(cost_mat, lam, hist_pred, gt_hist, num_iters=100, eps=1e-1):
     hist_pred: N x C x H x W Should all be nonzero!
     gt_hist: N x C x H x W
     """
+
     r = hist_pred.permute([0,2,3,1]).unsqueeze(-1) # N x W x H x C x 1
 #     print("r min", torch.min(r))
     c = gt_hist.permute([0,2,3,1]).unsqueeze(-1)     # N x W x H x C x 1
@@ -70,12 +71,18 @@ def sinkhorn_dist(cost_mat, lam, hist_pred, gt_hist, num_iters=100, eps=1e-1):
     x = torch.ones_like(r)/r.shape[-2] # Initialize histogram to be uniform
     K_T = K.transpose(3, 4)
     # set_trace()
+    # print(r)
+    # print(c)
+    # print(lam)
+    # print(eps)
+    # set_trace()
     for i in range(num_iters):
         temp1 = K_T.matmul(1./x) # N x W x H x C x 1
         temp2 = c*(1./temp1)  # N x W x H x C x 1
         temp3 = K.matmul(temp2)
-        r_diag = torch.diag_embed(torch.transpose(1./r, -1, -2)).squeeze(-3)
-        x_temp = r_diag.matmul(temp3)
+        # r_diag = torch.diag_embed(torch.transpose(1./r, -1, -2)).squeeze(-3)
+        # x_temp = r_diag.matmul(temp3)
+        x_temp = (1./r)*temp3
         if torch.sum(torch.abs(x - x_temp)) < eps:
             break
         # print("diff", torch.sum(torch.abs(x - x_temp))) # Inspect for convergence
@@ -92,7 +99,6 @@ def sinkhorn_dist(cost_mat, lam, hist_pred, gt_hist, num_iters=100, eps=1e-1):
     u_diag = torch.diag_embed(torch.transpose(u, -1, -2)).squeeze(-3)
     v_diag = torch.diag_embed(torch.transpose(v, -1, -2)).squeeze(-3)
     P = u_diag.matmul(K).matmul(v_diag)
-    # set_trace()
     return torch.sum(u*(K*M).matmul(v)), P
 
 
@@ -110,6 +116,7 @@ def optimize_depth_map(x_index_init, sigma, n_bins,
     x = x_index_init.clone().detach().float().requires_grad_(True)
     # print(x)
     for i in range(num_sgd_iters):
+        # with torch.autograd.detect_anomaly():
 
         # Per-pixel depth index to per-pixel histogram
         x_img = kernel_density_estimation(x, sigma, n_bins, eps=kde_eps)
@@ -125,10 +132,10 @@ def optimize_depth_map(x_index_init, sigma, n_bins,
         # print(hist_loss)
         # entropy_loss = torch.sum(entropy(x_img, dim=1))
         loss = hist_loss
-        loss.backward(retain_graph=True)
+        loss.backward()
         with torch.no_grad():
             if torch.isnan(x.grad).any().item():
-                set_trace()
+                            # set_trace()
                 print("nans detected in x.grad")
                 break
             x -= lr*x.grad
@@ -137,5 +144,5 @@ def optimize_depth_map(x_index_init, sigma, n_bins,
                 return x, x_img, x_hist
             x.grad.zero_()
             x = torch.clamp(x, min=0., max=n_bins).requires_grad_(True)
-    # print("warning: sgd exited before convergence.")
+        # print("warning: sgd exited before convergence.")
     return x, x_img, x_hist

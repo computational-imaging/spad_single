@@ -4,7 +4,7 @@ import torch
 import json
 from torch.utils.data import DataLoader
 from utils.train_utils import init_randomness, worker_init_randomness
-from utils.eval_utils import evaluate_model_on_dataset
+from utils.eval_utils import evaluate_model_on_dataset, evaluate_model_on_data_entry
 from models.core.checkpoint import load_checkpoint, safe_makedir
 from models import make_model
 from sacred import Experiment
@@ -28,6 +28,7 @@ def cfg(data_config, spad_config):
             "lam": 1e-2,
             "kde_eps": 1e-4,
             "sinkhorn_eps": 1e-4,
+            "dc_eps": 1e-5,
             "remove_dc": spad_config["dc_count"] > 0.,
             "use_albedo": spad_config["use_albedo"],
             "use_squared_falloff": spad_config["use_squared_falloff"],
@@ -53,6 +54,7 @@ def cfg(data_config, spad_config):
     save_outputs = True
     seed = 95290421
     small_run = 0
+    entry = None
     # hyperparams = ["sgd_iters", "sinkhorn_iters", "sigma", "lam", "kde_eps", "sinkhorn_eps"]
     pdict = model_config["model_params"]
     comment = "_".join(["sgd_iters_{}".format(pdict["sgd_iters"]),
@@ -95,6 +97,7 @@ def main(model_config,
          data_config,
          seed,
          small_run,
+         entry,
          device):
     # Load the model
     model = make_model(**model_config)
@@ -107,7 +110,10 @@ def main(model_config,
     dataset = test if dataset_type == "test" else val
 
     init_randomness(seed)
-
-    print("Evaluating the model on {} ({})".format(data_config["data_name"],
-                                                   dataset_type))
-    evaluate_model_on_dataset(model, dataset, small_run, device, save_outputs, output_dir)
+    if entry is None:
+        print("Evaluating the model on {} ({})".format(data_config["data_name"],
+                                                       dataset_type))
+        evaluate_model_on_dataset(model, dataset, small_run, device, save_outputs, output_dir)
+    else:
+        print("Evaluating {}".format(entry))
+        evaluate_model_on_data_entry(model, dataset, entry, device)

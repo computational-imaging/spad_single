@@ -7,9 +7,9 @@ from models.data.utils.sid_utils import SIDTorch
 from models.sinkhorn_dist import optimize_depth_map
 from models.data.utils.spad_utils import remove_dc_from_spad
 from torch.optim import SGD
-import matplotlib
-matplotlib.use("TKAgg")
-import matplotlib.pyplot as plt
+# import matplotlib
+# matplotlib.use("TKAgg")
+# import matplotlib.pyplot as plt
 import os
 from pdb import set_trace
 
@@ -23,7 +23,7 @@ class DORN_sinkhorn_opt:
     estimate from DORN.
     """
     def __init__(self, sgd_iters=250, sinkhorn_iters=40, sigma=2., lam=1e-2, kde_eps=1e-5,
-                 sinkhorn_eps = 1e-2,
+                 sinkhorn_eps=1e-2, dc_eps=1e-5,
                  remove_dc=True, use_albedo=True, use_squared_falloff=True,
                  lr=1e3, hints_len=68,
                  in_channels=3, in_height=257, in_width=353,
@@ -40,6 +40,7 @@ class DORN_sinkhorn_opt:
         :param lam: sinkhorn iteration parameter
         :param kde_eps: Epsilon for kernel density estimation, involved in setting floor for the kernel.
         :param sinkhorn_eps: Epsilon for sinkhorn iterations, controls convergence.
+        :param dc_eps: Epsilon for approximate lowest value of denoised histogram.
         :param remove_dc: Whether or not to remove any dc component in the spad histogram before denoising.
         :param use_albedo: Whether or not to use albedo in kernel density estimation
         :param use_squared_falloff: Whether or not to use squared falloff in kernel density estimation
@@ -64,8 +65,21 @@ class DORN_sinkhorn_opt:
         self.lam = lam
         self.kde_eps = kde_eps
         self.sinkhorn_eps = sinkhorn_eps
-
+        self.dc_eps = dc_eps
         # Define cost matrix for optimal transport problem
+        def huber(x, delta=200.):
+            if np.abs(x) < delta:
+                return 0.5 * (x ** 2)
+            return delta * (np.abs(x) - 0.5 * delta)
+
+        def berhu(x, c=5):
+            if np.abs(x) <= c:
+                return np.abs(x)
+            return (x ** 2 + c ** 2) / (2 * c)
+
+        # C = np.array([[np.abs(i - j)**2 for j in range(n_bins)] for i in range(n_bins)])
+        # C = np.array([[huber(i - j) for j in range(sid_bins)] for i in range(sid_bins)])
+        # C = np.array([[berhu(i - j) for j in range(n_bins)] for i in range(n_bins)])
         C = np.array([[(i - j)**2 for j in range(sid_bins)] for i in range(sid_bins)])
         self.cost_mat = torch.from_numpy(C).float()
 
@@ -137,24 +151,24 @@ class DORN_sinkhorn_opt:
         # DC Check
 
         denoised_spad = input_["spad"].to(device)
-        plt.figure()
-        plt.plot(denoised_spad.squeeze().clone().detach().cpu().numpy())
-        plt.title("Noisy SPAD")
-        plt.draw()
-        plt.pause(0.001)
+        # plt.figure()
+        # plt.plot(denoised_spad.squeeze().clone().detach().cpu().numpy())
+        # plt.title("Noisy SPAD")
+        # plt.draw()
+        # plt.pause(0.001)
         if self.remove_dc:
             bin_widths = (self.sid_obj.sid_bin_edges[1:] - self.sid_obj.sid_bin_edges[:-1]).cpu().numpy()
             denoised_spad = torch.from_numpy(remove_dc_from_spad(denoised_spad.squeeze(-1).squeeze(-1).cpu().numpy(),
                                                                  bin_widths)).unsqueeze(-1).unsqueeze(-1).to(device)
-            denoised_spad = denoised_spad/torch.sum(denoised_spad, dim=1, keepdim=True)
+            denoised_spad[denoised_spad < self.dc_eps] = self.dc_eps
             # print(torch.sum(denoised_spad, dim=1))
-            plt.figure()
-            plt.plot(denoised_spad.squeeze().clone().detach().cpu().numpy())
-            plt.title("Denoised SPAD")
-            plt.draw()
-            plt.pause(0.001)
+            # plt.figure()
+            # plt.plot(denoised_spad.squeeze().clone().detach().cpu().numpy())
+            # plt.title("Denoised SPAD")
+            # plt.draw()
+            # plt.pause(0.001)
         # Normalize to 1
-        denoised_spad /= torch.sum(denoised_spad)
+        denoised_spad = denoised_spad / torch.sum(denoised_spad, dim=1, keepdim=True)
         # Albedo check
         albedo = None
         if self.use_albedo:
@@ -185,11 +199,11 @@ class DORN_sinkhorn_opt:
             # # Note: align_corners=False gives same behavior as cv2.resize
             # pred = F.interpolate(depth_pred, size=original_size,
             #                      mode="bilinear", align_corners=False)
-        plt.figure()
-        plt.plot(depth_hist_final.squeeze().clone().detach().cpu().numpy())
-        plt.title("Final Histogram")
-        plt.draw()
-        plt.pause(0.001)
+        # plt.figure()
+        # plt.plot(depth_hist_final.squeeze().clone().detach().cpu().numpy())
+        # plt.title("Final Histogram")
+        # plt.draw()
+        # plt.pause(0.001)
         # compute metrics
         gt = input_["rawdepth_orig"].cpu()
         mask = input_["mask_orig"].cpu()
@@ -202,7 +216,7 @@ class DORN_sinkhorn_opt:
         # print(depth_init_map.device)
         before_metrics = self.get_metrics(depth_init_map, gt, mask)
         print("before", before_metrics)
-        input("Press enter to continue.")
+        # input("Press enter to continue.")
         return pred, metrics
 
 DORN_sinkhorn_opt.to_logprobs = staticmethod(DORN_nyu_nohints.to_logprobs)
@@ -220,9 +234,9 @@ if __name__ == "__main__":
     from collections import defaultdict
     data_config = cfg()
     spad_config = spad_cfg()
-    spad_config["dc_count"] = 0.
-    spad_config["use_albedo"] = False
-    spad_config["use_squared_falloff"] = False
+    # spad_config["dc_count"] = 0.
+    # spad_config["use_albedo"] = False
+    # spad_config["use_squared_falloff"] = False
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # print(config)
     # print(spad_config)
@@ -238,8 +252,8 @@ if __name__ == "__main__":
     dataloader = DataLoader(test, shuffle=True)
     start = perf_counter()
     init_randomness(95290421)
-    input_ = test.get_item_by_id("living_room_0059/1591")
-    for key in ["rgb", "albedo", "rawdepth", "spad", "mask", "rawdepth_orig", "mask_orig"]:
+    input_ = test.get_item_by_id("kitchen_0002/1121")
+    for key in ["rgb", "albedo", "rawdepth", "spad", "mask", "rawdepth_orig", "mask_orig", "albedo_orig"]:
         input_[key] = input_[key].unsqueeze(0)
     data_load_time = perf_counter() - start
     print("dataloader: {}".format(data_load_time))
