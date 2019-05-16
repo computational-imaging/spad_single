@@ -89,7 +89,8 @@ def load_data(train_file, train_dir,
     # print(spad_config)
     train = NYUDepthv2Dataset(train_file, train_dir, transform=None,
                               file_types=["rgb", "albedo", "rawdepth"],
-                              min_depth=min_depth, max_depth=max_depth)
+                              min_depth=min_depth, max_depth=max_depth,
+                              blacklist_file=blacklist_file)
 
     train.rgb_mean, train.rgb_var = train.get_mean_and_var()
 
