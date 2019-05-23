@@ -1,10 +1,103 @@
-\subsection{Monocular Depth Estimation} 
+In this section, we describe the histogram formation model for a single-pixel
+time-of-flight lidar sensor under diffuse, pulsed laser illumination. We also use
+this model to simulate the formation of a histogram given a depth map. 
+\subsection{Histogram Formation Model}
+Consider a laser which emits a pulse at time $t = 0$ with shape $g(t)$. The waveform passes through a diffuser
+which spreads the light evenly over some 3D scene $z(x,y)$, which we describe as
+depth as a function of $(x,y)$ position. 
+To assess the distribution of returning photons from the whole scene, we first consider photons returning from a single
+location $(x, y)$. The expected number of photon events detected 
+from this location in the time interval $(t, t + \Delta t)$ is given as
+\begin{equation}
+  \lambda_{x,y}[n] = \int_{n\Delta t}^{(n+1) \Delta t} (f * g)\paren*{t - 2z(x,y)/c} dt. \label{single_loc_spad} 
+\end{equation}  
 
-\subsection{Global Depth Hints} 
+where $c$ is the speed of light, and $f$ models the temporal uncertainty in the
+detector. Since the detection of each photon can be described as a Bernoulli random variable,
+the total number of accumulated photons in this time interval follows a Poisson
+distribution according to
 
-\begin{itemize}
-	\item image formation model	
-	\item training details
-	\item simulations and comparison: qualitative and quantitative
-\end{itemize}
+\begin{equation}
+  h[n] \sim \mathcal{P}\paren*{\sum_{x,y}\alpha_{x,y}\eta \lambda_{x,y}[n] + d} \label{global_hints}
+\end{equation}
+
+where $\alpha_{x,y} = r_{x,y}/z(x,y)^2$ captures the attenuation of the
+photon counts due to the reflectance $r(x,y)$ of the scene and due to the
+inverse square falloff $1/z(x,y)^2$.
+In addition, $\eta$ is the detection probability of a photon
+triggering a SPAD event, and $d = \eta a + b$ is the number of ambient photons $a$
+and the number of ``dark count'' events $b$, which is a property of the SPAD.
+
+Pick an example scene, show side-by-side with depth map and histogram of gt
+depth and histogram from SPAD (to make intuitive)
+
+\subsection{Monocular depth estimation with global depth hints}
+Given a single RGB image $I(x,y)$ and a histogram of photon arrivals $h[n]$
+collected as in equation \ref{global_hints}, we seek to
+reconstruct the ground truth depth map $z(x,y)$.
+Our method has two parts. First, we initialize our estimate of the depth map from the single RGB
+image via a monocular depth estimator. Second, we refine this depth map using
+the captured histogram $h[n]$ via a process we call Differentiable Histogram Matching.
+Differentiable histogram matching as a tool for post-processing the image to
+match the depth map to the statistics we capture from the SPAD.
+
+\paragraph{Initialization via CNN}
+Convoluational Neural Networks have become increasingly capable of leveraging
+monocular depth cues from to produce accurate estimates of depth
+from only a single image. We therefore choose to initialize our depth map
+estimate $z^{(0)}(x,y)$ using
+a CNN. However, any depth estimator reliant on only a single
+view will be unable resolve the inherent scale ambiguity in the scene resulting
+from the tradeoff between size of and distance to an object. Our next step,
+differentiable histogram matching, will resolve this ambiguity using the depth
+information present in the SPAD histogram.
+
+\paragraph{Differentiable Histogram Matching}
+Given our initial depth map estimate, our goal is now to refine that depth map
+so that it agrees with the information provided by the SPAD histogram.
+Figure showing just the differentiable histogram matching part of the model.
+At a high level, our goal is to formulate the SPAD histogram formation model as
+a differentiable function of the depth map and RGB image so that the output
+$\hat h[n]$ of the SPAD simulation can be compared to the observed SPAD
+histogram $h[n]$ and the depth map can be optimized via gradient descent or
+other first-order method.
+Given per-pixel depth, we can simulate SPAD histogram formation using equation
+\ref{global_hints}, where we approximate $\lambda_{x,y}[n]$ using Kernel Density
+Estimation as:
+\begin{equation}
+  \hat \lambda^{(i)}_{x,y}[n] = \frac{1}{\sigma\sqrt{2 \pi}}\exp\paren*{-\frac{1}{2\sigma^2}(n - \hat z^{(i)}(x,y))} \label{KDE}
+\end{equation}
+where $\hat z^{(i)}(x, y)$ is our estimate of the depth at pixel $(x,y)$ at
+iteration $i$.
+
+Once we have $\lambda^{(i)}$, we compute $\hat h[n]$ according to the rest of
+the SPAD histogram formation model, neglecting the Poisson sampling, as follows
+\begin{equation}
+  \hat h[n] = \sum_{x,y}\alpha_{x,y}\eta \lambda_{x,y}[n] + d \label{diff_forward}
+\end{equation}
+model. (Explain where $d$ and $\eta$ come from.)
+Finally, given two histograms, we can compute the Sinkhorn Distance between
+them. As described in \ref{Cuturi et. al.}, the Sinkhorn Distance is a measure
+of distance between two probability distributions. It is particularly desirable
+to us because unlike other distances between probability distributions, such as
+the KL divergence or the simple RMSE, the Sinkhorn Distance scales with
+separation as well as magnitude. Furthermore, unlike the Wasserstein Distance
+from which it is derived, the computation of the Sinkhorn Distance can be
+computed via Sinkhorn Iterations, which are fast and differentiable.
+We refer the reader to \ref{Cuturi et. al.} for the details.
+``Minimize blah s.t. blah blah''
+\subsection{``How you actually solve it''} 
+
+\subsection{Implementation Details}
+For the Monocular Depth Estimator, we use a pretrained version of the
+the Deep Ordinal Regression Network (DORN) \cite{}. We use the implementation of
+the Sinkhorn Iteration (for calculating the entropy-regularized Wasserstein
+Loss) from \ref Cuturi et. al. We update the depth map using gradient descent.
+Everything is implemented in PyTorch.
+
+Table with hyperparameters (defer to supplementary info?)
+- Kernel Density Estimation (sigma)
+- Sinkhorn Iterations (maximum number, epsilon tolerance)
+- Gradient Descent (learning rate, epsilon tolerance, max iterations)
+
 

@@ -1,0 +1,4 @@
+# Random latex stuff
+*.aux
+*.gz
+*.log

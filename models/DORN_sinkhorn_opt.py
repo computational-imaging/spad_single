@@ -149,38 +149,34 @@ class DORN_sinkhorn_opt:
         # Run RGB through DORN
         depth_init = self.initialize(input_, device) # Already resized properly
         # DC Check
-
         denoised_spad = input_["spad"].to(device)
-        # plt.figure()
-        # plt.plot(denoised_spad.squeeze().clone().detach().cpu().numpy())
-        # plt.title("Noisy SPAD")
-        # plt.draw()
-        # plt.pause(0.001)
         if self.remove_dc:
-            bin_widths = (self.sid_obj.sid_bin_edges[1:] - self.sid_obj.sid_bin_edges[:-1]).cpu().numpy()
+            # bin_widths = (self.sid_obj.sid_bin_edges[1:] - self.sid_obj.sid_bin_edges[:-1]).cpu().numpy()
+            bin_edges = self.sid_obj.sid_bin_edges.cpu().numpy().squeeze()
             denoised_spad = torch.from_numpy(remove_dc_from_spad(denoised_spad.squeeze(-1).squeeze(-1).cpu().numpy(),
-                                                                 bin_widths)).unsqueeze(-1).unsqueeze(-1).to(device)
+                                                                 bin_edges)).unsqueeze(-1).unsqueeze(-1).to(device)
             denoised_spad[denoised_spad < self.dc_eps] = self.dc_eps
-            # print(torch.sum(denoised_spad, dim=1))
-            # plt.figure()
-            # plt.plot(denoised_spad.squeeze().clone().detach().cpu().numpy())
-            # plt.title("Denoised SPAD")
-            # plt.draw()
-            # plt.pause(0.001)
         # Normalize to 1
         denoised_spad = denoised_spad / torch.sum(denoised_spad, dim=1, keepdim=True)
         # Albedo check
         albedo = None
+        alpha = 0. # Set alpha based on albedo
         if self.use_albedo:
             albedo = input_["albedo_orig"][:, 1:2, ...].to(device) / 255.
+            alpha = 1./torch.mean(albedo) - 1
+        print("alpha", alpha)
 
         # Squared depth check
         inv_squared_depths = None
         if self.use_squared_falloff:
             inv_squared_depths = (self.sid_obj.sid_bin_values[:68]**(-2)).unsqueeze(0).unsqueeze(-1).unsqueeze(-1).to(device)
-        # print(depth_init[:,:,30:50,30:50])
         # Actually run the optimization
-        # set_trace()
+        mseloss = MSELoss()
+        if alpha > 0.:
+            regularizer = lambda x, x0: 1e-1 * mseloss(x, x0)
+        else:
+            regularizer = None
+
         with torch.enable_grad():
             depth_index_final, depth_img_final, depth_hist_final = \
                 optimize_depth_map(depth_init, sigma=self.sigma, n_bins=self.sid_bins,
@@ -189,34 +185,24 @@ class DORN_sinkhorn_opt:
                                    kde_eps=self.kde_eps,
                                    sinkhorn_eps=self.sinkhorn_eps,
                                    inv_squared_depths=inv_squared_depths,
-                                   albedo=albedo)
+                                   albedo=albedo,
+                                   regularizer=regularizer)
             depth_index_final = depth_index_final.detach().long().cpu()
-            # print(depth_index_final)
+
             # Get depth maps and compute metrics
             pred = self.sid_obj.get_value_from_sid_index(depth_index_final)
-            # print(pred)
-            # original_size = input_["rgb_orig"].size()[-2:]
-            # # Note: align_corners=False gives same behavior as cv2.resize
-            # pred = F.interpolate(depth_pred, size=original_size,
-            #                      mode="bilinear", align_corners=False)
-        # plt.figure()
-        # plt.plot(depth_hist_final.squeeze().clone().detach().cpu().numpy())
-        # plt.title("Final Histogram")
-        # plt.draw()
-        # plt.pause(0.001)
+            # Note: align_corners=False gives same behavior as cv2.resize
+
         # compute metrics
         gt = input_["rawdepth_orig"].cpu()
         mask = input_["mask_orig"].cpu()
         metrics = self.get_metrics(pred, gt, mask)
-        # print("after", metrics)
 
         # Also compute initial metrics:
         _, logprobs = self.feature_extractor.get_loss(input_, device, resize_output=True)
         depth_init_map = self.feature_extractor.ord_decode(logprobs, self.sid_obj)
-        # print(depth_init_map.device)
         before_metrics = self.get_metrics(depth_init_map, gt, mask)
         print("before", before_metrics)
-        # input("Press enter to continue.")
         return pred, metrics
 
 DORN_sinkhorn_opt.to_logprobs = staticmethod(DORN_nyu_nohints.to_logprobs)

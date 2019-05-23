@@ -135,12 +135,12 @@ def load_data(train_file, train_dir,
 
     val_transform = transforms.Compose([
         AddDepthMask(min_depth, max_depth, "rawdepth"),
-        Save(["rgb", "mask", "albedo", "rawdepth"], "_orig"),
+        Save(["rgb", "depth", "mask", "albedo", "rawdepth"], "_orig"),
         Normalize(transform_mean, transform_var, key="rgb"),
-        ResizeAll((353, 257), keys=["rgb", "albedo", "rawdepth"]),
+        ResizeAll((353, 257), keys=["rgb", "albedo", "depth", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"),
         AddSIDDepth(sid_bins, alpha, beta, offset, "rawdepth"),
-        SimulateSpad("rawdepth", "albedo", "mask", "spad", min_depth, max_depth,
+        SimulateSpad("depth", "albedo", "mask", "spad", min_depth, max_depth,
                      spad_config["spad_bins"],
                      spad_config["photon_count"],
                      spad_config["dc_count"],
@@ -148,19 +148,19 @@ def load_data(train_file, train_dir,
                      spad_config["use_albedo"],
                      spad_config["use_squared_falloff"],
                      sid_obj=SID(sid_bins, alpha, beta, offset)),
-        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_orig", "albedo", "albedo_orig",
+        ToTensorAll(keys=["rgb", "rgb_orig", "depth", "depth_orig", "rawdepth", "rawdepth_orig", "albedo", "albedo_orig",
                           "rawdepth_sid", "rawdepth_sid_index", "mask", "mask_orig", "spad"])
         ]
     )
 
     test_transform = transforms.Compose([
         AddDepthMask(min_depth, max_depth, "rawdepth"),
-        Save(["rgb", "mask", "albedo", "rawdepth"], "_orig"),
+        Save(["rgb", "depth", "mask", "albedo", "rawdepth"], "_orig"),
         Normalize(transform_mean, transform_var, key="rgb"),
-        ResizeAll((353, 257), keys=["rgb", "albedo", "rawdepth"]),
+        ResizeAll((353, 257), keys=["rgb", "albedo", "depth", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"),
         AddSIDDepth(sid_bins, alpha, beta, offset, "rawdepth"),
-        SimulateSpad("rawdepth", "albedo", "mask", "spad", min_depth, max_depth,
+        SimulateSpad("depth", "albedo", "mask", "spad", min_depth, max_depth,
                      spad_config["spad_bins"],
                      spad_config["photon_count"],
                      spad_config["dc_count"],
@@ -168,7 +168,7 @@ def load_data(train_file, train_dir,
                      spad_config["use_albedo"],
                      spad_config["use_squared_falloff"],
                      sid_obj=SID(sid_bins, alpha, beta, offset)),
-        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "rawdepth_orig", "albedo", "albedo_orig",
+        ToTensorAll(keys=["rgb", "rgb_orig", "depth", "depth_orig", "rawdepth", "rawdepth_orig", "albedo", "albedo_orig",
                           "rawdepth_sid", "rawdepth_sid_index", "mask", "mask_orig", "spad"])
         ]
     )
@@ -177,14 +177,14 @@ def load_data(train_file, train_dir,
     val = None
     if val_file is not None:
         val = NYUDepthv2Dataset(val_file, val_dir, transform=val_transform,
-                                file_types = ["rgb", "albedo", "rawdepth"],
+                                file_types = ["rgb", "albedo", "depth", "rawdepth"],
                                 min_depth=min_depth, max_depth=max_depth)
         val.rgb_mean, val.rgb_var = train.rgb_mean, train.rgb_var
         print("Loaded val dataset from {} with size {}.".format(val_file, len(val)))
     test = None
     if test_file is not None:
         test = NYUDepthv2Dataset(test_file, test_dir, transform=test_transform,
-                                 file_types = ["rgb", "albedo", "rawdepth"],
+                                 file_types = ["rgb", "albedo", "depth", "rawdepth"],
                                  min_depth=min_depth, max_depth=max_depth)
         test.rgb_mean, test.rgb_var = train.rgb_mean, train.rgb_var
         print("Loaded test dataset from {} with size {}.".format(test_file, len(test)))
