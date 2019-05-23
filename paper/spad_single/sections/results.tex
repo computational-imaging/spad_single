@@ -3,5 +3,31 @@
 hardware, calibration, etc.
 
 \subsection{Results} 
+% Table of quantitative results
+\begin{table}
+\begin{center}
+\begin{tabular}{cccc|ccc}
+  \toprule
+    & $\delta^1 \uparrow$ & $\delta^2\uparrow$ & $\delta^3 \uparrow$ & RMSE $\downarrow$ & rel & $log_{10}$ \\
+  \midrule
+    DORN & 1 & 2 & 3 & 4 & 5 & 6 \\ 
+  \bottomrule
+\end{tabular} 
+\end{center}
+\end{table}
 
+% Table of qualitative results
+\begin{table}
+  \begin{center}
+    \begin{tabular}{cccccc}
+      RGB & Albedo & Ground Truth & CNN & CNN + Raw Histogram & CNN + Albedo/Falloff \\
+      \includegraphics[width=4cm]{sections/figures/comparison_table/rgb_0.png} &
+      \includegraphics[width=4cm]{sections/figures/comparison_table/albedo_0.png} &
+      \includegraphics[width=4cm]{sections/figures/comparison_table/gt_0.png} &
+      \includegraphics[width=4cm]{sections/figures/comparison_table/cnn_0.png} &
+      \includegraphics[width=4cm]{sections/figures/comparison_table/cnn_rawhist_0.png} &
+      \includegraphics[width=4cm]{sections/figures/comparison_table/cnn_hist_0.png} \\ 
+    \end{tabular}
+  \end{center}
+\end{table}
 

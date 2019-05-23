@@ -187,17 +187,20 @@ class SimulateSpad:
         return sample
 
 
-def remove_dc_from_spad_batched(noisy_spad, bin_widths, lam=1e-2, eps=1e-5):
+def remove_dc_from_spad_batched(noisy_spad, bin_edges, lam=1e-2, eps=1e-5):
     """
     Batched, operates of batches of size N
     WARNING: Batching generally produces noisier answers.
     Works in numpy.
     :param noisy_spad: length NxC array with the raw spad histogram to denoise.
-    :param bin_widths: 1xC array with the bin widths in meters of the original bins.
+    :param bin_edges: (C+1) array with the edges of the bins
     """
     # print(noisy_spad.shape)
     # print(bin_widths.shape)
+
     N, C = noisy_spad.shape
+    assert bin_edges.shape == (C+1,)
+    bin_widths = bin_edges[1:] - bin_edges[:-1]
     # Equalize everything so DC appears uniform
     #     for i in range(N):
     #     spad = noisy_spad[i,:]
@@ -217,7 +220,7 @@ def remove_dc_from_spad_batched(noisy_spad, bin_widths, lam=1e-2, eps=1e-5):
     return signal_hist
 
 
-def remove_dc_from_spad(noisy_spad, bin_widths, lam=1e-2, eps=1e-5):
+def remove_dc_from_spad(noisy_spad, bin_edges, lam=1e-2, eps=1e-5):
     """
     Not batched, solves N convex problems where N is the batch size.
     For some reason, this gives better results.
@@ -230,8 +233,10 @@ def remove_dc_from_spad(noisy_spad, bin_widths, lam=1e-2, eps=1e-5):
     # print(noisy_spad.shape)
     # print(bin_widths.shape)
     assert len(noisy_spad.shape) == 2
-    assert len(bin_widths) == noisy_spad.shape[1]
     N, C = noisy_spad.shape
+    assert bin_edges.shape == (C+1,)
+    bin_widths = bin_edges[1:] - bin_edges[:-1]
+
     # Equalize everything so DC appears uniform
     denoised_spad = np.zeros_like(noisy_spad)
     for i in range(N):

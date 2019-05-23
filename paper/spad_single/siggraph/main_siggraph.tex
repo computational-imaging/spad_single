@@ -1,0 +1,63 @@
+%\documentclass[acmtog]{acmart}
+\documentclass[acmtog,anonymous,timestamp,review]{acmart} 
+
+\usepackage{booktabs} % For formal tables
+
+% this prevents an error from references that are exended over 2 pages
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\@combinedblfloats{\box\@outputbox}{\unvbox\@outputbox}{}{\errmessage{\noexpand patch failed}}
+\makeatother
+
+\newcommand{\note}[1]{\textcolor{red}{#1}}
+
+\acmPrice{15.00}
+
+% The next eight lines come directly from the completed rights form.
+% You MUST replace them with the lines specific to your accepted work.
+\setcopyright{acmlicensed}
+\acmJournal{TOG}
+\acmYear{2017}
+\acmVolume{36}
+\acmNumber{4}
+\acmArticle{1}
+\acmMonth{7}
+\acmDOI{http://dx.doi.org/10.1145/8888888.7777777}
+
+% Use the "authoryear" citation style, and make sure citations are in [square brackets].
+\citestyle{acmauthoryear}
+\setcitestyle{square}
+
+% A useful command for controlling the number of authors per row.
+% The default value of "authorsperrow" is 2.
+\settopmatter{authorsperrow=4}
+\input{mark_defs.tex}
+% end of preamble.
+
+\begin{document}
+
+% Title. 
+% If your title is long, consider \title[short title]{full title} - "short title" will be used for running heads.
+\title{Monocular Depth Estimation with Global Depth Hints}
+
+\section{Introduction}
+\input{sections/introduction}
+
+\section{Related Work}
+\input{sections/related}
+
+\section{The Method}
+\input{sections/method}
+
+\section{Hands and Faces}
+\input{sections/handsfaces}
+
+\section{Assessment}
+\input{sections/results}
+
+\section{Discussion}
+\input{sections/discussion}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+\end{document}

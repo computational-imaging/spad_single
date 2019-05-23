@@ -2,6 +2,8 @@ import torch
 import numpy as np
 from pdb import set_trace
 
+mse = torch.nn.MSELoss()
+
 def get_depth_index(model, input_, device):
     rgb = input_["rgb"].to(device)
     with torch.no_grad():
@@ -13,8 +15,10 @@ def get_depth_index(model, input_, device):
 
 def img_to_hist(x, inv_squared_depths=None, albedo=None):
     """
-    Assumes each pixel of x is normalized to sum to 1.
-    x has shape N x C x H x W.
+    Converts image of per-pixel histograms to a single histogram for the whole image.
+    :param x: N x C x H x W tensor of per-pixel histograms
+    :param inv_squared_depths: N x C x 1 x 1
+    :param albedo: N x 1 x H x W
     """
     weights = torch.ones_like(x)
     if albedo is not None:
@@ -44,8 +48,8 @@ def threshold_and_normalize_pixels(x, eps=1e-2):
 
 def kernel_density_estimation(x, sigma, n_bins, eps=1e-2):
     """
-    Given x, a batch of 2D depth maps, (N x 1 x W x H),
-    return a tensor of size N x {n_bins} x W x H where each pixel has been converted into
+    Given x, a batch of 2D depth maps, (N x 1 x H x W),
+    return a tensor of size N x {n_bins} x H x W where each pixel has been converted into
     a histogram using a gaussian kernel with standard deviation sigma.
     """
     N, _, W, H = x.shape
@@ -112,7 +116,9 @@ def optimize_depth_map(x_index_init, sigma, n_bins,
                        kde_eps=1e-5,
                        sinkhorn_eps=1e-2,
                        inv_squared_depths=None,
-                       albedo=None):
+                       albedo=None,
+                       regularizer=None):
+    x0 = x_index_init.clone().detach().float().requires_grad_(False)
     x = x_index_init.clone().detach().float().requires_grad_(True)
     # print(x)
     for i in range(num_sgd_iters):
@@ -132,6 +138,8 @@ def optimize_depth_map(x_index_init, sigma, n_bins,
         # print(hist_loss)
         # entropy_loss = torch.sum(entropy(x_img, dim=1))
         loss = hist_loss
+        if regularizer is not None:
+            loss = loss + regularizer(x, x0)
         loss.backward()
         with torch.no_grad():
             if torch.isnan(x.grad).any().item():

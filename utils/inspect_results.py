@@ -28,6 +28,20 @@ def show_hist(hist, min_depth, max_depth, title):
     plt.show()
 
 
+def show_hist_as_plot(t, title):
+    """
+    For displaying histograms as plots (quick and dirty)
+    :param t: the histogram to show
+    :param title: title of the plot
+    :return: None
+    """
+    plt.figure()
+    plt.plot(t.squeeze().clone().detach().cpu().numpy())
+    plt.title(title)
+    plt.draw()
+    plt.pause(0.001)
+
+
 def get_loss_diffs(nohints_losses, hints_losses):
     loss_names = set()
     loss_diffs = defaultdict(dict)
