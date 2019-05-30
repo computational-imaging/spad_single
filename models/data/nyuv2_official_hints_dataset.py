@@ -14,7 +14,7 @@ from models.data.nyuv2_official_nohints_dataset import NYUDepthv2Dataset
 nyuv2_hints_ingredient = Experiment('data_config')
 
 
-@nyuv2_nohints_sid_ingredient.config
+@nyuv2 hints_ingredient.config
 def cfg():
     data_name = "nyu_depth_v2"
     # Paths should be specified relative to the train script, not this file.
@@ -30,28 +30,8 @@ def cfg():
     # Indices of images to exclude from the dataset.
     # Set relative to the directory from which the dataset is being loaded.
     blacklist_file = "blacklist.txt"
-
-    #
     hist_bins = 1024
     min_depth = 0. # Defaults for NYUv2
-    max_depth = 10.
-
-    sid_bins = 68   # Number of bins (network outputs 2x this number of channels)
-    bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
-    dorn_decode = np.exp((bin_edges - 1) / 25 - 0.36)
-    d0 = dorn_decode[0]
-    d1 = dorn_decode[1]
-    # Algebra stuff to make the depth bins work out exactly like in the
-    # original DORN code.
-    alpha = (2 * d0 ** 2) / (d1 + d0)
-    beta = alpha * np.exp(sid_bins * np.log(2 * d0 / alpha - 1))
-    del bin_edges, dorn_decode, d0, d1
-    offset = 0.
-
-    # Complex procedure to calculate min and max depths
-    # to conform to DORN standards
-    # i.e. make it so that doing exp(i/25 - 0.36) is the right way to decode depth from a bin value i.
-    min_depth = 0.
     max_depth = 10.
     use_dorn_normalization = True # Sets specific normalization if using DORN network.
                                   # If False, defaults to using the empirical mean and variance from train set.
@@ -60,12 +40,11 @@ def cfg():
 #############
 # Load data #
 #############
-@nyuv2_nohints_sid_ingredient.capture
+@nyuv2_hints_ingredient.capture
 def load_data(train_file, train_dir,
               val_file, val_dir,
               test_file, test_dir,
-              min_depth, max_depth, use_dorn_normalization,
-              sid_bins, alpha, beta, offset,
+              hist_bins, min_depth, max_depth, use_dorn_normalization,
               blacklist_file):
     """Generates training and validation datasets from
     text files and directories. Sets up datasets with transforms.py.

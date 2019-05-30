@@ -82,7 +82,7 @@ def delta(prediction, target, mask, threshold):
 
 def mse(prediction, target, mask):
     """
-    Return the RMSE of prediction and target
+    Return the MSE of prediction and target
     """
     diff = prediction - target
     squares = (diff[mask > 0]).pow(2)

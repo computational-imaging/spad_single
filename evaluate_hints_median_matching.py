@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 import os
 import torch
-from utils.train_utils import init_randomness
-from utils.eval_utils import evaluate_model_on_dataset
+import json
+from torch.utils.data import DataLoader
+from utils.train_utils import init_randomness, worker_init_randomness
+from utils.eval_utils import evaluate_model_on_dataset, evaluate_model_on_data_entry
 from models.core.checkpoint import load_checkpoint, safe_makedir
 from models import make_model
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
+from time import perf_counter
+
 # Dataset
 from models.data.nyuv2_official_nohints_sid_dataset import nyuv2_nohints_sid_ingredient, load_data
 
-ex = Experiment('eval_nohints_sid', ingredients=[nyuv2_nohints_sid_ingredient])
+ex = Experiment('eval_median_matching', ingredients=[nyuv2_nohints_sid_ingredient])
 
 
 # Tensorboardx
@@ -20,7 +24,7 @@ ex = Experiment('eval_nohints_sid', ingredients=[nyuv2_nohints_sid_ingredient])
 @ex.config
 def cfg(data_config):
     model_config = {                            # Load pretrained model for testing
-        "model_name": "DORN_nyu_nohints",
+        "model_name": "DORN_median_matching",
         "model_params": {
             "in_channels": 3,
             "in_height": 257,
@@ -37,17 +41,15 @@ def cfg(data_config):
         },
         "model_state_dict_fn": None
     }
-    ckpt_file = None                            # Keep as None
+    ckpt_file = None # Median matching eval
     dataset_type = "val"
     save_outputs = True
     seed = 95290421
     small_run = 0
-
-    # hyperparams = ["sgd_iters", "sinkhorn_iters", "sigma", "lam", "kde_eps", "sinkhorn_eps"]
-    pdict = model_config["model_params"]
-    del pdict
+    entry = None
 
     # print(data_config.keys())
+
     output_dir = os.path.join("results",
                               data_config["data_name"],    # e.g. nyu_depth_v2
                               "{}_{}".format(dataset_type, small_run),
@@ -55,6 +57,7 @@ def cfg(data_config):
 
     safe_makedir(output_dir)
     ex.observers.append(FileStorageObserver.create(os.path.join(output_dir, "runs")))
+    ##
 
     cuda_device = "0"                       # The gpu index to run on. Should be a string
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
@@ -68,7 +71,6 @@ def cfg(data_config):
 
         del model_update, _  # So sacred doesn't collect them.
 
-
 @ex.automain
 def main(model_config,
          dataset_type,
@@ -77,12 +79,14 @@ def main(model_config,
          data_config,
          seed,
          small_run,
+         entry,
          device):
     # Load the model
     model = make_model(**model_config)
-    model.eval()
     model.to(device)
+    model.eval()
     # model.sid_obj.to(device)
+    print(model)
 
     # Load the data
     _, val, test = load_data()
@@ -92,6 +96,10 @@ def main(model_config,
 
     print("Evaluating the model on {} ({})".format(data_config["data_name"],
                                                    dataset_type))
-    evaluate_model_on_dataset(model, dataset, small_run, device, save_outputs, output_dir)
-
-
+    if entry is None:
+        print("Evaluating the model on {} ({})".format(data_config["data_name"],
+                                                       dataset_type))
+        evaluate_model_on_dataset(model, dataset, small_run, device, save_outputs, output_dir)
+    else:
+        print("Evaluating {}".format(entry))
+        evaluate_model_on_data_entry(model, dataset, entry, device)

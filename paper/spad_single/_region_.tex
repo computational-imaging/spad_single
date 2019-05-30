@@ -1,4 +1,4 @@
-%\documentclass[acmtog]{acmart}
+\message{ !name(main.tex)}%\documentclass[acmtog]{acmart}
 \documentclass[acmtog,anonymous,timestamp,review]{acmart} 
 
 \usepackage{booktabs} % For formal tables
@@ -36,38 +36,12 @@
 
 \begin{document}
 
+\message{ !name(main.tex) !offset(-3) }
+
+
 % Title. 
 % If your title is long, consider \title[short title]{full title} - "short title" will be used for running heads.
 \title{Monocular Depth Estimation with Global Depth Hints}
-
-% Authors.
-\author{John DeJohnette}
-\affiliation{%
-  \department{Department of Computer Science and Engineering}
-  \institution{University of Minnesota}}
-\email{johnd@umn.edu}
-
-% This command defines the author string for running heads.
-\renewcommand{\shortauthors}{DeJohnette, Rowland-Smith, Badeeri, and Foyt}
-
-% abstract
-\begin{abstract}
-abstract
-\end{abstract}
-
-%keywords
-\keywords{computational photography, single-photon imaging}
-
-% A "teaser" figure, centered below the title and authors and above the body of the work.
-%\begin{teaserfigure}
-  %\centering
-  %\includegraphics[width=0.7\textwidth]{figures/teaser_draft.jpg}
-  %\caption{caption}
-	%\label{fig:teaser}
-%\end{teaserfigure}
-
-% Processes all of the front-end information and starts the body of the work.
-\maketitle
 
 \section{Introduction}
 \input{sections/introduction}
@@ -90,3 +64,4 @@ abstract
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{references}
 \end{document}
+\message{ !name(main.tex) !offset(-67) }
