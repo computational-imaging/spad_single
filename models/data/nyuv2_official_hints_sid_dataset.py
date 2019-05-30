@@ -8,7 +8,7 @@ from models.data.utils.transforms import (Save, ResizeAll, RandomHorizontalFlipA
                                           AddDepthMask, ToTensorAll)
 from models.data.utils.sid_utils import AddSIDDepth, SID
 from models.data.nyuv2_official_nohints_dataset import NYUDepthv2Dataset
-from models.data.utils.spad_utils import spad_ingredient, SimulateSpad
+from models.data.utils.spad_utils import spad_ingredient, SimulateSpadIntensity
 
 
 from sacred import Experiment
@@ -120,7 +120,7 @@ def load_data(train_file, train_dir,
         RandomHorizontalFlipAll(flip_prob=0.5, keys=["rgb", "albedo", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"), # "mask"
         AddSIDDepth(sid_bins, alpha, beta, offset, "rawdepth"), # "rawdepth_sid"  "rawdepth_sid_index"
-        SimulateSpad("rawdepth", "albedo", "mask", "spad", min_depth, max_depth,
+        SimulateSpadIntensity("rawdepth", "rgb", "mask", "spad", min_depth, max_depth,
                      spad_config["spad_bins"],
                      spad_config["photon_count"],
                      spad_config["dc_count"],
@@ -140,7 +140,7 @@ def load_data(train_file, train_dir,
         ResizeAll((353, 257), keys=["rgb", "albedo", "depth", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"),
         AddSIDDepth(sid_bins, alpha, beta, offset, "rawdepth"),
-        SimulateSpad("depth", "albedo", "mask", "spad", min_depth, max_depth,
+        SimulateSpadIntensity("depth", "rgb", "mask", "spad", min_depth, max_depth,
                      spad_config["spad_bins"],
                      spad_config["photon_count"],
                      spad_config["dc_count"],
@@ -160,7 +160,7 @@ def load_data(train_file, train_dir,
         ResizeAll((353, 257), keys=["rgb", "albedo", "depth", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"),
         AddSIDDepth(sid_bins, alpha, beta, offset, "rawdepth"),
-        SimulateSpad("depth", "albedo", "mask", "spad", min_depth, max_depth,
+        SimulateSpadIntensity("depth", "rgb", "mask", "spad", min_depth, max_depth,
                      spad_config["spad_bins"],
                      spad_config["photon_count"],
                      spad_config["dc_count"],
