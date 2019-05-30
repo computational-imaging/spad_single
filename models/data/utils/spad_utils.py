@@ -25,7 +25,21 @@ def rawhist():
     use_albedo = False
     use_squared_falloff = False
 
-def simulate_spad(depth_truth, albedo, mask, min_depth, max_depth,
+
+def bgr2gray(bgr):
+    """
+    Numpy / Torch version of cv2.cvtColor(image, cv2.COLOR_BGR2GRAY).
+    :param bgr: tensor with channels in (B, G, R) order
+    :return: tensor with grayscale image
+    """
+    if len(bgr.shape) == 4:
+        # Shape is N x 3 x H x W
+        return 0.2989 * bgr[:,2:3,:,:] + 0.5870 * bgr[:,1:2,:,:] + 0.1140 * bgr[:,0:1,:,:]
+    # Otherwise, shape is H x W x 3
+    return 0.2989 * bgr[:,:,2:3] + 0.5870 * bgr[:,:,1:2] + 0.1140 * bgr[:,:,0:1]
+
+
+def simulate_spad(depth_truth, intensity, mask, min_depth, max_depth,
                   spad_bins, photon_count, dc_count, fwhm_ps,
                   use_albedo, use_squared_falloff):
     """
@@ -46,7 +60,7 @@ def simulate_spad(depth_truth, albedo, mask, min_depth, max_depth,
     # Only use the green channel to simulate
     weights = mask
     if use_albedo:
-        weights = weights * albedo[..., 1]
+        weights = weights * intensity
     if use_squared_falloff:
         weights = weights / (depth_truth ** 2 + 1e-6)
     # weights = (albedo[..., 1] / (depth_truth ** 2 + 1e-6)) * mask
@@ -173,17 +187,57 @@ class SimulateSpad:
         self.use_albedo = use_albedo
         self.use_squared_falloff = use_squared_falloff
         self.simulate_spad_fn = \
-            lambda d, a, m: simulate_spad(d, a, m, min_depth, max_depth, spad_bins, photon_count, dc_count,
+            lambda d, i, m: simulate_spad(d, i, m, min_depth, max_depth, spad_bins, photon_count, dc_count,
                                           fwhm_ps, use_albedo, use_squared_falloff)
 
     def __call__(self, sample):
         spad_counts = self.simulate_spad_fn(sample[self.depth_truth_key],
-                                            sample[self.albedo_key],
+                                            sample[self.albedo_key][..., 1],
                                             sample[self.mask_key])
         if self.sid_obj is not None:
             spad_counts = rescale_bins(spad_counts, self.min_depth, self.max_depth, self.sid_obj)
         sample[self.spad_key] = spad_counts/np.sum(spad_counts)
+        return sample
 
+
+class SimulateSpadIntensity:
+    def __init__(self, depth_truth_key, rgb_key, mask_key, spad_key, min_depth, max_depth,
+                 spad_bins, photon_count, dc_count, fwhm_ps, use_albedo, use_squared_falloff,
+                 sid_obj=None):
+        """
+
+        :param depth_truth_key: Key for ground truth depth in sample.
+        :param mask_key: Key for mask in sample.
+        :param spad_key: Output key for spad counts.
+        :param spad_bins: As in simulate_spad
+        :param photon_count: As in simulate_spad
+        :param dc_count: As in simulate_spad
+        :param fwhm_ps: As in simulate_spad
+        :param min_depth: As in simulate_spad
+        :param max_depth: As in simulate_spad
+        :param sid_obj: If not None, rescales histogram using the sid object.
+        """
+        self.depth_truth_key = depth_truth_key
+        self.rgb_key = rgb_key
+        self.mask_key = mask_key
+        self.spad_key = spad_key
+        self.min_depth = min_depth
+        self.max_depth = max_depth
+        self.sid_obj = sid_obj
+        self.use_albedo = use_albedo
+        self.use_squared_falloff = use_squared_falloff
+        self.simulate_spad_fn = \
+            lambda d, i, m: simulate_spad(d, i, m, min_depth, max_depth, spad_bins, photon_count, dc_count,
+                                          fwhm_ps, use_albedo, use_squared_falloff)
+
+    def __call__(self, sample):
+        print(sample[self.rgb_key].shape)
+        spad_counts = self.simulate_spad_fn(sample[self.depth_truth_key],
+                                            bgr2gray(sample[self.rgb_key]).squeeze(-1),
+                                            sample[self.mask_key])
+        if self.sid_obj is not None:
+            spad_counts = rescale_bins(spad_counts, self.min_depth, self.max_depth, self.sid_obj)
+        sample[self.spad_key] = spad_counts/np.sum(spad_counts)
         return sample
 
 
