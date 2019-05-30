@@ -18,7 +18,6 @@
     "sections/introduction"
     "sections/related"
     "sections/method"
-    "sections/handsfaces"
     "sections/results"
     "sections/discussion"
     "article"
@@ -31,6 +30,9 @@
     "amssymb"
     "booktabs"
     "subfig"
+    "array"
+    "tabularx"
+    "bm"
     "hyperref")
    (TeX-add-symbols
     "cvprPaperID"

@@ -23,7 +23,8 @@ def load_dataset_from_config(config, load_hints, load_nohints):
     """
     data_config = config["data_config"]
     # Future: Check data_name to choose the right dataset
-    del data_config["data_name"]
+    if "data_name" in data_config:
+        del data_config["data_name"]
     spad_config = None
     if "spad_config" in config:
         # With hints (probably)

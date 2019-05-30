@@ -13,28 +13,35 @@ def get_depth_index(model, input_, device):
     return depth_index
 
 
-def img_to_hist(x, inv_squared_depths=None, albedo=None):
+def spad_forward(x_index, mask, sigma, n_bins, kde_eps=1e-2,
+                 inv_squared_depths=None, scaling=None):
     """
-    Converts image of per-pixel histograms to a single histogram for the whole image.
-    :param x: N x C x H x W tensor of per-pixel histograms
+    Converts image of per-pixel depth indices to a single histogram for the whole image.
+    :param x_index: N x 1 x H x W tensor of per-pixel depth indices in [0, n_bins]
+    :param mask: N x 1 x H x W tensor of valid depth pixels
+    :param sigma: width parameter for kernel density estimation
+    :param n_bins: Number of bin indices
+    :param kde_eps: Epsilon used for KDE to prevent 0 values in histogram.
     :param inv_squared_depths: N x C x 1 x 1
-    :param albedo: N x 1 x H x W
+    :param scaling: N x 1 x H x W
+    :returns x_hist: N x n_bins histograms
     """
+    per_pixel_hists = kernel_density_estimation(x_index, sigma, n_bins, eps=kde_eps)
+    x = per_pixel_hists * mask
     weights = torch.ones_like(x)
-    if albedo is not None:
-        assert albedo.shape[0] == x.shape[0]
-        assert albedo.shape[1] == 1
-        assert albedo.shape[-2:] == x.shape[-2:]
-        weights = weights * albedo
+    if scaling is not None:
+        assert scaling.shape[0] == x.shape[0]
+        assert scaling.shape[1] == 1
+        assert scaling.shape[-2:] == x.shape[-2:]
+        weights = weights * scaling
     if inv_squared_depths is not None:
         assert inv_squared_depths.shape[:2] == x.shape[:2] and inv_squared_depths.shape[-2:] == (1,1)
         weights = weights * inv_squared_depths
 #     x_hist = torch.sum(x, dim=(2, 3), keepdim=True) / (x.shape[2] * x.shape[3])
     x_hist = torch.sum(x*weights, dim=(2,3), keepdim=True)
-    x_hist = x_hist / torch.sum(x_hist)
+    x_hist = x_hist / torch.sum(x_hist, dim=1, keepdim=True)
 
-    return x_hist
-
+    return x_hist.squeeze(-1).squeeze(-1)
 
 def threshold_and_normalize_pixels(x, eps=1e-2):
     """
@@ -58,6 +65,48 @@ def kernel_density_estimation(x, sigma, n_bins, eps=1e-2):
     y = torch.exp((-1./sigma**2)*(x - ind)**2)
     y = threshold_and_normalize_pixels(y, eps=eps)
     return y
+
+
+def sinkhorn_dist_single(cost_mat, lam, h1, h2, num_iters=100, eps=1e-4):
+    """
+    Computes N sinkhorn distances, one for each histogram of length C.
+    :param cost_mat: C x C
+    :param lam: Controls strength of entropy regularization
+    :param h1: N x C
+    :param h2: N x C
+    :param num_iters: Number of sinkhorn iterations to run
+    :param eps: Algorithm stops when difference between sinkhorn dist is less than this
+                for two consecutive iterations.
+    :return: sinkhorn_dist, transport_matrix
+    """
+    assert h1.shape == h2.shape and len(h1.shape) == 2
+    assert cost_mat.shape[0] == h1.shape[1] and cost_mat.shape[0] == cost_mat.shape[1]
+
+    K = torch.exp(-lam*cost_mat) # C x C
+    K_T = K.transpose(0,1)
+    r = h1.transpose(0,1) # C x N
+    c = h2.transpose(0,1) # C x N
+    x = torch.ones_like(r)/r.shape[0] # C x N
+    for i in range(num_iters):
+        temp1 = K_T.mm(1./x) # C x N
+        temp2 = c*(1./temp1)
+        temp3 = K.mm(temp2) # C x N
+        x_temp = (1./r)*temp3
+        if torch.sum(torch.abs(x - x_temp)) < eps:
+            break
+        if torch.isnan(x_temp).any().item():
+            print("iteration {}".format(i))
+            print(x)
+            break
+        x = x_temp
+    u = 1./x # C x N
+    v = c * (1./K_T.mm(u)) # C x N
+
+    u_temp = u.transpose(0,1).unsqueeze(-1) # N x C x 1
+    v_temp = v.transpose(0,1).unsqueeze(1) # N x 1 x C
+    K_temp = K.unsqueeze(0) # 1 x C x  C
+    P = u_temp * K_temp * v_temp # N x C x C
+    return torch.sum(u*(K*cost_mat).mm(v)), P
 
 
 def sinkhorn_dist(cost_mat, lam, hist_pred, gt_hist, num_iters=100, eps=1e-1):
@@ -111,30 +160,56 @@ def entropy(p, dim = -1, keepdim=False):
 
 
 def optimize_depth_map(x_index_init, sigma, n_bins,
-                       cost_mat, lam, spad_hist,
+                       cost_mat, lam, gt_hist,
                        lr, num_sgd_iters, num_sinkhorn_iters,
                        kde_eps=1e-5,
                        sinkhorn_eps=1e-2,
                        inv_squared_depths=None,
-                       albedo=None,
+                       scaling=None,
                        regularizer=None):
+    """
+
+    :param x_index_init:
+    :param mask:
+    :param sigma:
+    :param n_bins:
+    :param cost_mat:
+    :param lam:
+    :param spad_hist:
+    :param lr:
+    :param num_sgd_iters:
+    :param num_sinkhorn_iters:
+    :param kde_eps:
+    :param sinkhorn_eps:
+    :param inv_squared_depths:
+    :param scaling:
+    :param regularizer:
+    :return:
+    """
+    print("lr: ", lr)
+    print("sigma: ", sigma)
+    print("regularizer: ", regularizer)
     x0 = x_index_init.clone().detach().float().requires_grad_(False)
     x = x_index_init.clone().detach().float().requires_grad_(True)
     # print(x)
     for i in range(num_sgd_iters):
-        # with torch.autograd.detect_anomaly():
-
-        # Per-pixel depth index to per-pixel histogram
-        x_img = kernel_density_estimation(x, sigma, n_bins, eps=kde_eps)
-
         # per-pixel histogram to full-image histogram
-        x_hist = img_to_hist(x_img, inv_squared_depths=inv_squared_depths, albedo=albedo)
+        x_hist = spad_forward(x, torch.ones_like(x), sigma, n_bins, kde_eps=kde_eps,
+                              inv_squared_depths=inv_squared_depths, scaling=scaling)
         # set_trace()
         hist_loss, P = sinkhorn_dist(cost_mat, lam,
-                                     x_hist, spad_hist,
+                                     x_hist, gt_hist,
                                      num_iters=num_sinkhorn_iters,
                                      eps=sinkhorn_eps)
 
+
+
+        if not i % 10:
+            print("sinkhorn", hist_loss.item())
+            # TESTING: Print Wasserstein Loss
+            print(P.shape)
+            print(cost_mat.shape)
+            print(torch.sum(P * cost_mat))
         # print(hist_loss)
         # entropy_loss = torch.sum(entropy(x_img, dim=1))
         loss = hist_loss
@@ -149,8 +224,151 @@ def optimize_depth_map(x_index_init, sigma, n_bins,
             x -= lr*x.grad
             if torch.sum(torch.abs(lr*x.grad)) < sinkhorn_eps: # Reuse sinkhorn eps for sgd convergence.
                 x = torch.clamp(x, min=0., max=n_bins).requires_grad_(True)
-                return x, x_img, x_hist
+                return x, x_hist
             x.grad.zero_()
             x = torch.clamp(x, min=0., max=n_bins).requires_grad_(True)
         # print("warning: sgd exited before convergence.")
-    return x, x_img, x_hist
+    return x, x_hist
+
+
+def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
+                              cost_mat, lam, gt_hist,
+                              lr, num_sgd_iters, num_sinkhorn_iters,
+                              kde_eps=1e-5,
+                              sinkhorn_eps=1e-2,
+                              inv_squared_depths=None,
+                              scaling=None):
+    """
+
+    :param x_index_init: Initial depth map. Each pixel is an index in [0, n_bins-1]. N x 1 x H x W
+    :param mask: Mask off pixels with invalid depth. N x 1 x H x W
+    :param sigma: Width parameter for Kernel Density Estimation
+    :param n_bins: Number of bins for each histogram.
+    :param cost_mat: Cost Matrix for sinkhorn computation. n_bins x n_bins
+    :param lam: Controls strength of entropy regularization. Higher = closer to wasserstein.
+    :param gt_hist: The histogram we are trying to match x_index_init to.
+    :param lr: Learning rate for gradient descent.
+    :param num_sgd_iters: Maximum number of gradient descent steps to take.
+    :param num_sinkhorn_iters: Maximum number of sinkhorn iteration steps to take.
+    :param kde_eps: Epsilon used for KDE to prevent 0 values in histogram.
+    :param sinkhorn_eps: Epsilon used to control stopping criterion for the sinkhorn iterations.
+    :param inv_squared_depths: 1/depth^2 for each bin in [0, n_bins-1]
+    :param scaling: Per-pixel scaling image.
+    :return:
+    """
+    print("lr: ", lr)
+    print("sigma: ", sigma)
+    x_index = x_index_init.clone().detach().float().requires_grad_(True)
+    x_best = x_index_init.clone().detach().float().requires_grad_(False)
+    best_loss = float('inf')
+    for i in range(num_sgd_iters):
+        x_hist = spad_forward(x_index, mask, sigma, n_bins, kde_eps=kde_eps,
+                              inv_squared_depths=inv_squared_depths,
+                              scaling=scaling)
+        hist_loss, P = sinkhorn_dist_single(cost_mat, lam,
+                                            x_hist, gt_hist,
+                                            num_iters=num_sinkhorn_iters,
+                                            eps=sinkhorn_eps)
+
+        if not i % 10:
+            print("sinkhorn", hist_loss.item())
+            print("\tbest so far", best_loss)
+        loss = hist_loss
+        loss.backward()
+        with torch.no_grad():
+            if loss.item() < best_loss:
+                best_loss = loss.item()
+                x_best = x_index.clone().detach().float().requires_grad_(False)
+            # Do gradient descent step
+            if torch.isnan(x_index.grad).any().item():
+                print("nans detected in x.grad")
+                break
+            x_index -= lr*x_index.grad
+            # if torch.sum(torch.abs(lr*x_index.grad)) < sinkhorn_eps: # Reuse sinkhorn eps for sgd convergence.
+            if loss.item() < sinkhorn_eps:
+                x_index = torch.clamp(x_index, min=0., max=n_bins).requires_grad_(True)
+                print("early stopping")
+                return x_best, x_hist
+            x_index.grad.zero_()
+            x_index = torch.clamp(x_index, min=0., max=n_bins).requires_grad_(True)
+        # print("warning: sgd exited before convergence.")
+    return x_best, x_hist
+
+
+
+
+
+
+if __name__ == "__main__":
+    gaussian = lambda n, mu, sigma: np.exp(-1. / (2 * sigma ^ 2) * (np.linspace(0, n, n) - mu) ** 2)  # Ground truth depth
+    eps = 1e-3
+    lam = 1e1
+    n = 68  # Number of entries in the histogram
+    sigma = 6  # standard dev. of gaussian, in units of bins
+    mu_y = 20  # mean, in the interval [0,n]
+    y = gaussian(n, mu_y, sigma)
+    y[y < eps] = eps
+    y = y / np.sum(y)
+
+    # plt.figure()
+    # plt.plot(y, label="target")
+    # plt.title("Histograms")
+
+    mu_x = 40
+    x = gaussian(n, mu_x, sigma)
+    x[x < eps] = eps
+    x = x / np.sum(x)
+    # plt.plot(x, label="initial")
+    # plt.legend()
+
+    C = np.array([[(i - j)**2 for j in range(n)] for i in range(n)])/1000.
+
+
+    ### TEST SINKHORN DISTANCE ###
+    # Switch everything to torch and go
+    # h1 = torch.from_numpy(x).unsqueeze(0)
+    # h2 = torch.from_numpy(y).unsqueeze(0)
+    # cost_mat = torch.from_numpy(C)
+    # sinkhorn_dist_1, P_1 = sinkhorn_dist_single(cost_mat, lam, h1, h2)
+    #
+    # print("single", sinkhorn_dist_1, P_1)
+    #
+    # h1_spatial = h1.unsqueeze(-1).unsqueeze(-1)
+    # h2_spatial = h2.unsqueeze(-1).unsqueeze(-1)
+    # sinkhorn_dist_2, P_2 = sinkhorn_dist(cost_mat, lam, h1_spatial, h2_spatial)
+    #
+    # print("spatial", sinkhorn_dist_2, P_2)
+    ### DONE ###
+
+    ### TEST ON SMALL IMAGE ###
+    kde_eps=1e-2
+    n = 10
+    C = np.array([[(i - j)**2 for j in range(n)] for i in range(n)])
+    cost_mat = torch.from_numpy(C).float()
+    x_index_init = torch.tensor([[3, 7, 9],
+                                 [3, 9, 8],
+                                 [3, 1, 1]]).unsqueeze(0).unsqueeze(0).float()
+    init_hist = spad_forward(x_index_init, torch.ones_like(x_index_init), sigma=0.5, n_bins=n, kde_eps=kde_eps)
+
+    x_truth = torch.tensor([[4, 6, 9],
+                            [3, 8, 9],
+                            [2, 2, 0]]).unsqueeze(0).unsqueeze(0).float()
+    gt_hist = spad_forward(x_truth, torch.ones_like(x_truth), sigma=0.5, n_bins=n, kde_eps=kde_eps)
+
+    # Add noise to enable perfect matching
+    x_index_init = torch.clamp(x_index_init + 0.01*torch.randn_like(x_index_init), min=0., max=n)
+    print("init", x_index_init)
+    print(init_hist)
+    x_index_pred, x_hist = optimize_depth_map_masked(x_index_init, torch.ones_like(x_index_init),
+                                                     sigma=0.5, n_bins=10,
+                                                     cost_mat=cost_mat, lam=1e1, gt_hist=gt_hist,
+                                                     lr=1e0, num_sgd_iters=100, num_sinkhorn_iters=40,
+                                                     kde_eps=1e-2, sinkhorn_eps=1e-5)
+    print("gt", x_truth)
+    print("gt_hist", gt_hist)
+    print("pred", torch.round(x_index_pred))
+    print("pred hist", x_hist)
+    ### DONE ###
+
+
+

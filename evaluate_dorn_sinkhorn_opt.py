@@ -30,7 +30,7 @@ def cfg(data_config, spad_config):
             "sinkhorn_eps": 1e-4,
             "dc_eps": 1e-5,
             "remove_dc": spad_config["dc_count"] > 0.,
-            "use_albedo": spad_config["use_albedo"],
+            "use_scaling": spad_config["use_albedo"],
             "use_squared_falloff": spad_config["use_squared_falloff"],
             "lr": 1e3,
             "hints_len": 68,

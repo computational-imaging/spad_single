@@ -15,13 +15,17 @@ from models.data.utils.sid_utils import SIDTorch
 from models.loss import delta, mse, rmse, rel_abs_diff, rel_sqr_diff, log10
 
 
-class DORN_nyu_nohints(Model):
+class DenseDepth(Model):
     """
-    Deep Ordinal Regression Network
+    DenseDepth Network
 
-    Ported from caffe.
+    https://github.com/ialhashim/DenseDepth
 
     Meant to be run as a part of a larger network.
+
+    Only works in eval mode.
+
+    Thin wrapper around the Keras implementation.
     """
     def __init__(self, in_channels=3, in_height=257, in_width=353,
                  sid_bins=68, offset=0.,
