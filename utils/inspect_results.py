@@ -1,6 +1,33 @@
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
+import json
+
+
+class Results:
+    """
+    For managing results of evaluation runs on various datasets.
+
+    Really a boilerplate class that abstracts away the idea of a directory with lots
+    of results files in it, and an index that tells you the unique ids of all the files
+    in the results directory.
+    """
+    def __init__(self, results_dir, index_file):
+        """
+
+        :param results_dir: A directory path to the root directory of the results files.
+        :param index_file: A file containing a (json-serialized) iterable of entries.
+        """
+        self.results_dir = results_dir
+        self.index_file = index_file
+
+        # Load the index
+        with open(index_file) as f:
+            self.entries = json.load(f)
+
+    def load_
+
+
 
 def show(img):
     """Displays a 3-channel RGB image or a 1-channel Grayscale image.
@@ -14,16 +41,32 @@ def show(img):
     plt.imshow(np.transpose(npimg, (1, 2, 0)), interpolation='nearest')
 
 
-def show_hist(hist, min_depth, max_depth):
+def show_hist(hist, min_depth, max_depth, title):
     """Input should be a 1d numpy array with the value for each
     bin specified.
 
     In particular, this does NOT compute a histogram on hist before displaying: it assumes
     that bar-graphing hist is what will produce the histogram.
     """
-    fig = plt.figure(figsize=(5, 2))
+    fig = plt.figure(figsize=(10, 4))
     ax = fig.add_subplot(111)
+    plt.title(title)
     ax.bar(np.linspace(min_depth, max_depth, len(hist)), hist, width=(max_depth - min_depth) / len(hist))
+    plt.show()
+
+
+def show_hist_as_plot(t, title):
+    """
+    For displaying histograms as plots (quick and dirty)
+    :param t: the histogram to show
+    :param title: title of the plot
+    :return: None
+    """
+    plt.figure()
+    plt.plot(t.squeeze().clone().detach().cpu().numpy())
+    plt.title(title)
+    plt.draw()
+    plt.pause(0.001)
 
 
 def get_loss_diffs(nohints_losses, hints_losses):
@@ -40,6 +83,7 @@ def get_loss_diffs(nohints_losses, hints_losses):
 
 
 def find_max_differential(loss_diffs, loss_names):
+    """Sorts smallest to largest"""
     sorted_loss_diffs = defaultdict(dict)
     for loss_name in loss_names:
         sorted_loss_diffs[loss_name] = sorted(loss_diffs.items(), key=lambda x: x[1][loss_name])

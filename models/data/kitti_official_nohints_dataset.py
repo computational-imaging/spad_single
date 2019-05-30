@@ -205,19 +205,19 @@ def load_data(train_file, train_dir,
         transform_var = train.rgb_var
 
     train_transform = transforms.Compose([
-        ResizeAll((353, 257), keys=["rgb", "depth", "rawdepth"]),
+        ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"), # introduces "mask"
-        RandomHorizontalFlipAll(flip_prob=0.5, keys=["rgb", "depth", "rawdepth", "mask"]),
+        RandomHorizontalFlipAll(flip_prob=0.5, keys=["rgb", "rawdepth", "mask"]),
         Normalize(transform_mean, transform_var, key="rgb"), # introduces "rgb_orig"
         ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "mask"])
         ]
     )
 
     val_transform = transforms.Compose([
-        ResizeAll((353, 257), keys=["rgb", "depth", "rawdepth"]),
+        ResizeAll((353, 257), keys=["rgb", "rawdepth"]),
         AddDepthMask(min_depth, max_depth, "rawdepth"),
         Normalize(transform_mean, transform_var, key="rgb"),
-        ToTensorAll(keys=["rgb", "rgb_orig", "depth", "rawdepth", "mask"])
+        ToTensorAll(keys=["rgb", "rgb_orig", "rawdepth", "mask"])
         ]
     )
 

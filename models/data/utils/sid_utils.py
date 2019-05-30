@@ -1,6 +1,11 @@
 import torch
 import numpy as np
 
+class UniformDiscretization:
+    """
+    Implements Uniform Discretization.
+    """
+    pass
 
 class SID:
     """

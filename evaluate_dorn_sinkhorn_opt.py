@@ -4,7 +4,7 @@ import torch
 import json
 from torch.utils.data import DataLoader
 from utils.train_utils import init_randomness, worker_init_randomness
-from utils.eval_utils import evaluate_model_on_dataset
+from utils.eval_utils import evaluate_model_on_dataset, evaluate_model_on_data_entry
 from models.core.checkpoint import load_checkpoint, safe_makedir
 from models import make_model
 from sacred import Experiment
@@ -22,14 +22,15 @@ def cfg(data_config, spad_config):
     model_config = {                            # Load pretrained model for testing
         "model_name": "DORN_sinkhorn_opt",
         "model_params": {
-            "sgd_iters": 80,
+            "sgd_iters": 100,
             "sinkhorn_iters": 40,
-            "sigma": 2.,
+            "sigma": 0.5,
             "lam": 1e-2,
-            "kde_eps": 1e-5,
-            "sinkhorn_eps": 1e-2,
+            "kde_eps": 1e-4,
+            "sinkhorn_eps": 1e-4,
+            "dc_eps": 1e-5,
             "remove_dc": spad_config["dc_count"] > 0.,
-            "use_albedo": spad_config["use_albedo"],
+            "use_scaling": spad_config["use_albedo"],
             "use_squared_falloff": spad_config["use_squared_falloff"],
             "lr": 1e3,
             "hints_len": 68,
@@ -53,6 +54,7 @@ def cfg(data_config, spad_config):
     save_outputs = True
     seed = 95290421
     small_run = 0
+    entry = None
     # hyperparams = ["sgd_iters", "sinkhorn_iters", "sigma", "lam", "kde_eps", "sinkhorn_eps"]
     pdict = model_config["model_params"]
     comment = "_".join(["sgd_iters_{}".format(pdict["sgd_iters"]),
@@ -95,10 +97,10 @@ def main(model_config,
          data_config,
          seed,
          small_run,
+         entry,
          device):
     # Load the model
     model = make_model(**model_config)
-    # model.to(device)
     # model.sid_obj.to(device)
     # print(model)
     model.to(device)
@@ -108,7 +110,10 @@ def main(model_config,
     dataset = test if dataset_type == "test" else val
 
     init_randomness(seed)
-
-    print("Evaluating the model on {} ({})".format(data_config["data_name"],
-                                                   dataset_type))
-    evaluate_model_on_dataset(model, dataset, small_run, device, save_outputs, output_dir)
+    if entry is None:
+        print("Evaluating the model on {} ({})".format(data_config["data_name"],
+                                                       dataset_type))
+        evaluate_model_on_dataset(model, dataset, small_run, device, save_outputs, output_dir)
+    else:
+        print("Evaluating {}".format(entry))
+        evaluate_model_on_data_entry(model, dataset, entry, device)

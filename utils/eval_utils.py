@@ -4,6 +4,7 @@ import json
 import pandas as pd
 from collections import defaultdict
 from torch.utils.data import DataLoader
+from torch.utils.data._utils.collate import default_collate
 from utils.train_utils import worker_init_randomness
 from models.core.checkpoint import safe_makedir
 
@@ -23,7 +24,7 @@ def evaluate_model_on_dataset(model, dataset, small_run, device,
     dataloader = DataLoader(dataset,
                             batch_size=1,
                             shuffle=True,
-                            num_workers=1,
+                            num_workers=0, # needs to be 0 to not crash autograd profiler.
                             pin_memory=True,
                             worker_init_fn=worker_init_randomness)
     # if eval_config["save_outputs"]:
@@ -38,6 +39,11 @@ def evaluate_model_on_dataset(model, dataset, small_run, device,
             if small_run and i == small_run:
                 break
             entry = data["entry"][0]
+            #### DEBUGGING
+            # if entry != "kitchen_0002/1121":
+            #     continue
+            ####
+
             print("Evaluating {}".format(data["entry"][0]))
             pred, pred_metrics = model.evaluate(data, device)
             metrics[entry] = pred_metrics
@@ -45,7 +51,7 @@ def evaluate_model_on_dataset(model, dataset, small_run, device,
             num_pixels += num_valid_pixels
             for metric_name in pred_metrics:
                 avg_metrics[metric_name] += num_valid_pixels * pred_metrics[metric_name]
-            # print(pred_metrics)
+            print(pred_metrics)
             # Option to save outputs:
             if save_outputs:
                 if output_dir is None:
@@ -65,7 +71,31 @@ def evaluate_model_on_dataset(model, dataset, small_run, device,
             json.dump(avg_metrics, f)
         with open(os.path.join(output_dir, "metrics.json"), "w") as f:
             json.dump(metrics, f)
+        print(avg_metrics)
     print("wrote results to {}".format(output_dir))
+
+
+def evaluate_model_on_data_entry(model, dataset, entry, device):
+    """
+    Workaround for when we only to evaluate on a single entry.
+    :param model:
+    :param dataset:
+    :param entry_id:
+    :param device:
+    :return:
+    """
+    input_unbatched = dataset.get_item_by_id(entry)
+    # for key in ["rgb", "albedo", "rawdepth", "spad", "mask", "rawdepth_orig", "mask_orig", "albedo_orig"]:
+    #     input_[key] = input_[key].unsqueeze(0)
+    input_ = default_collate([input_unbatched])
+
+    # Checks
+    print(input_["entry"])
+    print("remove_dc: ", model.remove_dc)
+    print("use_albedo: ", model.use_albedo)
+    print("use_squared_falloff: ", model.use_squared_falloff)
+    pred, pred_metrics = model.evaluate(input_, device)
+    print(pred_metrics)
 
 
 def collect_results_files(**filepaths):
