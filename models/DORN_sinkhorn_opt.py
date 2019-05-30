@@ -4,8 +4,8 @@ import torch.nn.functional as F
 from torch.nn import MSELoss
 import numpy as np
 from models.data.utils.sid_utils import SIDTorch
-from models.sinkhorn_dist import optimize_depth_map
-from models.data.utils.spad_utils import remove_dc_from_spad
+from models.sinkhorn_dist import optimize_depth_map_masked
+from models.data.utils.spad_utils import remove_dc_from_spad, bgr2gray
 from torch.optim import SGD
 # import matplotlib
 # matplotlib.use("TKAgg")
@@ -158,35 +158,25 @@ class DORN_sinkhorn_opt:
             denoised_spad[denoised_spad < self.dc_eps] = self.dc_eps
         # Normalize to 1
         denoised_spad = denoised_spad / torch.sum(denoised_spad, dim=1, keepdim=True)
-        # Albedo check
-        albedo = None
-        alpha = 0. # Set alpha based on albedo
+        # Scaling check
+        scaling = None
         if self.use_albedo:
-            albedo = input_["albedo_orig"][:, 1:2, ...].to(device) / 255.
-            alpha = 1./torch.mean(albedo) - 1
-        print("alpha", alpha)
-
+            # intensity = input_["albedo_orig"][:, 1:2, ...].to(device) / 255.
+            scaling = bgr2gray(input_["rgb_orig"])
         # Squared depth check
         inv_squared_depths = None
         if self.use_squared_falloff:
             inv_squared_depths = (self.sid_obj.sid_bin_values[:68]**(-2)).unsqueeze(0).unsqueeze(-1).unsqueeze(-1).to(device)
-        # Actually run the optimization
-        mseloss = MSELoss()
-        if alpha > 0.:
-            regularizer = lambda x, x0: 1e-1 * mseloss(x, x0)
-        else:
-            regularizer = None
 
         with torch.enable_grad():
             depth_index_final, depth_img_final, depth_hist_final = \
-                optimize_depth_map(depth_init, sigma=self.sigma, n_bins=self.sid_bins,
-                                   cost_mat=self.cost_mat, lam=self.lam, spad_hist=denoised_spad,
-                                   lr=self.lr, num_sgd_iters=self.sgd_iters, num_sinkhorn_iters=self.sinkhorn_iters,
-                                   kde_eps=self.kde_eps,
-                                   sinkhorn_eps=self.sinkhorn_eps,
-                                   inv_squared_depths=inv_squared_depths,
-                                   albedo=albedo,
-                                   regularizer=regularizer)
+                optimize_depth_map_masked(depth_init, sigma=self.sigma, n_bins=self.sid_bins,
+                                          cost_mat=self.cost_mat, lam=self.lam, gt_hist=denoised_spad,
+                                          lr=self.lr, num_sgd_iters=self.sgd_iters, num_sinkhorn_iters=self.sinkhorn_iters,
+                                          kde_eps=self.kde_eps,
+                                          sinkhorn_eps=self.sinkhorn_eps,
+                                          inv_squared_depths=inv_squared_depths,
+                                          scaling=scaling)
             depth_index_final = depth_index_final.detach().long().cpu()
 
             # Get depth maps and compute metrics
