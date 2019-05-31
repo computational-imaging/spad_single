@@ -169,22 +169,6 @@ class ToTensorAll(): # pylint: disable=too-few-public-methods
         return sample
 
 
-class AddRawDepthMask(): # pylint: disable=too-few-public-methods
-    """Creates a mask according to the original paper Eigen et. al.
-    Assigns a 0 to pixels where the minimum or maximum depth is attained.
-    Assigns a 1 everywhere else.
-    """
-    def __init__(self, min_depth, max_depth):
-        self.min_depth = min_depth
-        self.max_depth = max_depth
-
-    def __call__(self, sample):
-        rawdepth = sample["rawdepth"]
-        boolmask = (rawdepth >= self.max_depth) | (rawdepth <= self.min_depth)
-        sample["mask"] = 1. - boolmask.astype(np.float32) # Logical NOT
-        return sample
-
-
 class ClipMinMax(): # pylint: disable=too-few-public-methods
     def __init__(self, key, min_val, max_val):
         """Setting min_val or max_val equal to None removes clipping
