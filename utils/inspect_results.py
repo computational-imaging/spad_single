@@ -4,28 +4,28 @@ import numpy as np
 import json
 
 
-class Results:
-    """
-    For managing results of evaluation runs on various datasets.
-
-    Really a boilerplate class that abstracts away the idea of a directory with lots
-    of results files in it, and an index that tells you the unique ids of all the files
-    in the results directory.
-    """
-    def __init__(self, results_dir, index_file):
-        """
-
-        :param results_dir: A directory path to the root directory of the results files.
-        :param index_file: A file containing a (json-serialized) iterable of entries.
-        """
-        self.results_dir = results_dir
-        self.index_file = index_file
-
-        # Load the index
-        with open(index_file) as f:
-            self.entries = json.load(f)
-
-    def load_
+# class Results:
+#     """
+#     For managing results of evaluation runs on various datasets.
+#
+#     Really a boilerplate class that abstracts away the idea of a directory with lots
+#     of results files in it, and an index that tells you the unique ids of all the files
+#     in the results directory.
+#     """
+#     def __init__(self, results_dir, index_file):
+#         """
+#
+#         :param results_dir: A directory path to the root directory of the results files.
+#         :param index_file: A file containing a (json-serialized) iterable of entries.
+#         """
+#         self.results_dir = results_dir
+#         self.index_file = index_file
+#
+#         # Load the index
+#         with open(index_file) as f:
+#             self.entries = json.load(f)
+#
+#     def load_
 
 
 

@@ -24,7 +24,7 @@ class DORN_sinkhorn_opt:
     """
     def __init__(self, sgd_iters=250, sinkhorn_iters=40, sigma=2., lam=1e-2, kde_eps=1e-5,
                  sinkhorn_eps=1e-2, dc_eps=1e-5,
-                 remove_dc=True, use_albedo=True, use_squared_falloff=True,
+                 remove_dc=True, use_intensity=True, use_squared_falloff=True,
                  lr=1e3, hints_len=68,
                  in_channels=3, in_height=257, in_width=353,
                  sid_bins=68, offset=0.,
@@ -42,7 +42,7 @@ class DORN_sinkhorn_opt:
         :param sinkhorn_eps: Epsilon for sinkhorn iterations, controls convergence.
         :param dc_eps: Epsilon for approximate lowest value of denoised histogram.
         :param remove_dc: Whether or not to remove any dc component in the spad histogram before denoising.
-        :param use_albedo: Whether or not to use albedo in kernel density estimation
+        :param use_intensity: Whether or not to use intensity in kernel density estimation
         :param use_squared_falloff: Whether or not to use squared falloff in kernel density estimation
         :param lr: Learning rate of sgd for optimizing the depth map
         :param hints_len: Length of input hints histogram
@@ -84,7 +84,7 @@ class DORN_sinkhorn_opt:
         self.cost_mat = torch.from_numpy(C).float()
 
         self.remove_dc = remove_dc
-        self.use_albedo = use_albedo
+        self.use_intensity = use_intensity
         self.use_squared_falloff = use_squared_falloff
         self.lr = lr
         # self.loss.to(device)
@@ -160,7 +160,7 @@ class DORN_sinkhorn_opt:
         denoised_spad = denoised_spad / torch.sum(denoised_spad, dim=1, keepdim=True)
         # Scaling check
         scaling = None
-        if self.use_albedo:
+        if self.use_intensity:
             # intensity = input_["albedo_orig"][:, 1:2, ...].to(device) / 255.
             scaling = bgr2gray(input_["rgb_orig"])
         # Squared depth check
@@ -169,15 +169,15 @@ class DORN_sinkhorn_opt:
             inv_squared_depths = (self.sid_obj.sid_bin_values[:68]**(-2)).unsqueeze(0).unsqueeze(-1).unsqueeze(-1).to(device)
 
         with torch.enable_grad():
-            depth_index_final, depth_img_final, depth_hist_final = \
-                optimize_depth_map_masked(depth_init, sigma=self.sigma, n_bins=self.sid_bins,
+            depth_index_final, depth_hist_final = \
+                optimize_depth_map_masked(depth_init, input_["mask_orig"], sigma=self.sigma, n_bins=self.sid_bins,
                                           cost_mat=self.cost_mat, lam=self.lam, gt_hist=denoised_spad,
                                           lr=self.lr, num_sgd_iters=self.sgd_iters, num_sinkhorn_iters=self.sinkhorn_iters,
                                           kde_eps=self.kde_eps,
                                           sinkhorn_eps=self.sinkhorn_eps,
                                           inv_squared_depths=inv_squared_depths,
                                           scaling=scaling)
-            depth_index_final = depth_index_final.detach().long().cpu()
+            depth_index_final = torch.round(depth_index_final).detach().long().cpu()
 
             # Get depth maps and compute metrics
             pred = self.sid_obj.get_value_from_sid_index(depth_index_final)
@@ -217,9 +217,9 @@ if __name__ == "__main__":
     # print(config)
     # print(spad_config)
     del data_config["data_name"]
-    model = DORN_sinkhorn_opt(sgd_iters=100, sinkhorn_iters=40, sigma=.5, lam=1e-2,
+    model = DORN_sinkhorn_opt(sgd_iters=400, sinkhorn_iters=40, sigma=.5, lam=1e-2,
                               kde_eps=1e-4, sinkhorn_eps=1e-4,
-                              remove_dc=spad_config["dc_count"] > 0., use_albedo=spad_config["use_albedo"],
+                              remove_dc=spad_config["dc_count"] > 0., use_intensity=spad_config["use_intensity"],
                               use_squared_falloff=spad_config["use_squared_falloff"],
                               lr=1e3)
     model.to(device)
@@ -229,18 +229,17 @@ if __name__ == "__main__":
     start = perf_counter()
     init_randomness(95290421)
     input_ = test.get_item_by_id("kitchen_0002/1121")
-    for key in ["rgb", "albedo", "rawdepth", "spad", "mask", "rawdepth_orig", "mask_orig", "albedo_orig"]:
-        input_[key] = input_[key].unsqueeze(0)
+    for key in ["rgb", "rgb_orig", "rawdepth", "spad", "mask", "rawdepth_orig", "mask_orig"]:
+        input_[key] = input_[key].unsqueeze(0).to(device)
     data_load_time = perf_counter() - start
     print("dataloader: {}".format(data_load_time))
     # print(input_["entry"])
     # print(model.hints_extractor[0].weight)
 
-
     # Checks
     print(input_["entry"])
     print("remove_dc: ", model.remove_dc)
-    print("use_albedo: ", model.use_albedo)
+    print("use_intensity: ", model.use_intensity)
     print("use_squared_falloff: ", model.use_squared_falloff)
     pred, pred_metrics = model.evaluate(input_, device)
     print(pred_metrics)
@@ -285,4 +284,4 @@ if __name__ == "__main__":
     # # print(before_metrics)
     # print(metrics)
     # print(model.sid_obj)
-    input("press the enter key to finish.")
+    # input("press the enter key to finish.")

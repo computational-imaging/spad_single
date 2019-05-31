@@ -79,6 +79,8 @@ def sinkhorn_dist_single(cost_mat, lam, h1, h2, num_iters=100, eps=1e-4):
                 for two consecutive iterations.
     :return: sinkhorn_dist, transport_matrix
     """
+    # print(h1.shape)
+    # print(h2.shape)
     assert h1.shape == h2.shape and len(h1.shape) == 2
     assert cost_mat.shape[0] == h1.shape[1] and cost_mat.shape[0] == cost_mat.shape[1]
 
@@ -258,6 +260,7 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
     """
     print("lr: ", lr)
     print("sigma: ", sigma)
+    gt_hist = gt_hist.squeeze(-1).squeeze(-1)
     x_index = x_index_init.clone().detach().float().requires_grad_(True)
     x_best = x_index_init.clone().detach().float().requires_grad_(False)
     best_loss = float('inf')

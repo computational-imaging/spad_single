@@ -13,16 +13,16 @@ def cfg():
     dc_count = 0.1*photon_count     # Simulates ambient + dark count (additional to photon_count
     fwhm_ps = 70.                   # Full-width-at-half-maximum of (Gaussian) SPAD jitter, in picoseconds
 
-    use_albedo = True
+    use_intensity = True
     use_squared_falloff = True
-    spad_comment = "use_albedo_{}".format(use_albedo) + "_" + \
+    spad_comment = "use_intensity_{}".format(use_intensity) + "_" + \
                    "use_squared_falloff_{}".format(use_squared_falloff) + "_" + \
                    "dc_count_{}".format(dc_count)
 
 @spad_ingredient.named_config
 def rawhist():
     dc_count = 0.
-    use_albedo = False
+    use_intensity = False
     use_squared_falloff = False
 
 
@@ -41,7 +41,7 @@ def bgr2gray(bgr):
 
 def simulate_spad(depth_truth, intensity, mask, min_depth, max_depth,
                   spad_bins, photon_count, dc_count, fwhm_ps,
-                  use_albedo, use_squared_falloff):
+                  use_intensity, use_squared_falloff):
     """
     Works in numpy.
     :param depth_truth: The ground truth depth map (z, not distance...)
@@ -53,13 +53,13 @@ def simulate_spad(depth_truth, intensity, mask, min_depth, max_depth,
     :param photon_count: The number of photons to collect
     :param dc_count: The additional fraction of photons to add to account for dark count + ambient light
     :param fwhm_ps: The full-width-at-half-maximum of the laser pulse jitter
-    :param use_albedo: Whether or not to take the albedo into account when simulating.
+    :param use_intensity: Whether or not to take an intensity image into account when simulating.
     :param use_squared_falloff: Whether or not to take the squared depth into account when simulating
     :return: A simulated spad.
     """
     # Only use the green channel to simulate
     weights = mask
-    if use_albedo:
+    if use_intensity:
         weights = weights * intensity
     if use_squared_falloff:
         weights = weights / (depth_truth ** 2 + 1e-6)
