@@ -162,7 +162,7 @@ class DORN_sinkhorn_opt:
         scaling = None
         if self.use_intensity:
             # intensity = input_["albedo_orig"][:, 1:2, ...].to(device) / 255.
-            scaling = bgr2gray(input_["rgb_orig"])
+            scaling = bgr2gray(input_["rgb_cropped_orig"])
         # Squared depth check
         inv_squared_depths = None
         if self.use_squared_falloff:
@@ -184,7 +184,7 @@ class DORN_sinkhorn_opt:
             # Note: align_corners=False gives same behavior as cv2.resize
 
         # compute metrics
-        gt = input_["rawdepth_orig"].cpu()
+        gt = input_["depth_cropped_orig"].cpu()
         mask = input_["mask_orig"].cpu()
         metrics = self.get_metrics(pred, gt, mask)
 
