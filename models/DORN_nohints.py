@@ -54,6 +54,25 @@ class DORN_nyu_nohints(Model):
                 param.requires_grad = False
             self.eval()
 
+    def predict(self, input_, device, resize_output=True):
+        # one = perf_counter()
+        rgb = input_["rgb"].to(device)
+        # print("dataloader: model input")
+        # print(rgb[:,:,50:55,50:55])
+        # two = perf_counter()
+        depth_pred = self.forward(rgb)
+        # three = perf_counter()
+        # print("Forward pass: {}".format(three - two))
+        logprobs = self.to_logprobs(depth_pred)
+        if resize_output:
+            original_size = input_["rgb_orig"].size()[-2:]
+            # Note: align_corners=False gives same behavior as cv2.resize
+            depth_pred_full = F.interpolate(depth_pred, size=original_size,
+                                            mode="bilinear", align_corners=False)
+            logprobs_full = self.to_logprobs(depth_pred_full)
+            return self.ord_decode(logprobs_full, self.sid_obj)
+        return self.ord_decode(logprobs, self.sid_obj)
+
     def get_loss(self, input_, device, resize_output=False):
         """
         :param input_: Dictionary from dataloader
@@ -204,8 +223,7 @@ class DORN_nyu_nohints(Model):
 
     def evaluate(self, data, device):
         # Output full-size depth map, so set resize_output=True
-        _, logprobs = self.get_loss(data, device, resize_output=True)
-        pred = self.ord_decode(logprobs, self.sid_obj)
+        pred = self.predict(data, device, resize_output=True)
         gt = data["rawdepth_orig"].cpu()
         mask = data["mask_orig"].cpu()
         metrics = self.get_metrics(pred,
@@ -1955,135 +1973,172 @@ class DORN_nyu_nohints(Model):
         return x
 
 if __name__ == "__main__":
-    import cv2
-    from torch.utils.data import DataLoader
-    from torchvision import utils
-    from models.data.nyuv2_official_nohints_sid_dataset import load_data
-    data_name = "nyu_depth_v2"
-    # Paths should be specified relative to the train script, not this file.
-    root_dir = os.path.join("data", "nyu_depth_v2_scaled16")
-    train_file = os.path.join(root_dir, "train.json")
-    train_dir = root_dir
-    val_file = os.path.join(root_dir, "val.json")
-    val_dir = root_dir
-    test_file = os.path.join(root_dir, "test.json")
-    test_dir = root_dir
-    del root_dir
+    from models.data.nyuv2_test_split_dataset import cfg, load_data
+    data_config = cfg()
+    if "data_name" in data_config:
+        del data_config["data_name"]
 
-    # Indices of images to exclude from the dataset.
-    # Set relative to the directory from which the dataset is being loaded.
-    blacklist_file = "blacklist.txt"
+    data_config["dorn_mode"] = True
+    test = load_data(**data_config)
 
-    sid_bins = 68   # Number of bins (network outputs 2x this number of channels)
-    bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
-    dorn_decode = np.exp((bin_edges - 1) / 25 - 0.36)
-    d0 = dorn_decode[0]
-    d1 = dorn_decode[1]
-    alpha = (2 * d0 ** 2) / (d1 + d0)
-    beta = alpha * np.exp(sid_bins * np.log(2 * d0 / alpha - 1))
-    del bin_edges, dorn_decode, d0, d1
-    offset = 0.
-
-    # Complex procedure to calculate min and max depths
-    # to conform to DORN standards
-    # i.e. make it so that doing exp(i/25 - 0.36) is the right way to decode depth from a bin value i.
-    min_depth = 0.
-    max_depth = 10.
-    use_dorn_normalization = True # Sets specific normalization if using DORN network.
-                                  # If False, defaults to using the empirical mean and variance from train set.
-    # if use_dorn_normalization:
-    #     transform_mean = np.array([[[103.0626, 115.9029, 123.1516]]]).astype(np.float32)
-    #     transform_var = np.ones((1, 1, 3))
-
-
-    def load_image_cv2(img_file, device):
-        rgb_cv2 = cv2.imread(img_file, cv2.IMREAD_COLOR)
-        H, W = rgb_cv2.shape[:2]
-        rgb_cv2 = rgb_cv2.astype(np.float32)
-        print("rgb_cv2: before mean subtraction")
-        print(rgb_cv2[50:55, 50:55, 0])
-
-        rgb_cv2 = rgb_cv2 - np.array([[[103.0626, 115.9029, 123.1516]]]).astype(np.float32)
-        rgb_cv2 = cv2.resize(rgb_cv2, (353, 257), interpolation=cv2.INTER_LINEAR)
-        print("rgb_cv2: after mean subtraction")
-        print(rgb_cv2[50:55, 50:55, 0])
-        # Flip because that's how numpy works vs. PIL
-        # rgb = torch.from_numpy(rgb_cv2.transpose(2, 0, 1)).unsqueeze(0).flip([1])
-        rgb = torch.from_numpy(rgb_cv2.transpose(2, 0, 1)).unsqueeze(0)
-        rgb = rgb.to(device)
-        return rgb, H, W
-
-    def depth_prediction(filename, net, device):
-        rgb, H, W = load_image_cv2(filename, device)
-        # rgb, H, W = load_image_torchvision(filename, device)
-        # print(rgb[:,:,50:55, 50:55])
-        with torch.no_grad():
-            # print("network input")
-            # print(rgb[:,:,50:55,50:55])
-            output = net(rgb)
-            print("network output")
-            print(output[:, 30:32, 50:55, 50:55])
-            pred = decode_ord(output)  # Pred is in numpy
-            print("after decoding")
-            print(pred[:, :, 50:55, 50:55])
-
-        pred = pred[0, 0, :, :] - 1.0
-        pred = pred / 25.0 - 0.36
-        pred = np.exp(pred)
-        # print("after exp")
-        # print(pred[50:55,50:55])
-        ord_score = cv2.resize(pred, (W, H), interpolation=cv2.INTER_LINEAR)
-        return ord_score
-
-
-    def decode_ord(data_pytorch):
-        """Takes a pytorch tensor, converts to numpy, then
-        does the ordinal loss decoding.
-        """
-        data = data_pytorch.cpu().numpy()
-        N = data.shape[0]
-        C = data.shape[1]
-        H = data.shape[2]
-        W = data.shape[3]
-        ord_labels = data
-        decode_label = np.zeros((N, 1, H, W), dtype=np.float32)
-        ord_num = C / 2
-        for i in range(int(ord_num)):
-            ord_i = ord_labels[:, 2 * i:2 * i + 2, :, :]
-            decode_label = decode_label + np.argmax(ord_i, axis=1)
-        return decode_label.astype(np.float32, copy=False)
-
-    def convert_to_uint8(img, min_val, max_val):
-        return np.uint8((img - min_val) / (max_val - min_val) * 255.0)
-
-    # rgb, H, W = load_image_cv2("models/demo_01.png", "cpu")
-    # rgb, H, W = load_image_cv2("./data/nyu_depth_v2_scaled16/playroom_0002/1111_rgb.png", "cpu")
-    # model = DORN_nyu_nohints()
-    # model.eval()
-    # depth = depth_prediction("models/demo_01.png", model, "cpu")
-    # depth = depth_prediction("./data/nyu_depth_v2_scaled16/playroom_0002/1111_rgb.png", model, "cpu")
-    # depth_img = convert_to_uint8(depth, 0., 10.)
-    # cv2.imwrite("models/out_01.png", depth_img)
-    train, _, _ = load_data(train_file, train_dir,
-              val_file, val_dir,
-              test_file, test_dir,
-              min_depth, max_depth, use_dorn_normalization,
-              sid_bins, alpha, beta, offset,
-              blacklist_file)
-    # dataloader = DataLoader(train, batch_size=1, shuffle=False, num_workers=1)
-    dataset = train
-    device = torch.device("cuda")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = DORN_nyu_nohints()
     model.to(device)
     model.eval()
-    input_ = dataset[0]
-    input_["rgb"] = input_["rgb"].unsqueeze(0)
-    input_["rawdepth"] = input_["rawdepth_sid"].unsqueeze(0)
-    input_["mask"] = input_["mask"].unsqueeze(0)
+
+    input_modified = {}
+    input_ = test[150]
+    input_modified["rgb"] = input_["rgb_cropped"].unsqueeze(0) # The input (cropped to dorn input)
+    input_modified["rgb_orig"] = input_["rgb_cropped_orig"].unsqueeze(0) # The original rgb image (cropped to output size)
+    input_modified["rawdepth_orig"] = input_["depth_cropped_orig"].unsqueeze(0) # The output
+    input_modified["mask_orig"] = input_["mask_orig"].unsqueeze(0)
+
+    # print(input_modified["rgb"][:,:,30,30])
+
+    pred, metrics = model.evaluate(input_modified, device=device)
+    print(metrics)
 
 
-    loss, pred = model.get_loss(input_, device=device, resize_output=True)
-    # ord_score = cv2.resize(pred, (W, H), interpolation=cv2.INTER_LINEAR)
-    depth_out = model.ord_decode(pred, model.sid_obj)
-    # utils.save_image(depth_out/10., os.path.join("models", "test_{}.png".format(i)))
 
+
+
+
+
+
+
+
+
+
+
+    # import cv2
+    # from torch.utils.data import DataLoader
+    # from torchvision import utils
+    # from models.data.nyuv2_official_nohints_sid_dataset import load_data
+    # data_name = "nyu_depth_v2"
+    # # Paths should be specified relative to the train script, not this file.
+    # root_dir = os.path.join("data", "nyu_depth_v2_scaled16")
+    # train_file = os.path.join(root_dir, "train.json")
+    # train_dir = root_dir
+    # val_file = os.path.join(root_dir, "val.json")
+    # val_dir = root_dir
+    # test_file = os.path.join(root_dir, "test.json")
+    # test_dir = root_dir
+    # del root_dir
+    #
+    # # Indices of images to exclude from the dataset.
+    # # Set relative to the directory from which the dataset is being loaded.
+    # blacklist_file = "blacklist.txt"
+    #
+    # sid_bins = 68   # Number of bins (network outputs 2x this number of channels)
+    # bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
+    # dorn_decode = np.exp((bin_edges - 1) / 25 - 0.36)
+    # d0 = dorn_decode[0]
+    # d1 = dorn_decode[1]
+    # alpha = (2 * d0 ** 2) / (d1 + d0)
+    # beta = alpha * np.exp(sid_bins * np.log(2 * d0 / alpha - 1))
+    # del bin_edges, dorn_decode, d0, d1
+    # offset = 0.
+    #
+    # # Complex procedure to calculate min and max depths
+    # # to conform to DORN standards
+    # # i.e. make it so that doing exp(i/25 - 0.36) is the right way to decode depth from a bin value i.
+    # min_depth = 0.
+    # max_depth = 10.
+    # use_dorn_normalization = True # Sets specific normalization if using DORN network.
+    #                               # If False, defaults to using the empirical mean and variance from train set.
+    # # if use_dorn_normalization:
+    # #     transform_mean = np.array([[[103.0626, 115.9029, 123.1516]]]).astype(np.float32)
+    # #     transform_var = np.ones((1, 1, 3))
+    #
+    #
+    # def load_image_cv2(img_file, device):
+    #     rgb_cv2 = cv2.imread(img_file, cv2.IMREAD_COLOR)
+    #     H, W = rgb_cv2.shape[:2]
+    #     rgb_cv2 = rgb_cv2.astype(np.float32)
+    #     print("rgb_cv2: before mean subtraction")
+    #     print(rgb_cv2[50:55, 50:55, 0])
+    #
+    #     rgb_cv2 = rgb_cv2 - np.array([[[103.0626, 115.9029, 123.1516]]]).astype(np.float32)
+    #     rgb_cv2 = cv2.resize(rgb_cv2, (353, 257), interpolation=cv2.INTER_LINEAR)
+    #     print("rgb_cv2: after mean subtraction")
+    #     print(rgb_cv2[50:55, 50:55, 0])
+    #     # Flip because that's how numpy works vs. PIL
+    #     # rgb = torch.from_numpy(rgb_cv2.transpose(2, 0, 1)).unsqueeze(0).flip([1])
+    #     rgb = torch.from_numpy(rgb_cv2.transpose(2, 0, 1)).unsqueeze(0)
+    #     rgb = rgb.to(device)
+    #     return rgb, H, W
+    #
+    # def depth_prediction(filename, net, device):
+    #     rgb, H, W = load_image_cv2(filename, device)
+    #     # rgb, H, W = load_image_torchvision(filename, device)
+    #     # print(rgb[:,:,50:55, 50:55])
+    #     with torch.no_grad():
+    #         # print("network input")
+    #         # print(rgb[:,:,50:55,50:55])
+    #         output = net(rgb)
+    #         print("network output")
+    #         print(output[:, 30:32, 50:55, 50:55])
+    #         pred = decode_ord(output)  # Pred is in numpy
+    #         print("after decoding")
+    #         print(pred[:, :, 50:55, 50:55])
+    #
+    #     pred = pred[0, 0, :, :] - 1.0
+    #     pred = pred / 25.0 - 0.36
+    #     pred = np.exp(pred)
+    #     # print("after exp")
+    #     # print(pred[50:55,50:55])
+    #     ord_score = cv2.resize(pred, (W, H), interpolation=cv2.INTER_LINEAR)
+    #     return ord_score
+    #
+    #
+    # def decode_ord(data_pytorch):
+    #     """Takes a pytorch tensor, converts to numpy, then
+    #     does the ordinal loss decoding.
+    #     """
+    #     data = data_pytorch.cpu().numpy()
+    #     N = data.shape[0]
+    #     C = data.shape[1]
+    #     H = data.shape[2]
+    #     W = data.shape[3]
+    #     ord_labels = data
+    #     decode_label = np.zeros((N, 1, H, W), dtype=np.float32)
+    #     ord_num = C / 2
+    #     for i in range(int(ord_num)):
+    #         ord_i = ord_labels[:, 2 * i:2 * i + 2, :, :]
+    #         decode_label = decode_label + np.argmax(ord_i, axis=1)
+    #     return decode_label.astype(np.float32, copy=False)
+    #
+    # def convert_to_uint8(img, min_val, max_val):
+    #     return np.uint8((img - min_val) / (max_val - min_val) * 255.0)
+    #
+    # # rgb, H, W = load_image_cv2("models/demo_01.png", "cpu")
+    # # rgb, H, W = load_image_cv2("./data/nyu_depth_v2_scaled16/playroom_0002/1111_rgb.png", "cpu")
+    # # model = DORN_nyu_nohints()
+    # # model.eval()
+    # # depth = depth_prediction("models/demo_01.png", model, "cpu")
+    # # depth = depth_prediction("./data/nyu_depth_v2_scaled16/playroom_0002/1111_rgb.png", model, "cpu")
+    # # depth_img = convert_to_uint8(depth, 0., 10.)
+    # # cv2.imwrite("models/out_01.png", depth_img)
+    # train, _, _ = load_data(train_file, train_dir,
+    #           val_file, val_dir,
+    #           test_file, test_dir,
+    #           min_depth, max_depth, use_dorn_normalization,
+    #           sid_bins, alpha, beta, offset,
+    #           blacklist_file)
+    # # dataloader = DataLoader(train, batch_size=1, shuffle=False, num_workers=1)
+    # dataset = train
+    # device = torch.device("cuda")
+    # model = DORN_nyu_nohints()
+    # model.to(device)
+    # model.eval()
+    # input_ = dataset[0]
+    # input_["rgb"] = input_["rgb"].unsqueeze(0)
+    # input_["rawdepth"] = input_["rawdepth_sid"].unsqueeze(0)
+    # input_["mask"] = input_["mask"].unsqueeze(0)
+    #
+    #
+    # loss, pred = model.get_loss(input_, device=device, resize_output=True)
+    # # ord_score = cv2.resize(pred, (W, H), interpolation=cv2.INTER_LINEAR)
+    # depth_out = model.ord_decode(pred, model.sid_obj)
+    # # utils.save_image(depth_out/10., os.path.join("models", "test_{}.png".format(i)))
+    #
