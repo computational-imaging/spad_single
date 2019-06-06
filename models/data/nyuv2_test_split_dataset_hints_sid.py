@@ -78,10 +78,14 @@ class NYUDepthv2TestDataset(Dataset):
             "depth": self.depth[i, :, :],
             "rgb": self.rgb[i, :, :, :],
             "crop": self.crop,
+            "entry": i,
         }
         if self.transform is not None:
             sample = self.transform(sample)
         return sample
+
+    def get_item_by_id(self, id):
+        return self[int(id)]
 
 
 @nyuv2_test_split_ingredient.capture
@@ -97,9 +101,12 @@ def load_data(root_dir,
     """
     test = NYUDepthv2TestDataset(root_dir, transform=None, dorn_mode=dorn_mode)
 
-    # Give data entries as DORN expects
-    transform_mean = np.array([[[103.0626, 115.9029, 123.1516]]]).astype(np.float32)
-    transform_var = np.ones((1, 1, 3))
+    if dorn_mode:
+        transform_mean = np.array([[[103.0626, 115.9029, 123.1516]]]).astype(np.float32)
+    else:
+        transform_mean = np.zeros((1, 1, 3)).astype(np.float32)
+    transform_var = np.ones((1, 1, 3)).astype(np.float32)
+
     transform_list = [
         AddDepthMask(min_depth, max_depth, "depth_cropped"),
         Save(["rgb_cropped", "mask", "depth_cropped"], "_orig"),

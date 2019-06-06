@@ -76,7 +76,7 @@ def load_entry_from_results_dir(entry, results_dir, load_hints, load_nohints, co
     return data
 
 # Simulated histogram from ground truth depth plus albedo:
-from models.sinkhorn_dist import kernel_density_estimation, img_to_hist
+from models.sinkhorn_dist import kernel_density_estimation
 def simulate_spad_from_depth_map(depth, albedo, mask, sid, sigma=0.5, n_bins=68, kde_eps=1e-4):
     """
     Do a feed-foward differentiable approximation to what the SPAD would see.

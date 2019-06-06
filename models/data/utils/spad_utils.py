@@ -138,6 +138,45 @@ def rescale_bins(spad_counts, min_depth, max_depth, sid_obj):
     return sid_counts
 
 
+def rescale_bins_overflow(spad_counts, min_depth, max_depth, sid_obj):
+    """
+
+    :param spad_counts: The histogram of spad counts to rescale.
+    :param min_depth: The minimum depth of the histogram.
+    :param max_depth: The maximum depth of the histogram.
+    :param sid_obj: An object representing a SID.
+    :return: A rescaled histogram in time to be according to the SID
+
+    Assign photons to sid bins proportionally according to the amount of overlap between
+    the sid bin range and the spad_count bin.
+
+    Includes an extra bin at the end for counts that appear past the largest sid bin value.
+    """
+
+    sid_bin_edges_m = sid_obj.sid_bin_edges
+
+    # Convert sid_bin_edges_m into units of spad bins
+    sid_bin_edges_bin = sid_bin_edges_m * len(spad_counts) / (max_depth - min_depth)
+
+    # Map spad_counts onto sid_bin indices
+    sid_counts = np.zeros(sid_obj.sid_bins + 1)
+    for i in range(sid_obj.sid_bins):
+        left = sid_bin_edges_bin[i]
+        right = sid_bin_edges_bin[i + 1]
+        curr = left
+        while curr != right:
+            curr = np.min([right, np.floor(left + 1.)])  # Don't go across spad bins - stop at integers
+            sid_counts[i] += (curr - left) * spad_counts[int(np.floor(left))]
+            # Update window
+            left = curr
+    # Fill the last bin with the remaining counts.
+    last_edge = sid_bin_edges_bin[-1]
+    sid_counts[sid_obj.sid_bins] = (np.ceil(last_edge) - last_edge) * \
+                                      spad_counts[int(np.floor(last_edge))] + \
+                                   np.sum(spad_counts[int(np.floor(last_edge))+1:])
+    return sid_counts
+
+
 def get_rescale_layer(spad_bins, min_depth, max_depth, sid_obj):
     """
     Returns the linear layer that converts the bins and the rescaled bins.
@@ -236,7 +275,8 @@ class SimulateSpadIntensity:
                                             bgr2gray(sample[self.rgb_key]).squeeze(-1),
                                             sample[self.mask_key])
         if self.sid_obj is not None:
-            spad_counts = rescale_bins(spad_counts, self.min_depth, self.max_depth, self.sid_obj)
+            # spad_counts = rescale_bins(spad_counts, self.min_depth, self.max_depth, self.sid_obj)
+            spad_counts = rescale_bins_overflow(spad_counts, self.min_depth, self.max_depth, self.sid_obj)
         sample[self.spad_key] = spad_counts/np.sum(spad_counts)
         return sample
 
