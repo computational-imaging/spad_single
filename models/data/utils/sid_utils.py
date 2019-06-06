@@ -96,6 +96,7 @@ class SIDTorch:
     def to(self, device):
         self.sid_bin_values = self.sid_bin_values.to(device)
         self.sid_bin_edges = self.sid_bin_edges.to(device)
+        print(self.sid_bin_values.device)
 
     def get_sid_index_from_value(self, arr):
         """
@@ -105,8 +106,8 @@ class SIDTorch:
         :return: The array of indices.
         """
         # print(arr + self.offset)
-        temp = torch.tensor(self.sid_bins * (np.log(arr + self.offset) - np.log(self.alpha_star)) /
-                                            (np.log(self.beta_star) - np.log(self.alpha_star)))
+        temp = (self.sid_bins * (torch.log(arr + self.offset) - np.log(self.alpha_star)) /
+                                (np.log(self.beta_star) - np.log(self.alpha_star)))
         sid_index = torch.floor(temp).long()
         sid_index = torch.clamp(sid_index, min=-1, max=self.sid_bins)
         # An index of -1 indicates alpha, while self.sid_bins indicates beta

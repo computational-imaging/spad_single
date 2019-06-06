@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from pdb import set_trace
+from utils.inspect_results import add_hist_plot
 
 mse = torch.nn.MSELoss()
 
@@ -27,6 +28,8 @@ def spad_forward(x_index, mask, sigma, n_bins, kde_eps=1e-2,
     :returns x_hist: N x n_bins histograms
     """
     per_pixel_hists = kernel_density_estimation(x_index, sigma, n_bins, eps=kde_eps)
+    # print(per_pixel_hists)
+    # print(mask)
     x = per_pixel_hists * mask
     weights = torch.ones_like(x)
     if scaling is not None:
@@ -61,7 +64,7 @@ def kernel_density_estimation(x, sigma, n_bins, eps=1e-2):
     """
     N, _, W, H = x.shape
     device = x.device
-    ind = torch.linspace(0, n_bins-1, n_bins).unsqueeze(0).unsqueeze(-1).unsqueeze(-1).expand(N, -1, W, H).to(device)
+    ind = torch.linspace(0, n_bins, n_bins+1).unsqueeze(0).unsqueeze(-1).unsqueeze(-1).expand(N, -1, W, H).to(device)
     y = torch.exp((-1./sigma**2)*(x - ind)**2)
     y = threshold_and_normalize_pixels(y, eps=eps)
     return y
@@ -96,7 +99,7 @@ def sinkhorn_dist_single(cost_mat, lam, h1, h2, num_iters=100, eps=1e-4):
         x_temp = (1./r)*temp3
         if torch.sum(torch.abs(x - x_temp)) < eps:
             break
-        if torch.isnan(x_temp).any().item():
+        if torch.isnan(1./x_temp).any().item():
             print("iteration {}".format(i))
             print(x)
             break
@@ -239,7 +242,7 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
                               kde_eps=1e-5,
                               sinkhorn_eps=1e-2,
                               inv_squared_depths=None,
-                              scaling=None):
+                              scaling=None, writer=None):
     """
 
     :param x_index_init: Initial depth map. Each pixel is an index in [0, n_bins-1]. N x 1 x H x W
@@ -258,11 +261,22 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
     :param scaling: Per-pixel scaling image.
     :return:
     """
+    import torchvision.utils as vutils
+    import matplotlib.pyplot as plt
+
     print("lr: ", lr)
     print("sigma: ", sigma)
     gt_hist = gt_hist.squeeze(-1).squeeze(-1)
+
+    if writer is not None:
+        # Histogram plot
+        add_hist_plot(writer, "hist/gt_hist", gt_hist)
+
     x_index = x_index_init.clone().detach().float().requires_grad_(True)
     x_best = x_index_init.clone().detach().float().requires_grad_(False)
+    # if writer is not None:
+    #     writer.add_image('depth_in',)
+    loss = torch.tensor(float('inf'))
     best_loss = float('inf')
     for i in range(num_sgd_iters):
         x_hist = spad_forward(x_index, mask, sigma, n_bins, kde_eps=kde_eps,
@@ -276,8 +290,20 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
         if not i % 10:
             print("sinkhorn", hist_loss.item())
             print("\tbest so far", best_loss)
+
+
+        ###
+        if writer is not None:
+            # Wasserstein Loss
+            writer.add_scalar("data/sinkhorn_dist", hist_loss.item(), i)
+            # Histogram plot
+            add_hist_plot(writer, "hist/x_hist", x_hist, global_step=i)
+
+        ###
+        prev_loss = loss.item()
         loss = hist_loss
         loss.backward()
+        # Save previous loss for convergence criteria
         with torch.no_grad():
             if loss.item() < best_loss:
                 best_loss = loss.item()
@@ -288,7 +314,10 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
                 break
             x_index -= lr*x_index.grad
             # if torch.sum(torch.abs(lr*x_index.grad)) < sinkhorn_eps: # Reuse sinkhorn eps for sgd convergence.
-            if loss.item() < sinkhorn_eps:
+            rel_improvement = np.abs(prev_loss - loss.item())/loss.item()
+            print("rel_improvement", rel_improvement)
+            # if loss.item() < sinkhorn_eps:
+            if rel_improvement < sinkhorn_eps:
                 x_index = torch.clamp(x_index, min=0., max=n_bins).requires_grad_(True)
                 print("early stopping")
                 return x_best, x_hist

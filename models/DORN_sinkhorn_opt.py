@@ -6,10 +6,11 @@ import numpy as np
 from models.data.utils.sid_utils import SIDTorch
 from models.sinkhorn_dist import optimize_depth_map_masked
 from models.data.utils.spad_utils import remove_dc_from_spad, bgr2gray
+from utils.inspect_results import add_hist_plot
 from torch.optim import SGD
-# import matplotlib
-# matplotlib.use("TKAgg")
-# import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import os
 from pdb import set_trace
 
@@ -80,8 +81,7 @@ class DORN_sinkhorn_opt:
         # C = np.array([[np.abs(i - j)**2 for j in range(n_bins)] for i in range(n_bins)])
         # C = np.array([[huber(i - j) for j in range(sid_bins)] for i in range(sid_bins)])
         # C = np.array([[berhu(i - j) for j in range(n_bins)] for i in range(n_bins)])
-        C = np.array([[(i - j)**2 for j in range(sid_bins)] for i in range(sid_bins)])
-        self.cost_mat = torch.from_numpy(C).float()
+        # C = np.array([[(i - j)**2 for j in range(sid_bins)] for i in range(sid_bins)])
 
         self.remove_dc = remove_dc
         self.use_intensity = use_intensity
@@ -100,27 +100,33 @@ class DORN_sinkhorn_opt:
                              frozen, pretrained,
                              state_dict_file)
         self.feature_extractor.eval()    # Only use DORN in eval mode.
-
         self.sid_obj = SIDTorch(sid_bins, alpha, beta, offset)
         self.one_over_depth_squared = 1./(self.sid_obj.sid_bin_values[:-2] ** 2)
         self.one_over_depth_squared.requires_grad = False
 
+        C = np.array([[(self.sid_obj.sid_bin_values[i] - self.sid_obj.sid_bin_values[j]).item()**2 for i in range(sid_bins+1)]
+                                                                                                   for j in range(sid_bins+1)])
+        self.cost_mat = torch.from_numpy(C*100).float()
+        self.writer = None
+
     def to(self, device):
         self.feature_extractor.to(device)
         self.cost_mat = self.cost_mat.to(device)
-        # self.sid_obj.to(device)
+        self.sid_obj.to(device)
+        self.feature_extractor.sid_obj.to(device)
+        # print(self.sid_obj.sid_bin_values)
 
     def get_depth_index(self, input_, device, resize_output=False):
-        _, prediction = self.feature_extractor.get_loss(input_, device, resize_output=resize_output)
+        _, prediction = self.feature_extractor.predict(input_, device, resize_output=resize_output)
         log_probs, _ = prediction
         depth_index = torch.sum((log_probs >= np.log(0.5)), dim=1, keepdim=True).long()
         return depth_index
 
-    def initialize(self, input_, device):
+    def initialize(self, rgb, rgb_orig, device):
         """Feed rgb through DORN
         :return per-pixel one-hot indicating the depth bin for that pixel.
         """
-        return self.get_depth_index(input_, device, resize_output=True)
+        return self.feature_extractor.predict(rgb, rgb_orig, device, resize_output=True)
 
 
 
@@ -145,11 +151,13 @@ class DORN_sinkhorn_opt:
     #     return depth_pred
 
 
-    def evaluate(self, input_, device):
+    def evaluate(self, rgb, rgb_orig, spad, mask_orig, gt, device):
         # Run RGB through DORN
-        depth_init = self.initialize(input_, device) # Already resized properly
+        depth_init = self.initialize(rgb, rgb_orig, device) # Already resized properly
         # DC Check
-        denoised_spad = input_["spad"].to(device)
+        if self.writer is not None:
+            add_hist_plot(self.writer, "hist/raw_spad", spad)
+        denoised_spad = spad.to(device)
         if self.remove_dc:
             # bin_widths = (self.sid_obj.sid_bin_edges[1:] - self.sid_obj.sid_bin_edges[:-1]).cpu().numpy()
             bin_edges = self.sid_obj.sid_bin_edges.cpu().numpy().squeeze()
@@ -158,40 +166,56 @@ class DORN_sinkhorn_opt:
             denoised_spad[denoised_spad < self.dc_eps] = self.dc_eps
         # Normalize to 1
         denoised_spad = denoised_spad / torch.sum(denoised_spad, dim=1, keepdim=True)
+        if self.writer is not None:
+            add_hist_plot(self.writer, "hist/spad_no_noise", denoised_spad)
         # Scaling check
         scaling = None
         if self.use_intensity:
             # intensity = input_["albedo_orig"][:, 1:2, ...].to(device) / 255.
-            scaling = bgr2gray(input_["rgb_cropped_orig"])
+            scaling = bgr2gray(rgb_orig)
         # Squared depth check
         inv_squared_depths = None
         if self.use_squared_falloff:
-            inv_squared_depths = (self.sid_obj.sid_bin_values[:68]**(-2)).unsqueeze(0).unsqueeze(-1).unsqueeze(-1).to(device)
-
+            inv_squared_depths = (self.sid_obj.sid_bin_values[:self.sid_bins+1]**(-2)).unsqueeze(0).unsqueeze(-1).unsqueeze(-1).to(device)
         with torch.enable_grad():
+            depth_index_init = self.sid_obj.get_sid_index_from_value(depth_init)
+            print("max depth index:", torch.max(depth_index_init))
+            print("min depth index:", torch.min(depth_index_init))
             depth_index_final, depth_hist_final = \
-                optimize_depth_map_masked(depth_init, input_["mask_orig"], sigma=self.sigma, n_bins=self.sid_bins,
+                optimize_depth_map_masked(depth_index_init, mask_orig, sigma=self.sigma, n_bins=self.sid_bins,
                                           cost_mat=self.cost_mat, lam=self.lam, gt_hist=denoised_spad,
                                           lr=self.lr, num_sgd_iters=self.sgd_iters, num_sinkhorn_iters=self.sinkhorn_iters,
                                           kde_eps=self.kde_eps,
                                           sinkhorn_eps=self.sinkhorn_eps,
                                           inv_squared_depths=inv_squared_depths,
-                                          scaling=scaling)
-            depth_index_final = torch.round(depth_index_final).detach().long().cpu()
+                                          scaling=scaling, writer=self.writer)
+            depth_index_final = torch.round(depth_index_final).detach().long()
 
             # Get depth maps and compute metrics
-            pred = self.sid_obj.get_value_from_sid_index(depth_index_final)
+            pred = self.feature_extractor.sid_obj.get_value_from_sid_index(depth_index_final)
             # Note: align_corners=False gives same behavior as cv2.resize
 
         # compute metrics
-        gt = input_["depth_cropped_orig"].cpu()
-        mask = input_["mask_orig"].cpu()
+        pred = pred.cpu()
+        gt = gt.cpu()
+        mask = mask_orig.cpu()
         metrics = self.get_metrics(pred, gt, mask)
 
+
+        if self.writer is not None:
+            import torchvision.utils as vutils
+            def log_single_gray_img(writer, name, img_tensor, min, max):
+                img = vutils.make_grid(img_tensor, nrow=1,
+                                                 normalize=True, range=(min, max))
+                writer.add_image(name, img, 0)
+
+            log_single_gray_img(self.writer, "depth/pred_init", depth_init, self.min_depth, self.max_depth)
+            log_single_gray_img(self.writer, "depth/gt", gt, self.min_depth, self.max_depth)
+            log_single_gray_img(self.writer, "depth/pred", pred, self.min_depth, self.max_depth)
+            log_single_gray_img(self.writer, "mask", mask, 0., 1.)
+
         # Also compute initial metrics:
-        _, logprobs = self.feature_extractor.get_loss(input_, device, resize_output=True)
-        depth_init_map = self.feature_extractor.ord_decode(logprobs, self.sid_obj)
-        before_metrics = self.get_metrics(depth_init_map, gt, mask)
+        before_metrics = self.get_metrics(depth_init.cpu(), gt, mask)
         print("before", before_metrics)
         return pred, metrics
 

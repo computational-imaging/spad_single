@@ -54,9 +54,8 @@ class DORN_nyu_nohints(Model):
                 param.requires_grad = False
             self.eval()
 
-    def predict(self, input_, device, resize_output=True):
+    def predict(self, rgb, rgb_orig, device, resize_output=True):
         # one = perf_counter()
-        rgb = input_["rgb"].to(device)
         # print("dataloader: model input")
         # print(rgb[:,:,50:55,50:55])
         # two = perf_counter()
@@ -65,7 +64,7 @@ class DORN_nyu_nohints(Model):
         # print("Forward pass: {}".format(three - two))
         logprobs = self.to_logprobs(depth_pred)
         if resize_output:
-            original_size = input_["rgb_orig"].size()[-2:]
+            original_size = rgb_orig.size()[-2:]
             # Note: align_corners=False gives same behavior as cv2.resize
             depth_pred_full = F.interpolate(depth_pred, size=original_size,
                                             mode="bilinear", align_corners=False)
@@ -176,7 +175,7 @@ class DORN_nyu_nohints(Model):
         :return: A depth map, as a torch.tensor.
         """
         log_probs, _ = prediction
-        depth_index = torch.sum((log_probs >= np.log(0.5)), dim=1, keepdim=True).long().cpu()
+        depth_index = torch.sum((log_probs >= np.log(0.5)), dim=1, keepdim=True).long()
         depth_map = sid_obj.get_value_from_sid_index(depth_index)
         # print(depth_vals.size())
         return depth_map

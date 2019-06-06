@@ -27,6 +27,13 @@ import json
 #
 #     def load_
 
+def add_hist_plot(writer, name, hist_tensor, global_step=None):
+    fig = plt.figure()
+    ax = plt.gca()
+    ax.bar(range(len(hist_tensor.clone().detach().cpu().numpy().squeeze())),
+           hist_tensor.clone().detach().cpu().numpy().squeeze())
+    writer.add_figure(name, fig, global_step=global_step)
+
 
 
 def show(img):
