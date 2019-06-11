@@ -15,17 +15,17 @@ from time import perf_counter
 from models.data.nyuv2_test_split_dataset_hints_sid import nyuv2_test_split_ingredient, load_data
 from models.data.utils.spad_utils import spad_ingredient
 
-ex = Experiment('eval_dorn_sinkhorn_opt_test_split', ingredients=[nyuv2_test_split_ingredient, spad_ingredient])
+ex = Experiment('eval_densedepth_sinkhorn_opt_test_split', ingredients=[nyuv2_test_split_ingredient, spad_ingredient])
 
 @ex.config
 def cfg(data_config, spad_config):
     model_config = {                            # Load pretrained model for testing
-        "model_name": "DORN_sinkhorn_opt",
+        "model_name": "DenseDepthSinkhornOpt",
         "model_params": {
             "sgd_iters": 100,
             "sinkhorn_iters": 40,
             "sigma": 0.5,
-            "lam": 1e1,
+            "lam": 1e0,
             "kde_eps": 1e-4,
             "sinkhorn_eps": 1e-7,
             "dc_eps": 1e-5,
@@ -33,19 +33,13 @@ def cfg(data_config, spad_config):
             "use_intensity": spad_config["use_intensity"],
             "use_squared_falloff": spad_config["use_squared_falloff"],
             "lr": 1e5,
-            "hints_len": 68,
-            "in_channels": 3,
-            "in_height": 257,
-            "in_width": 353,
             "sid_bins": data_config["sid_bins"],
             "offset": data_config["offset"],
             "min_depth": data_config["min_depth"],
             "max_depth": data_config["max_depth"],
             "alpha": data_config["alpha"],
             "beta": data_config["beta"],
-            "frozen": True,
-            "pretrained": True,
-            "state_dict_file": os.path.join("models", "torch_params_nyuv2_BGR.pth.tar"),
+            "existing": os.path.join("models", "nyu.h5"),
         },
         "model_state_dict_fn": None             # Keep as None
     }
@@ -76,13 +70,14 @@ def cfg(data_config, spad_config):
     safe_makedir(output_dir)
     ex.observers.append(FileStorageObserver.create(os.path.join(output_dir, "runs")))
 
-
-    cuda_device = "0"                       # The gpu index to run on. Should be a string
-    os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
+    # Devices are for pytorch.
+    tf_cuda_device = "0"                       # The gpu index to run on. Should be a string
+    os.environ["CUDA_VISIBLE_DEVICES"] = tf_cuda_device
     # print("after: {}".format(os.environ["CUDA_VISIBLE_DEVICES"]))
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print("using device: {} (CUDA_VISIBLE_DEVICES = {})".format(device,
-                                                                os.environ["CUDA_VISIBLE_DEVICES"]))
+    torch_cuda_device="3"
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # print("using device: {} (CUDA_VISIBLE_DEVICES = {})".format(device,
+    #                                                             os.environ["CUDA_VISIBLE_DEVICES"]))
     if ckpt_file is not None:
         model_update, _, _ = load_checkpoint(ckpt_file)
         model_config.update(model_update)
@@ -97,32 +92,34 @@ def main(model_config,
          seed,
          small_run,
          entry,
-         device):
+         tf_cuda_device,
+         torch_cuda_device):
     # Load the model
     model = make_model(**model_config)
     # model.sid_obj.to(device)
     # print(model)
-    model.to(device)
+    # model.to(device)
 
     from tensorboardX import SummaryWriter
     from datetime import datetime
     model.writer = SummaryWriter(log_dir=os.path.join("runs",
                                                       datetime.now().strftime('%b%d'),
                                                       datetime.now().strftime('%H-%M-%S_') + \
-                                                      "dorn_sinkhorn_opt"))
+                                                      "densedepth_sinkhorn_opt"))
 
     # Load the data
-    dataset = load_data(dorn_mode=True)
-    eval_fn = lambda input_, device: model.evaluate(input_["rgb_cropped"].to(device),
-                                                    input_["rgb_cropped_orig"].to(device),
-                                                    input_["spad"].to(device),
-                                                    input_["mask_orig"].to(device),
-                                                    input_["depth_cropped_orig"].to(device),
+    dataset = load_data(dorn_mode=False)
+    eval_fn = lambda input_, device: model.evaluate(input_["rgb"], # RGB input
+                                                    input_["rgb_cropped"], # rgb cropped for intensity scaling
+                                                    input_["crop"], # 4-tuple of crop parameters
+                                                    input_["spad"],  # simulated SPAD
+                                                    input_["mask"], # Cropped mask
+                                                    input_["depth_cropped"], # Ground truth depth
                                                     device)
     init_randomness(seed)
     if entry is None:
         print("Evaluating the model on {}.".format(data_config["data_name"]))
-        evaluate_model_on_dataset(eval_fn, dataset, small_run, device, save_outputs, output_dir)
+        evaluate_model_on_dataset(eval_fn, dataset, small_run, torch_cuda_device, save_outputs, output_dir)
     else:
         print("Evaluating {}".format(entry))
-        evaluate_model_on_data_entry(eval_fn, dataset, entry, device, save_outputs, output_dir)
+        evaluate_model_on_data_entry(eval_fn, dataset, entry, torch_cuda_device, save_outputs, output_dir)

@@ -96,7 +96,7 @@ class SIDTorch:
     def to(self, device):
         self.sid_bin_values = self.sid_bin_values.to(device)
         self.sid_bin_edges = self.sid_bin_edges.to(device)
-        print(self.sid_bin_values.device)
+        # print(self.sid_bin_values.device)
 
     def get_sid_index_from_value(self, arr):
         """

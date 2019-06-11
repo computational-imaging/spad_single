@@ -109,9 +109,9 @@ def load_data(root_dir,
 
     transform_list = [
         AddDepthMask(min_depth, max_depth, "depth_cropped"),
-        Save(["rgb_cropped", "mask", "depth_cropped"], "_orig"),
     ]
     if dorn_mode:
+        transform_list.append(Save(["rgb_cropped", "mask", "depth_cropped"], "_orig"))
         transform_list.append(ResizeAll((353, 257), keys=["rgb_cropped", "depth_cropped"]))
     transform_list += [
         Normalize(transform_mean, transform_var, key="rgb_cropped"),
@@ -134,8 +134,9 @@ def load_data(root_dir,
                                                 "mask", "mask_orig", "spad"]))
     else:
         print("Using dataset in Wonka mode.")
-        # Only convert the SPAD to pytorch - everything else can stay in numpy.
-        transform_list.append(ToTensorAll(keys=["spad"]))
+        # Don't flip channels of RGB input
+        # Flip channels of rgb_cropped used for intensity
+        transform_list.append(ToTensorAll(keys=["rgb_cropped", "depth_cropped", "mask", "spad"]))
     test.transform = transforms.Compose(transform_list)
     return test
 

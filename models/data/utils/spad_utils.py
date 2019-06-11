@@ -314,7 +314,7 @@ def remove_dc_from_spad_batched(noisy_spad, bin_edges, lam=1e-2, eps=1e-5):
     return signal_hist
 
 
-def remove_dc_from_spad(noisy_spad, bin_edges, lam=1e-2, eps=1e-5):
+def remove_dc_from_spad(noisy_spad, bin_edges, max_depth, lam=1e-2, eps=1e-5):
     """
     Not batched, solves N convex problems where N is the batch size.
     For some reason, this gives better results.
@@ -328,9 +328,11 @@ def remove_dc_from_spad(noisy_spad, bin_edges, lam=1e-2, eps=1e-5):
     # print(bin_widths.shape)
     assert len(noisy_spad.shape) == 2
     N, C = noisy_spad.shape
-    assert bin_edges.shape == (C+1,)
-    bin_widths = bin_edges[1:] - bin_edges[:-1]
-
+    assert bin_edges.shape == (C,) # Including overflow bin at end.
+    bin_widths = np.zeros_like(bin_edges)
+    bin_widths[:-1] = bin_edges[1:] - bin_edges[:-1]
+    assert max_depth > bin_edges[-1]
+    bin_widths[-1] = max_depth - bin_edges[-1]
     # Equalize everything so DC appears uniform
     denoised_spad = np.zeros_like(noisy_spad)
     for i in range(N):

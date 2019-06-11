@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from pdb import set_trace
-from utils.inspect_results import add_hist_plot
+from utils.inspect_results import add_hist_plot, log_single_gray_img, add_diff_map
 
 mse = torch.nn.MSELoss()
 
@@ -70,48 +70,54 @@ def kernel_density_estimation(x, sigma, n_bins, eps=1e-2):
     return y
 
 
-def sinkhorn_dist_single(cost_mat, lam, h1, h2, num_iters=100, eps=1e-4):
+def sinkhorn_dist_single(cost_mat, lam, gt_hist, x_hist, num_iters=100, eps=1e-4):
     """
     Computes N sinkhorn distances, one for each histogram of length C.
     :param cost_mat: C x C
     :param lam: Controls strength of entropy regularization
-    :param h1: N x C
-    :param h2: N x C
+    :param gt_hist: N x C. We discard zero entries of this vector since indexing won't backprop well through the x_hist.
+    :param x_hist: N x C
     :param num_iters: Number of sinkhorn iterations to run
     :param eps: Algorithm stops when difference between sinkhorn dist is less than this
                 for two consecutive iterations.
     :return: sinkhorn_dist, transport_matrix
     """
-    # print(h1.shape)
-    # print(h2.shape)
-    assert h1.shape == h2.shape and len(h1.shape) == 2
-    assert cost_mat.shape[0] == h1.shape[1] and cost_mat.shape[0] == cost_mat.shape[1]
+    # print(gt_hist.shape)
+    # print(x_hist.shape)
+    assert gt_hist.shape == x_hist.shape and len(x_hist.shape) == 2
+    assert cost_mat.shape[0] == x_hist.shape[1] and cost_mat.shape[0] == cost_mat.shape[1]
 
-    K = torch.exp(-lam*cost_mat) # C x C
-    K_T = K.transpose(0,1)
-    r = h1.transpose(0,1) # C x N
-    c = h2.transpose(0,1) # C x N
-    x = torch.ones_like(r)/r.shape[0] # C x N
+    r = gt_hist.transpose(0,1) # C x N
+    r_mask = (r > eps).squeeze() # Get rid of small entries for numerical stability
+    # print(r_mask.shape)
+    r = r[r_mask,:]         # C' x N
+    c = x_hist.transpose(0,1) # C x N
+    M = cost_mat[r_mask, :] # C' x C
+    K = torch.exp(-lam*M) # C' x C
+    K_T = K.transpose(0,1)  # C x C'
+    u = torch.ones_like(r)/r.shape[0] # C' x N
     for i in range(num_iters):
-        temp1 = K_T.mm(1./x) # C x N
-        temp2 = c*(1./temp1)
-        temp3 = K.mm(temp2) # C x N
-        x_temp = (1./r)*temp3
-        if torch.sum(torch.abs(x - x_temp)) < eps:
+        temp1 = K_T.mm(u) # C x N
+        # print(temp1)
+        v = c/temp1         # C x N
+        # print(v)
+        temp2 = K.mm(v) # C' x N
+        # print(temp2)
+        u_temp = r/temp2 # C' x N
+        # print(u_temp)
+        if torch.sum(torch.abs(u - u_temp)) < eps:
+            print("sinkhorn early stopping.")
             break
-        if torch.isnan(1./x_temp).any().item():
+        if torch.isnan(u_temp).any().item():
             print("iteration {}".format(i))
-            print(x)
+            print(u)
             break
-        x = x_temp
-    u = 1./x # C x N
-    v = c * (1./K_T.mm(u)) # C x N
-
-    u_temp = u.transpose(0,1).unsqueeze(-1) # N x C x 1
-    v_temp = v.transpose(0,1).unsqueeze(1) # N x 1 x C
-    K_temp = K.unsqueeze(0) # 1 x C x  C
-    P = u_temp * K_temp * v_temp # N x C x C
-    return torch.sum(u*(K*cost_mat).mm(v)), P
+        u = u_temp
+    u_diag = u.transpose(0,1).unsqueeze(-1) # N x C' x 1 # Element wise multiplication with this matrix is equivalent to multiplication by the diagonalization of it
+    v_diag = v.transpose(0,1).unsqueeze(1) # N x 1 x C
+    K_temp = K.unsqueeze(0) # 1 x C' x C
+    P = u_diag * K_temp * v_diag # N x C' x C
+    return torch.sum(P*M), P
 
 
 def sinkhorn_dist(cost_mat, lam, hist_pred, gt_hist, num_iters=100, eps=1e-1):
@@ -242,7 +248,8 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
                               kde_eps=1e-5,
                               sinkhorn_eps=1e-2,
                               inv_squared_depths=None,
-                              scaling=None, writer=None):
+                              scaling=None,
+                              writer=None, gt=None, model=None):
     """
 
     :param x_index_init: Initial depth map. Each pixel is an index in [0, n_bins-1]. N x 1 x H x W
@@ -272,6 +279,11 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
         # Histogram plot
         add_hist_plot(writer, "hist/gt_hist", gt_hist)
 
+        # RMSE Reference
+        # Standard deviation of gt depth
+        baseline_rmse = gt[mask > 0].std()
+        writer.add_scalar("data/baseline_rmse", baseline_rmse, 0)
+
     x_index = x_index_init.clone().detach().float().requires_grad_(True)
     x_best = x_index_init.clone().detach().float().requires_grad_(False)
     # if writer is not None:
@@ -283,7 +295,7 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
                               inv_squared_depths=inv_squared_depths,
                               scaling=scaling)
         hist_loss, P = sinkhorn_dist_single(cost_mat, lam,
-                                            x_hist, gt_hist,
+                                            gt_hist, x_hist,
                                             num_iters=num_sinkhorn_iters,
                                             eps=sinkhorn_eps)
 
@@ -296,8 +308,19 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
         if writer is not None:
             # Wasserstein Loss
             writer.add_scalar("data/sinkhorn_dist", hist_loss.item(), i)
+            # Image itself
+            pred_temp = model.sid_obj.get_value_from_sid_index(torch.floor(x_best).detach().long())
+            log_single_gray_img(writer, "depth/pred", pred_temp, model.min_depth, model.max_depth, global_step=i)
+            # Diff image
+            add_diff_map(writer, "depth/diff", gt, pred_temp, i)
+
+            # RMSE
+            metrics = model.get_metrics(pred_temp, gt, mask)
+            writer.add_scalar("data/rmse", metrics["rmse"], i)
+
             # Histogram plot
             add_hist_plot(writer, "hist/x_hist", x_hist, global_step=i)
+            # Image itself
 
         ###
         prev_loss = loss.item()
@@ -375,7 +398,7 @@ if __name__ == "__main__":
     ### TEST ON SMALL IMAGE ###
     kde_eps=1e-2
     n = 10
-    C = np.array([[(i - j)**2 for j in range(n)] for i in range(n)])
+    C = np.array([[(i - j)**2 for j in range(n+1)] for i in range(n+1)])
     cost_mat = torch.from_numpy(C).float()
     x_index_init = torch.tensor([[3, 7, 9],
                                  [3, 9, 8],
