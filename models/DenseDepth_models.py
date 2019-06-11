@@ -14,7 +14,9 @@ from models.core.model_core import Model
 from models.data.utils.sid_utils import SIDTorch
 from models.data.utils.spad_utils import remove_dc_from_spad, bgr2gray
 from models.loss import delta, mse, rmse, rel_abs_diff, rel_sqr_diff, log10
+from utils.inspect_results import add_hist_plot, log_single_gray_img
 
+from models.DORN_nohints import DORN_nyu_nohints
 from models.DenseDepth.utils import evaluate, predict, scale_up
 from models.DenseDepth.model import create_model
 from models.sinkhorn_dist import optimize_depth_map_masked
@@ -84,7 +86,6 @@ class DenseDepth(Model):
 
 class DenseDepthMedianRescaling(DenseDepth):
     def predict(self, input_):
-
         rgb = input_["rgb"]
         crop = input_["crop"]
         pred = scale_up(2, predict(self.model, rgb/255,
@@ -114,7 +115,6 @@ class DenseDepthSinkhornOpt(DenseDepth):
                  existing=os.path.join("models", "nyu.h5")):
         super(DenseDepthSinkhornOpt, self).__init__(min_depth, max_depth, existing)
         self.sid_bins = sid_bins
-        self.sid_obj = SIDTorch(sid_bins, alpha, beta, offset)
 
         self.sgd_iters = sgd_iters
         self.sinkhorn_iters = sinkhorn_iters
@@ -127,92 +127,115 @@ class DenseDepthSinkhornOpt(DenseDepth):
         self.use_intensity = use_intensity
         self.use_squared_falloff = use_squared_falloff
         self.lr = lr
+        self.sid_obj = SIDTorch(sid_bins, alpha, beta, offset)
+        self.one_over_depth_squared = 1./(self.sid_obj.sid_bin_values[:-2] ** 2)
+        self.one_over_depth_squared.requires_grad = False
 
+        C = np.array([[(self.sid_obj.sid_bin_values[i] - self.sid_obj.sid_bin_values[j]).item()**2 for i in range(sid_bins+1)]
+                                                                                                   for j in range(sid_bins+1)])
+        self.cost_mat = torch.from_numpy(C).float()
+        self.writer = None
 
-    def initialize(self, input_):
+    def initialize(self, rgb, crop):
         """
 
         :param input_: Dict of numpy arrays with key "rgb" for the rgb input and "crop" for the pixel
         locations to cropy the output image at.
         :return: Depth map of per-pixel depth indices.
         """
-        rgb = input_["rgb"].numpy() # Use uncropped version as input to the network.
-        crop = input_["crop"][0,:].numpy()
-        print(crop.shape)
+        rgb = rgb.numpy() # Use uncropped version as input to the network.
+        crop = crop[0,:].numpy()
         pred = scale_up(2, predict(self.model, rgb/255,
                                    minDepth=10, maxDepth=1000, batch_size=1)[:,:,:,0]) * 10.0
         pred_flip = scale_up(2, predict(self.model, rgb[...,::-1,:]/255,
                                         minDepth=10, maxDepth=1000, batch_size=1)[:,:,:,0]) * 10.0
 
+        # Test-time augmentation
         pred = pred[:,crop[0]:crop[1]+1, crop[2]:crop[3]+1]
         pred_flip = pred_flip[:,crop[0]:crop[1]+1, crop[2]:crop[3]+1]
         pred_combined = 0.5*pred + 0.5*pred_flip[:,:,::-1]
 
         # Convert to pytorch
-        pred_torch = torch.from_numpy(pred_combined)
-        print(pred_torch.shape)
+        pred_torch = torch.from_numpy(pred_combined).unsqueeze(0)
+        print("pred_torch", pred_torch.shape)
+        return pred_torch
 
-        # Apply discretization
-        pred_torch_index = self.sid_obj.get_sid_index_from_value(pred_torch)
-        print(torch.min(pred_torch_index))
-        print(torch.max(pred_torch_index))
-        # Convert back to numpy
-
-        return pred_torch_index
-
-    def evaluate(self, input_, device):
-        """
-
-        :param input_: Inputs (in numpy) to the network.
-        :param device: Device to run the torch optimization on.
-        :return: pred (numpy array), metrics (dict of metric-value pairs)
-        """
+    def evaluate(self, rgb, rgb_cropped, crop, spad, mask_cropped, gt, torch_cuda_device):
         # Run RGB through DORN
-        depth_init = self.initialize(input_) # Already resized properly. Array of depth indices.
+        depth_init = self.initialize(rgb, crop) # rgb is uncropped
+        # Move to another GPU for pytorch part...
+        os.environ["CUDA_VISIBLE_DEVICES"] = torch_cuda_device
         # DC Check
-        denoised_spad = input_["spad"].to(device)
+        if self.writer is not None:
+            add_hist_plot(self.writer, "hist/raw_spad", spad)
+        denoised_spad = spad
         if self.remove_dc:
             # bin_widths = (self.sid_obj.sid_bin_edges[1:] - self.sid_obj.sid_bin_edges[:-1]).cpu().numpy()
             bin_edges = self.sid_obj.sid_bin_edges.cpu().numpy().squeeze()
             denoised_spad = torch.from_numpy(remove_dc_from_spad(denoised_spad.squeeze(-1).squeeze(-1).cpu().numpy(),
-                                                                 bin_edges)).unsqueeze(-1).unsqueeze(-1).to(device)
+                                                                 bin_edges,
+                                                                 self.max_depth)).unsqueeze(-1).unsqueeze(-1)
             denoised_spad[denoised_spad < self.dc_eps] = self.dc_eps
         # Normalize to 1
         denoised_spad = denoised_spad / torch.sum(denoised_spad, dim=1, keepdim=True)
+        if self.writer is not None:
+            add_hist_plot(self.writer, "hist/spad_no_noise", denoised_spad)
         # Scaling check
         scaling = None
         if self.use_intensity:
             # intensity = input_["albedo_orig"][:, 1:2, ...].to(device) / 255.
-            scaling = bgr2gray(input_["rgb_cropped_orig"])
+            scaling = bgr2gray(rgb_cropped)/255.
         # Squared depth check
         inv_squared_depths = None
         if self.use_squared_falloff:
-            inv_squared_depths = (self.sid_obj.sid_bin_values[:68]**(-2)).unsqueeze(0).unsqueeze(-1).unsqueeze(-1).to(device)
-
+            inv_squared_depths = (self.sid_obj.sid_bin_values[:self.sid_bins+1]**(-2)).unsqueeze(0).unsqueeze(-1).unsqueeze(-1)
         with torch.enable_grad():
+            depth_index_init = self.sid_obj.get_sid_index_from_value(depth_init)
+            print("max depth index:", torch.max(depth_index_init))
+            print("min depth index:", torch.min(depth_index_init))
             depth_index_final, depth_hist_final = \
-                optimize_depth_map_masked(depth_init, input_["mask_orig"], sigma=self.sigma, n_bins=self.sid_bins,
+                optimize_depth_map_masked(depth_index_init, mask_cropped, sigma=self.sigma, n_bins=self.sid_bins,
                                           cost_mat=self.cost_mat, lam=self.lam, gt_hist=denoised_spad,
                                           lr=self.lr, num_sgd_iters=self.sgd_iters, num_sinkhorn_iters=self.sinkhorn_iters,
                                           kde_eps=self.kde_eps,
                                           sinkhorn_eps=self.sinkhorn_eps,
                                           inv_squared_depths=inv_squared_depths,
-                                          scaling=scaling)
-            depth_index_final = torch.round(depth_index_final).detach().long().cpu()
+                                          scaling=scaling, writer=self.writer, gt=gt,
+                                          model=self)
+            depth_index_final = torch.floor(depth_index_final).detach().long()
+            # depth_index_final = torch.round(depth_index_final).detach().long()
+
 
             # Get depth maps and compute metrics
             pred = self.sid_obj.get_value_from_sid_index(depth_index_final)
             # Note: align_corners=False gives same behavior as cv2.resize
 
         # compute metrics
-        gt = input_["depth_cropped_orig"].cpu().numpy()
-        mask = input_["mask_orig"].cpu().numpy()
+        pred = pred.cpu()
+        gt = gt.cpu()
+        mask = mask_cropped.cpu()
         metrics = self.get_metrics(pred, gt, mask)
 
+
+        if self.writer is not None:
+            import torchvision.utils as vutils
+            log_single_gray_img(self.writer, "depth/pred_init", depth_init, self.min_depth, self.max_depth)
+            log_single_gray_img(self.writer, "depth/gt", gt, self.min_depth, self.max_depth)
+            log_single_gray_img(self.writer, "depth/pred", pred, self.min_depth, self.max_depth)
+            log_single_gray_img(self.writer, "img/mask", mask, 0., 1.)
+            if scaling is not None:
+                print("min scaling", torch.min(scaling))
+                print("max scaling", torch.max(scaling))
+                log_single_gray_img(self.writer, "img/intensity", scaling, 0., 1.)
+            rgb_img = vutils.make_grid(rgb_cropped/ 255, nrow=1)
+            self.writer.add_image("img/rgb", rgb_img, 0)
+
         # Also compute initial metrics:
-        before_metrics = self.get_metrics(depth_init.cpu().numpy(), gt, mask)
+        before_metrics = self.get_metrics(depth_init.float().cpu(), gt, mask)
         print("before", before_metrics)
-        return pred.cpu().numpy(), metrics
+        return pred, metrics
+
+DenseDepthSinkhornOpt.get_metrics = staticmethod(DORN_nyu_nohints.get_metrics)
 
 
 if __name__ == "__main__":

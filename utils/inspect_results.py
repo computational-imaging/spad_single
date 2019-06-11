@@ -1,6 +1,7 @@
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
+import torchvision.utils as vutils
 import json
 
 
@@ -34,6 +35,19 @@ def add_hist_plot(writer, name, hist_tensor, global_step=None):
            hist_tensor.clone().detach().cpu().numpy().squeeze())
     writer.add_figure(name, fig, global_step=global_step)
 
+
+def log_single_gray_img(writer, name, img_tensor, min, max, global_step=0):
+    img = vutils.make_grid(img_tensor, nrow=1,
+                           normalize=True, range=(min, max))
+    writer.add_image(name, img, global_step=global_step)
+
+
+def add_diff_map(writer, name, gt_tensor, img_tensor, global_step=0):
+    diff = gt_tensor - img_tensor
+    fig = plt.figure()
+    plt.imshow(diff.numpy().squeeze())
+    plt.colorbar()
+    writer.add_figure(name, fig, global_step=global_step)
 
 
 def show(img):

@@ -6,7 +6,7 @@ import numpy as np
 from models.data.utils.sid_utils import SIDTorch
 from models.sinkhorn_dist import optimize_depth_map_masked
 from models.data.utils.spad_utils import remove_dc_from_spad, bgr2gray
-from utils.inspect_results import add_hist_plot
+from utils.inspect_results import add_hist_plot, log_single_gray_img
 from torch.optim import SGD
 import matplotlib
 matplotlib.use("Agg")
@@ -106,7 +106,8 @@ class DORN_sinkhorn_opt:
 
         C = np.array([[(self.sid_obj.sid_bin_values[i] - self.sid_obj.sid_bin_values[j]).item()**2 for i in range(sid_bins+1)]
                                                                                                    for j in range(sid_bins+1)])
-        self.cost_mat = torch.from_numpy(C*100).float()
+        self.cost_mat = torch.from_numpy(C).float()
+        np.save("cost_mat.np", C)
         self.writer = None
 
     def to(self, device):
@@ -162,7 +163,8 @@ class DORN_sinkhorn_opt:
             # bin_widths = (self.sid_obj.sid_bin_edges[1:] - self.sid_obj.sid_bin_edges[:-1]).cpu().numpy()
             bin_edges = self.sid_obj.sid_bin_edges.cpu().numpy().squeeze()
             denoised_spad = torch.from_numpy(remove_dc_from_spad(denoised_spad.squeeze(-1).squeeze(-1).cpu().numpy(),
-                                                                 bin_edges)).unsqueeze(-1).unsqueeze(-1).to(device)
+                                                                 bin_edges,
+                                                                 self.max_depth)).unsqueeze(-1).unsqueeze(-1).to(device)
             denoised_spad[denoised_spad < self.dc_eps] = self.dc_eps
         # Normalize to 1
         denoised_spad = denoised_spad / torch.sum(denoised_spad, dim=1, keepdim=True)
@@ -172,7 +174,7 @@ class DORN_sinkhorn_opt:
         scaling = None
         if self.use_intensity:
             # intensity = input_["albedo_orig"][:, 1:2, ...].to(device) / 255.
-            scaling = bgr2gray(rgb_orig)
+            scaling = bgr2gray(rgb_orig)/255.
         # Squared depth check
         inv_squared_depths = None
         if self.use_squared_falloff:
@@ -188,8 +190,11 @@ class DORN_sinkhorn_opt:
                                           kde_eps=self.kde_eps,
                                           sinkhorn_eps=self.sinkhorn_eps,
                                           inv_squared_depths=inv_squared_depths,
-                                          scaling=scaling, writer=self.writer)
-            depth_index_final = torch.round(depth_index_final).detach().long()
+                                          scaling=scaling, writer=self.writer, gt=gt,
+                                          model=self)
+            depth_index_final = torch.floor(depth_index_final).detach().long()
+            # depth_index_final = torch.round(depth_index_final).detach().long()
+
 
             # Get depth maps and compute metrics
             pred = self.feature_extractor.sid_obj.get_value_from_sid_index(depth_index_final)
@@ -197,22 +202,24 @@ class DORN_sinkhorn_opt:
 
         # compute metrics
         pred = pred.cpu()
+        print(pred.dtype)
         gt = gt.cpu()
+        print(gt.dtype)
         mask = mask_orig.cpu()
+        print(mask.dtype)
         metrics = self.get_metrics(pred, gt, mask)
 
 
         if self.writer is not None:
             import torchvision.utils as vutils
-            def log_single_gray_img(writer, name, img_tensor, min, max):
-                img = vutils.make_grid(img_tensor, nrow=1,
-                                                 normalize=True, range=(min, max))
-                writer.add_image(name, img, 0)
-
             log_single_gray_img(self.writer, "depth/pred_init", depth_init, self.min_depth, self.max_depth)
             log_single_gray_img(self.writer, "depth/gt", gt, self.min_depth, self.max_depth)
             log_single_gray_img(self.writer, "depth/pred", pred, self.min_depth, self.max_depth)
-            log_single_gray_img(self.writer, "mask", mask, 0., 1.)
+            log_single_gray_img(self.writer, "img/mask", mask, 0., 1.)
+            if scaling is not None:
+                log_single_gray_img(self.writer, "img/intensity", scaling, 0., 1.)
+            rgb_img = vutils.make_grid(torch.flip(rgb_orig, dims=(1,)) / 255, nrow=1)
+            self.writer.add_image("img/rgb", rgb_img, 0)
 
         # Also compute initial metrics:
         before_metrics = self.get_metrics(depth_init.cpu(), gt, mask)
