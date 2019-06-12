@@ -6,12 +6,13 @@ from collections import defaultdict
 import json
 from models.core.checkpoint import load_checkpoint, safe_makedir
 from models.data.utils.transforms import AddDepthMask
+from utils.eval_utils import evaluate_model_on_dataset, evaluate_model_on_data_entry
 from models import make_model
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
 # Dataset
-from models.data.nyuv2_test_split_dataset import nyuv2_test_split_ingredient, load_data
+from models.data.nyuv2_test_split_dataset_hints_sid import nyuv2_test_split_ingredient, load_data
 
 ex = Experiment('densedepth_nohints', ingredients=[nyuv2_test_split_ingredient])
 
@@ -34,6 +35,7 @@ def cfg(data_config):
     save_outputs = True
     seed = 95290421
     small_run = 0
+    entry = None
 
     # print(data_config.keys())
     output_dir = os.path.join("results",
@@ -60,51 +62,29 @@ def main(model_config,
          output_dir,
          data_config,
          seed,
-         small_run):
+         small_run,
+         entry):
     # Load the model
     model = make_model(**model_config)
     # model.sid_obj.to(device)
 
-    # Load the data
-    dataset = load_data()
+    from tensorboardX import SummaryWriter
+    from datetime import datetime
+    model.writer = SummaryWriter(log_dir=os.path.join("runs",
+                                                      datetime.now().strftime('%b%d'),
+                                                      datetime.now().strftime('%H-%M-%S_') + \
+                                                      "densedepth_nohints"))
 
+    # Load the data
+    dataset = load_data(dorn_mode=False)
+    eval_fn = lambda input_, device: model.evaluate(input_["rgb"].numpy(),
+                                                    input_["crop"][0,:].numpy(),
+                                                    input_["depth_cropped"].numpy())
     init_randomness(seed)
 
-    print("Evaluating the model on {}.".format(data_config["data_name"]))
-    # evaluate_model_on_dataset(model, dataset, small_run, device, save_outputs, output_dir)
-    add_mask = AddDepthMask(data_config["min_depth"], data_config["max_depth"], "depth_cropped")
-    all_metrics = defaultdict(dict)
-    avg_metrics = defaultdict(float)
-    total_pixels = 0.
-    for i in range(len(dataset)):
-        print("Evaluating {}".format(i))
-        input_ = dataset[i]
-        # Get valid pixels
-        input_ = add_mask(input_)
-
-        pred, metrics = model.evaluate(input_)
-        all_metrics[i] = metrics
-
-        total_pixels += np.sum(input_["mask"])
-        for metric_name in metrics:
-            avg_metrics[metric_name] += np.sum(input_["mask"]) * metrics[metric_name]
-        ## Save stuff ##
-        if save_outputs:
-            np.save(os.path.join(output_dir, "{:04d}.npy".format(i)), pred)
-        ## Done saving stuff ##
-        print({metric_name: avg_metrics[metric_name]/total_pixels for metric_name in avg_metrics})
-
-    for metric_name in avg_metrics:
-        avg_metrics[metric_name] /= total_pixels
-    with open(os.path.join(output_dir, "avg_metrics.json"), "w") as f:
-        json.dump(avg_metrics, f)
-    with open(os.path.join(output_dir, "metrics.json"), "w") as f:
-        json.dump(all_metrics, f)
-
-    print(avg_metrics)
-    print("wrote results to {}".format(output_dir))
-
-
-
-
-
+    if entry is None:
+        print("Evaluating the model on {}.".format(data_config["data_name"]))
+        evaluate_model_on_dataset(eval_fn, dataset, small_run, None, save_outputs, output_dir)
+    else:
+        print("Evaluating {}".format(entry))
+        evaluate_model_on_data_entry(eval_fn, dataset, entry, None, save_outputs, output_dir)

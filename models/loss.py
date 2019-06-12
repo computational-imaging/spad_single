@@ -2,6 +2,36 @@ import torch
 from torch.nn import MSELoss, L1Loss
 
 
+def get_depth_metrics(depth_pred, depth_truth, mask):
+    """
+    Takes torch tensors.
+    :param depth_pred: Depth prediction
+    :param depth_truth: Ground truth
+    :param mask: Masks off invalid pixels
+    :return: Dictionary of metrics
+    """
+    metrics = dict()
+    # deltas
+    metrics["delta1"] = delta(depth_pred, depth_truth, mask, 1.25).item()
+    metrics["delta2"] = delta(depth_pred, depth_truth, mask, 1.25 ** 2).item()
+    metrics["delta3"] = delta(depth_pred, depth_truth, mask, 1.25 ** 3).item()
+    # rel_abs_diff
+    metrics["rel_abs_diff"] = rel_abs_diff(depth_pred, depth_truth, mask).item()
+    # rel_sqr_diff
+    metrics["rel_sqr_diff"] = rel_sqr_diff(depth_pred, depth_truth, mask).item()
+    # log10
+    metrics["log10"] = log10(depth_pred, depth_truth, mask).item()
+    # mse
+    metrics["mse"] = mse(depth_pred, depth_truth, mask).item()
+    # rmse
+    metrics["rmse"] = rmse(depth_pred, depth_truth, mask).item()
+    # rmse(log)
+    metrics["log_rmse"] = rmse(torch.log(depth_pred),
+                               torch.log(depth_truth),
+                               mask).item()
+    # print(metrics)
+    return metrics
+
 ##################
 # Loss functions #
 ##################

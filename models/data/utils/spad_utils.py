@@ -353,6 +353,8 @@ def remove_dc_from_spad(noisy_spad, bin_edges, max_depth, lam=1e-2, eps=1e-5):
     return denoised_spad
 
 
+
+
 if __name__ == "__main__":
     min_depth = 0.
     max_depth = 10.

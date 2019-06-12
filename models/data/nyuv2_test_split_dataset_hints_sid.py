@@ -59,7 +59,6 @@ class NYUDepthv2TestDataset(Dataset):
                                     self.crop[2]:self.crop[3]+1,
                                     :
                                     ]
-        # Unnecessary because wonka is already in BGR order.
         if dorn_mode:
             self.rgb = np.flip(self.rgb, axis=3).copy() # N x H x W x C
             self.rgb_cropped = np.flip(self.rgb_cropped, axis=3).copy()
@@ -109,14 +108,14 @@ def load_data(root_dir,
 
     transform_list = [
         AddDepthMask(min_depth, max_depth, "depth_cropped"),
+        Save(["rgb_cropped", "mask", "depth_cropped"], "_orig"),
     ]
     if dorn_mode:
-        transform_list.append(Save(["rgb_cropped", "mask", "depth_cropped"], "_orig"))
         transform_list.append(ResizeAll((353, 257), keys=["rgb_cropped", "depth_cropped"]))
     transform_list += [
         Normalize(transform_mean, transform_var, key="rgb_cropped"),
         AddDepthMask(min_depth, max_depth, "depth_cropped"),
-        SimulateSpadIntensity("depth_cropped", "rgb_cropped", "mask", "spad", min_depth, max_depth,
+        SimulateSpadIntensity("depth_cropped_orig", "rgb_cropped_orig", "mask_orig", "spad", min_depth, max_depth,
                      spad_config["spad_bins"],
                      spad_config["photon_count"],
                      spad_config["dc_count"],
