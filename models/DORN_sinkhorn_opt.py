@@ -202,11 +202,8 @@ class DORN_sinkhorn_opt:
 
         # compute metrics
         pred = pred.cpu()
-        print(pred.dtype)
         gt = gt.cpu()
-        print(gt.dtype)
         mask = mask_orig.cpu()
-        print(mask.dtype)
         metrics = self.get_metrics(pred, gt, mask)
 
 

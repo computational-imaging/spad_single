@@ -28,8 +28,6 @@ def spad_forward(x_index, mask, sigma, n_bins, kde_eps=1e-2,
     :returns x_hist: N x n_bins histograms
     """
     per_pixel_hists = kernel_density_estimation(x_index, sigma, n_bins, eps=kde_eps)
-    # print(per_pixel_hists)
-    # print(mask)
     x = per_pixel_hists * mask
     weights = torch.ones_like(x)
     if scaling is not None:

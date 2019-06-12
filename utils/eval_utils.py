@@ -90,6 +90,7 @@ def evaluate_model_on_dataset(eval_fn, dataset, small_run, device,
             if small_run and i == small_run:
                 break
             entry = data["entry"][0]
+            entry = entry if isinstance(entry, str) else entry.item()
             print("Evaluating {}".format(data["entry"][0]))
             # pred, pred_metrics = model.evaluate(data, device)
             pred, pred_metrics = eval_fn(data, device)

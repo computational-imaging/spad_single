@@ -39,11 +39,10 @@ class DenseDepth(Model):
         self.max_depth = max_depth
         self.model = create_model(existing)
 
-    def predict(self, input_):
+    def predict(self, rgb, crop):
         """
+        Works in numpy.
         """
-        rgb = input_["rgb"]
-        crop = input_["crop"]
         pred = scale_up(2, predict(self.model, rgb/255,
                                    minDepth=10, maxDepth=1000, batch_size=1)[:,:,:,0]) * 10.0
         pred_flip = scale_up(2, predict(self.model, rgb[...,::-1,:]/255,
@@ -55,14 +54,20 @@ class DenseDepth(Model):
         pred_final = 0.5*pred + 0.5*pred_flip[:,:,::-1]
         return pred_final
 
-    def evaluate(self, input_):
+    def evaluate(self, rgb, crop, gt):
+        """
+        Works in numpy, but returns a torch tensor prediction.
+        :param rgb: N x H x W x C in RGB order (not BGR)
+        :param crop: length-4 array with crop pixel coordinates
+        :param gt: N x H x W x C
+        :return: torch tensor prediction and metrics dict
+        """
         # Output full-size depth map, so set resize_output=True
-        pred = self.predict(input_)
-        gt = input_["depth_cropped"]
+        pred = self.predict(rgb, crop)
         metrics = {}
         metrics["delta1"], metrics["delta2"], metrics["delta3"], \
         metrics["abs_rel_diff"], metrics["mse"], metrics["rmse"], metrics["log10"] = self.get_metrics(gt, pred)
-        return pred, metrics
+        return torch.from_numpy(pred).float(), metrics
 
     # Error computaiton based on https://github.com/tinghuiz/SfMLearner
     @staticmethod
@@ -160,11 +165,21 @@ class DenseDepthSinkhornOpt(DenseDepth):
         print("pred_torch", pred_torch.shape)
         return pred_torch
 
-    def evaluate(self, rgb, rgb_cropped, crop, spad, mask_cropped, gt, torch_cuda_device):
+    def evaluate(self, rgb, rgb_cropped, crop, spad, mask_cropped, gt, device):
         # Run RGB through DORN
         depth_init = self.initialize(rgb, crop) # rgb is uncropped
         # Move to another GPU for pytorch part...
-        os.environ["CUDA_VISIBLE_DEVICES"] = torch_cuda_device
+        # os.environ["CUDA_VISIBLE_DEVICES"] = torch_cuda_device
+        # device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+        # rgb = rgb.to(device)
+        depth_init = depth_init.to(device)
+        rgb_cropped = rgb_cropped.to(device)
+        spad = spad.to(device)
+        mask_cropped = mask_cropped.to(device)
+        self.sid_obj.to(device)
+        self.cost_mat = self.cost_mat.to(device)
+
+
         # DC Check
         if self.writer is not None:
             add_hist_plot(self.writer, "hist/raw_spad", spad)
@@ -178,6 +193,7 @@ class DenseDepthSinkhornOpt(DenseDepth):
             denoised_spad[denoised_spad < self.dc_eps] = self.dc_eps
         # Normalize to 1
         denoised_spad = denoised_spad / torch.sum(denoised_spad, dim=1, keepdim=True)
+        denoised_spad = denoised_spad.to(device)
         if self.writer is not None:
             add_hist_plot(self.writer, "hist/spad_no_noise", denoised_spad)
         # Scaling check

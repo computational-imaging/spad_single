@@ -45,7 +45,7 @@ def log_single_gray_img(writer, name, img_tensor, min, max, global_step=0):
 def add_diff_map(writer, name, gt_tensor, img_tensor, global_step=0):
     diff = gt_tensor - img_tensor
     fig = plt.figure()
-    plt.imshow(diff.numpy().squeeze())
+    plt.imshow(diff.cpu().numpy().squeeze())
     plt.colorbar()
     writer.add_figure(name, fig, global_step=global_step)
 

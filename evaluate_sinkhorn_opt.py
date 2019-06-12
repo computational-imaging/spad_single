@@ -15,14 +15,14 @@ from time import perf_counter
 from models.data.nyuv2_test_split_dataset_hints_sid import nyuv2_test_split_ingredient, load_data
 from models.data.utils.spad_utils import spad_ingredient
 
-ex = Experiment('eval_densedepth_sinkhorn_opt_test_split', ingredients=[nyuv2_test_split_ingredient, spad_ingredient])
+ex = Experiment('eval_densedepth_sinkhorn_opt_test_split', ingredients=[nyuv2_test_split_ingredient, directory_dataset_ingredient])
 
 @ex.config
 def cfg(data_config, spad_config):
     model_config = {                            # Load pretrained model for testing
-        "model_name": "DenseDepthSinkhornOpt",
+        "model_name": "SinkhornOpt",
         "model_params": {
-            "sgd_iters": 200,
+            "sgd_iters": 300,
             "sinkhorn_iters": 40,
             "sigma": 0.5,
             "lam": 2e1,
@@ -39,7 +39,6 @@ def cfg(data_config, spad_config):
             "max_depth": data_config["max_depth"],
             "alpha": data_config["alpha"],
             "beta": data_config["beta"],
-            "existing": os.path.join("models", "nyu.h5"),
         },
         "model_state_dict_fn": None             # Keep as None
     }
@@ -48,7 +47,6 @@ def cfg(data_config, spad_config):
     seed = 95290421
     small_run = 0
     entry = None
-    # hyperparams = ["sgd_iters", "sinkhorn_iters", "sigma", "lam", "kde_eps", "sinkhorn_eps"]
     pdict = model_config["model_params"]
     comment = "_".join(["sgd_iters_{}".format(pdict["sgd_iters"]),
                         "sinkhorn_iters_{}".format(pdict["sinkhorn_iters"]),
@@ -71,12 +69,11 @@ def cfg(data_config, spad_config):
     ex.observers.append(FileStorageObserver.create(os.path.join(output_dir, "runs")))
 
     # Devices are for pytorch.
-    cuda_device = "0,3"                       # The gpu index to run on. Should be a string
-    os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
-    # print("after: {}".format(os.environ["CUDA_VISIBLE_DEVICES"]))
-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
-    # print("using device: {} (CUDA_VISIBLE_DEVICES = {})".format(device,
-    #                                                             os.environ["CUDA_VISIBLE_DEVICES"]))
+    cuda_device = "0"                       # The gpu index to run on. Should be a string
+    os.environ["CUDA_VISIBLE_DEVICES"] = tf_cuda_device
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("using device: {} (CUDA_VISIBLE_DEVICES = {})".format(device,
+                                                                os.environ["CUDA_VISIBLE_DEVICES"]))
     if ckpt_file is not None:
         model_update, _, _ = load_checkpoint(ckpt_file)
         model_config.update(model_update)
@@ -96,7 +93,7 @@ def main(model_config,
     model = make_model(**model_config)
     # model.sid_obj.to(device)
     # print(model)
-    # model.to(device)
+    model.to(device)
 
     from tensorboardX import SummaryWriter
     from datetime import datetime
@@ -117,7 +114,7 @@ def main(model_config,
     init_randomness(seed)
     if entry is None:
         print("Evaluating the model on {}.".format(data_config["data_name"]))
-        evaluate_model_on_dataset(eval_fn, dataset, small_run, device, save_outputs, output_dir)
+        evaluate_model_on_dataset(eval_fn, dataset, small_run, torch_cuda_device, save_outputs, output_dir)
     else:
         print("Evaluating {}".format(entry))
-        evaluate_model_on_data_entry(eval_fn, dataset, entry, device, save_outputs, output_dir)
+        evaluate_model_on_data_entry(eval_fn, dataset, entry, torch_cuda_device, save_outputs, output_dir)

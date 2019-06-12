@@ -3,7 +3,7 @@ import os
 import torch
 import numpy as np
 from utils.train_utils import init_randomness
-from utils.eval_utils import evaluate_model_on_dataset
+from utils.eval_utils import evaluate_model_on_dataset, evaluate_model_on_data_entry
 from collections import defaultdict
 import json
 from models.core.checkpoint import load_checkpoint, safe_makedir
@@ -13,7 +13,7 @@ from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
 # Dataset
-from models.data.nyuv2_test_split_dataset import nyuv2_test_split_ingredient, load_data
+from models.data.nyuv2_test_split_dataset_hints_sid import nyuv2_test_split_ingredient, load_data
 
 ex = Experiment('eval_dorn_nohints_test_split', ingredients=[nyuv2_test_split_ingredient])
 
@@ -39,6 +39,7 @@ def cfg(data_config):
     save_outputs = True
     seed = 95290421
     small_run = 0
+    entry = None
 
     # hyperparams = ["sgd_iters", "sinkhorn_iters", "sigma", "lam", "kde_eps", "sinkhorn_eps"]
     pdict = model_config["model_params"]
@@ -71,56 +72,30 @@ def main(model_config,
          data_config,
          seed,
          small_run,
+         entry,
          device):
     # Load the model
     model = make_model(**model_config)
     model.eval()
     model.to(device)
-    # model.sid_obj.to(device)
+    model.sid_obj.to(device)
 
     # Load the data
     dataset = load_data(dorn_mode=True)
+    eval_fn = lambda input_, device: model.evaluate(input_["rgb_cropped"].to(device),
+                                                    input_["rgb_cropped_orig"].to(device),
+                                                    input_["depth_cropped_orig"].to(device),
+                                                    input_["mask_orig"].to(device),
+                                                    device)
 
     init_randomness(seed)
 
-    print("Evaluating the model on {}".format(data_config["data_name"]))
-    all_metrics = defaultdict(dict)
-    avg_metrics = defaultdict(float)
-    total_pixels = 0.
-    for i in range(len(dataset)):
-        if small_run and i == small_run:
-            break
-        print("Evaluating {}".format(i))
-        input_ = dataset[i]
-        input_modified = {}
-        input_modified["rgb"] = input_["rgb_cropped"].unsqueeze(0)  # The input (cropped to dorn input)
-        input_modified["rgb_orig"] = input_["rgb_cropped_orig"].unsqueeze(0)  # The original rgb image (cropped to output size)
-        input_modified["rawdepth_orig"] = input_["depth_cropped_orig"].unsqueeze(0)  # The output
-        input_modified["mask_orig"] = input_["mask_orig"].unsqueeze(0)
-        # Get valid pixels
-        pred, metrics = model.evaluate(input_modified, device)
-        all_metrics[i] = metrics
-
-        total_pixels += torch.sum(input_modified["mask_orig"]).item()
-        for metric_name in metrics:
-            avg_metrics[metric_name] += (torch.sum(input_modified["mask_orig"]) * metrics[metric_name]).item()
-        ## Save stuff ##
-        if save_outputs:
-            torch.save(pred, os.path.join(output_dir, "{:04d}.pt".format(i)), )
-        ## Done saving stuff ##
-        # Print running average:
-        print({metric_name: avg_metrics[metric_name]/total_pixels for metric_name in avg_metrics})
-
-    for metric_name in avg_metrics:
-        avg_metrics[metric_name] /= total_pixels
-    with open(os.path.join(output_dir, "avg_metrics.json"), "w") as f:
-        json.dump(avg_metrics, f)
-    with open(os.path.join(output_dir, "metrics.json"), "w") as f:
-        json.dump(all_metrics, f)
-
-    print(avg_metrics)
-    print("wrote results to {}".format(output_dir))
-
+    if entry is None:
+        print("Evaluating the model on {}.".format(data_config["data_name"]))
+        evaluate_model_on_dataset(eval_fn, dataset, small_run, device, save_outputs, output_dir)
+    else:
+        print("Evaluating {}".format(entry))
+        evaluate_model_on_data_entry(eval_fn, dataset, entry, device, save_outputs, output_dir)
 
 
 

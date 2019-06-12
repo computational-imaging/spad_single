@@ -12,7 +12,7 @@ from time import perf_counter
 from models.core.checkpoint import safe_makedir
 from models.core.model_core import Model
 from models.data.utils.sid_utils import SIDTorch
-from models.loss import delta, mse, rmse, rel_abs_diff, rel_sqr_diff, log10
+from models.loss import get_depth_metrics
 
 
 class DORN_nyu_nohints(Model):
@@ -55,13 +55,7 @@ class DORN_nyu_nohints(Model):
             self.eval()
 
     def predict(self, rgb, rgb_orig, device, resize_output=True):
-        # one = perf_counter()
-        # print("dataloader: model input")
-        # print(rgb[:,:,50:55,50:55])
-        # two = perf_counter()
         depth_pred = self.forward(rgb)
-        # three = perf_counter()
-        # print("Forward pass: {}".format(three - two))
         logprobs = self.to_logprobs(depth_pred)
         if resize_output:
             original_size = rgb_orig.size()[-2:]
@@ -220,11 +214,9 @@ class DORN_nyu_nohints(Model):
         depth_mask = vutils.make_grid(input_["mask"], nrow=4, normalize=False)
         writer.add_image(tag + "/depth_mask", depth_mask, it)
 
-    def evaluate(self, data, device):
+    def evaluate(self, rgb, rgb_orig, gt, mask, device):
         # Output full-size depth map, so set resize_output=True
-        pred = self.predict(data, device, resize_output=True)
-        gt = data["rawdepth_orig"].cpu()
-        mask = data["mask_orig"].cpu()
+        pred = self.predict(rgb, rgb_orig, device, resize_output=True)
         metrics = self.get_metrics(pred,
                                    gt,
                                    mask)
@@ -232,34 +224,7 @@ class DORN_nyu_nohints(Model):
 
     @staticmethod
     def get_metrics(depth_pred, depth_truth, mask):
-        """
-        Takes torch tensors.
-        :param depth_pred: Depth prediction
-        :param depth_truth: Ground truth
-        :param mask: Masks off invalid pixels
-        :return: Dictionary of metrics
-        """
-        metrics = dict()
-        # deltas
-        metrics["delta1"] = delta(depth_pred, depth_truth, mask, 1.25).item()
-        metrics["delta2"] = delta(depth_pred, depth_truth, mask, 1.25 ** 2).item()
-        metrics["delta3"] = delta(depth_pred, depth_truth, mask, 1.25 ** 3).item()
-        # rel_abs_diff
-        metrics["rel_abs_diff"] = rel_abs_diff(depth_pred, depth_truth, mask).item()
-        # rel_sqr_diff
-        metrics["rel_sqr_diff"] = rel_sqr_diff(depth_pred, depth_truth, mask).item()
-        # log10
-        metrics["log10"] = log10(depth_pred, depth_truth, mask).item()
-        # mse
-        metrics["mse"] = mse(depth_pred, depth_truth, mask).item()
-        # rmse
-        metrics["rmse"] = rmse(depth_pred, depth_truth, mask).item()
-        # rmse(log)
-        metrics["log_rmse"] = rmse(torch.log(depth_pred),
-                                   torch.log(depth_truth),
-                                   mask).item()
-        # print(metrics)
-        return metrics
+        return get_depth_metrics(depth_pred, depth_truth, mask)
 
     def make_layers(self, in_channels, in_height, in_width, sid_bins):
         """
