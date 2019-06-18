@@ -106,10 +106,10 @@ def main(model_config,
 
     from tensorboardX import SummaryWriter
     from datetime import datetime
-    model.writer = SummaryWriter(log_dir=os.path.join("runs",
-                                                      datetime.now().strftime('%b%d'),
-                                                      datetime.now().strftime('%H-%M-%S_') + \
-                                                      "dorn_sinkhorn_opt"))
+    # model.writer = SummaryWriter(log_dir=os.path.join("runs",
+    #                                                   datetime.now().strftime('%b%d'),
+    #                                                   datetime.now().strftime('%H-%M-%S_') + \
+    #                                                   "dorn_sinkhorn_opt"))
 
     # Load the data
     dataset = load_data(dorn_mode=True)

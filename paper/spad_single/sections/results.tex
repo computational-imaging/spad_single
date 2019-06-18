@@ -13,7 +13,7 @@ pretrained according to \cite{Fu. et al} as our CNN.
 \begin{center}
 \begin{tabular}{lccc|ccc}
   \toprule
-    & $\delta^1 \uparrow$ & $\delta^2\uparrow$ & $\delta^3 \uparrow$ & RMSE $\downarrow$ & rel \downarrow & $log_{10} \downarrow$ \\
+    & $\delta^1 \uparrow$ & $\delta^2\uparrow$ & $\delta^3 \uparrow$ & RMSE $\downarrow$ & rel $\downarrow$ & $log_{10} \downarrow$ \\
   \midrule
 Eigen et. al. & 0.769 & 0.950 & 0.988 & 0.641 & 0.158 & - \\ 
 Laina et. al.&0.811&0.953&0.988&0.573&0.127&0.055 \\
@@ -23,7 +23,35 @@ Alhashim, Wonka (2019)&0.847&0.973&0.994&0.548(0.461)&0.123&0.053 \\
 Alhashim, Wonka (2019) rescaled using GT depth"&0.888&\textbf{0.978}&\textbf{0.995}&\textbf{0.499}(0.409)&\textbf{0.106}&\textbf{0.045} \\
   \midrule
   Ours (raw depth counts) & \textbf{0.899} & 0.970 & 0.990 & 0.529 & 0.199 & 0.055 \\
-  Ours (albedo/falloff) & 0.798 & 0.960 & 0.988 & 0.615 & 0.143 & 0.068 \\
+  Ours (DORN) (intensity/falloff) & 0.835 & 0.953 & 0.984 & 0.521 & 0.129 & 0.060 \\
+  Ours (DenseDepth) (intensity/falloff) & 0.867 & 0.974 & 0.994 & 0.445 & 0.114 & 0.050 \\
+  \bottomrule
+\end{tabular} 
+\end{center}
+\caption{Results on the NYU Depth v2 test set \cite{nyudepth}.}
+\end{table*}
+%%%
+\begin{table*}
+\begin{center}
+\begin{tabular}{lccc|ccc}
+  \toprule
+    & $\delta^1 \uparrow$ & $\delta^2\uparrow$ & $\delta^3 \uparrow$ & RMSE $\downarrow$ & rel $\downarrow$ & $log_{10} \downarrow$ \\
+  \midrule
+  DORN (cite)&0.818&0.950&0.982&0.620&0.137&0.063 \\
+DenseNet(cite))&0.847&0.973&0.994&0.461&0.123&0.053 \\
+  \midrule
+  DORN  DORN (rescaled) & 0.872 & 0.967 & 0.989 & 0.548 & 0.111 & 0.048 \\
+  DORN (Wass)
+  DORN (Histogram Matching)
+ Alhashim, Wonka (2019) rescaled using GT depth"&0.888&\textbf{0.978}&\textbf{0.995}&\textbf{0.499}(0.409)&\textbf{0.106}&\textbf{0.045} \\
+  DenseNet (Wass)
+  DenseNet (Histogram Matching)
+  \midrule
+  DORN (Median SPAD Rescaling)
+  DORN + Wasserstein (intensity/falloff) & 0.835 & 0.953 & 0.984 & 0.521 & 0.129 & 0.060 \\
+  DenseDepth (Median SPAD Rescaling)
+  DenseDepth + Wasserstein (intensity/falloff) & 0.867 & 0.974 & 0.994 & 0.445 & 0.114 & 0.050 \\
+  \midrule
   \bottomrule
 \end{tabular} 
 \end{center}
