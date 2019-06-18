@@ -22,10 +22,10 @@ def cfg(data_config, spad_config):
     model_config = {                            # Load pretrained model for testing
         "model_name": "DenseDepthSinkhornOpt",
         "model_params": {
-            "sgd_iters": 200,
+            "sgd_iters": 100,
             "sinkhorn_iters": 40,
             "sigma": 0.5,
-            "lam": 2e1,
+            "lam": 1e1,
             "kde_eps": 1e-4,
             "sinkhorn_eps": 1e-7,
             "dc_eps": 1e-5,
@@ -100,10 +100,10 @@ def main(model_config,
 
     from tensorboardX import SummaryWriter
     from datetime import datetime
-    model.writer = SummaryWriter(log_dir=os.path.join("runs",
-                                                      datetime.now().strftime('%b%d'),
-                                                      datetime.now().strftime('%H-%M-%S_') + \
-                                                      "densedepth_sinkhorn_opt"))
+    # model.writer = SummaryWriter(log_dir=os.path.join("runs",
+    #                                                   datetime.now().strftime('%b%d'),
+    #                                                   datetime.now().strftime('%H-%M-%S_') + \
+    #                                                   "densedepth_sinkhorn_opt"))
 
     # Load the data
     dataset = load_data(dorn_mode=False)

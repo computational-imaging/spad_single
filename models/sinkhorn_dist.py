@@ -245,6 +245,7 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
                               lr, num_sgd_iters, num_sinkhorn_iters,
                               kde_eps=1e-5,
                               sinkhorn_eps=1e-2,
+                              min_sgd_iters=0.,
                               inv_squared_depths=None,
                               scaling=None,
                               writer=None, gt=None, model=None):
@@ -262,6 +263,7 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
     :param num_sinkhorn_iters: Maximum number of sinkhorn iteration steps to take.
     :param kde_eps: Epsilon used for KDE to prevent 0 values in histogram.
     :param sinkhorn_eps: Epsilon used to control stopping criterion for the sinkhorn iterations.
+    :param min_sgd_iters: Minimum number of SGD iterations to undergo before stopping.
     :param inv_squared_depths: 1/depth^2 for each bin in [0, n_bins-1]
     :param scaling: Per-pixel scaling image.
     :return:
@@ -310,10 +312,10 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
             pred_temp = model.sid_obj.get_value_from_sid_index(torch.floor(x_best).detach().long())
             log_single_gray_img(writer, "depth/pred", pred_temp, model.min_depth, model.max_depth, global_step=i)
             # Diff image
-            add_diff_map(writer, "depth/diff", gt, pred_temp, i)
+            add_diff_map(writer, "depth/diff", gt.cpu(), pred_temp.cpu(), i)
 
             # RMSE
-            metrics = model.get_metrics(pred_temp, gt, mask)
+            metrics = model.get_metrics(pred_temp.cpu(), gt.cpu(), mask.cpu())
             writer.add_scalar("data/rmse", metrics["rmse"], i)
 
             # Histogram plot
@@ -338,7 +340,7 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
             rel_improvement = np.abs(prev_loss - loss.item())/loss.item()
             print("rel_improvement", rel_improvement)
             # if loss.item() < sinkhorn_eps:
-            if rel_improvement < sinkhorn_eps:
+            if rel_improvement < sinkhorn_eps and i >= min_sgd_iters:
                 x_index = torch.clamp(x_index, min=0., max=n_bins).requires_grad_(True)
                 print("early stopping")
                 return x_best, x_hist

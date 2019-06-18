@@ -2,22 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ebb10411-0152-4c74-83b8-0064780d50e4" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/evaluate_sinkhorn_opt.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/data/directory_dataset.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/sinkhorn_opt.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/labeled_equals_wonka.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/process_nyuv2_labeled.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/evaluate_densedepth_nohints.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_densedepth_nohints.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/evaluate_densedepth_sinkhorn_opt_test_split.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_densedepth_sinkhorn_opt_test_split.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/evaluate_dorn_test_split_nohints.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_dorn_test_split_nohints.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/DORN_nohints.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/DORN_nohints.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/DORN_sinkhorn_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/DORN_sinkhorn_opt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/evaluate_dorn_sinkhorn_opt_test_split.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_dorn_sinkhorn_opt_test_split.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/DenseDepth_models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/DenseDepth_models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/data/nyuv2_test_split_dataset_hints_sid.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/nyuv2_test_split_dataset_hints_sid.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/data/utils/spad_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/utils/spad_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/loss.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/loss.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/sinkhorn_dist.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/sinkhorn_dist.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/eval_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/eval_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/inspect_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/inspect_results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper/DepthNet.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/paper/DepthNet.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.synctex.gz" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.synctex.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper/spad_single/sections/results.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/sections/results.tex" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -29,11 +24,11 @@
     <splitter split-orientation="horizontal" split-proportion="0.5">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/evaluate_densedepth_sinkhorn_opt_test_split.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="426">
-                  <caret line="105" column="16" selection-start-line="100" selection-start-column="16" selection-end-line="105" selection-end-column="16" />
+                <state relative-caret-position="120">
+                  <caret line="22" column="29" selection-start-line="22" selection-start-column="29" selection-end-line="22" selection-end-column="29" />
                   <folding>
                     <element signature="e#23#32#0" expanded="true" />
                   </folding>
@@ -41,11 +36,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/evaluate_dorn_sinkhorn_opt_test_split.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="490">
-                  <caret line="79" column="20" selection-start-line="79" selection-start-column="20" selection-end-line="79" selection-end-column="20" />
+                <state relative-caret-position="360">
+                  <caret line="24" column="26" selection-start-line="24" selection-start-column="26" selection-end-line="24" selection-end-column="26" />
                   <folding>
                     <element signature="e#23#32#0" expanded="true" />
                   </folding>
@@ -56,29 +51,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/evaluate_sinkhorn_opt.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="319">
-                  <caret line="73" column="13" lean-forward="true" selection-start-line="73" selection-end-line="74" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/models/data/directory_dataset.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="60">
-                  <caret line="4" column="55" selection-start-line="4" selection-start-column="55" selection-end-line="4" selection-end-column="55" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/models/DenseDepth_models.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="379">
-                  <caret line="157" column="28" selection-start-line="157" selection-start-column="28" selection-end-line="157" selection-end-column="28" />
-                  <folding>
-                    <element signature="e#0#12#0" expanded="true" />
-                  </folding>
+                <state relative-caret-position="885">
+                  <caret line="73" column="13" selection-start-line="73" selection-end-line="74" />
                 </state>
               </provider>
             </entry>
@@ -87,11 +61,11 @@
       </split-first>
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/models/DORN_sinkhorn_opt.py">
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/models/DenseDepth_models.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="651">
-                  <caret line="206" column="22" selection-start-line="206" selection-start-column="18" selection-end-line="206" selection-end-column="22" />
+                <state relative-caret-position="2640">
+                  <caret line="197" column="48" selection-start-line="197" selection-start-column="48" selection-end-line="197" selection-end-column="48" />
                   <folding>
                     <element signature="e#0#12#0" expanded="true" />
                   </folding>
@@ -100,10 +74,43 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/models/DORN_sinkhorn_opt.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="2130">
+                  <caret line="152" selection-start-line="152" selection-end-line="152" />
+                  <folding>
+                    <element signature="e#0#12#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/data/process_nyuv2_labeled.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="750">
+                  <caret line="54" column="26" selection-start-line="54" selection-start-column="26" selection-end-line="54" selection-end-column="26" />
+                  <folding>
+                    <element signature="e#24#35#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/data/labeled_equals_wonka.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="120">
+                  <caret line="8" column="45" selection-start-line="8" selection-start-column="45" selection-end-line="8" selection-end-column="45" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/models/sinkhorn_opt.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1050">
-                  <caret line="70" column="26" lean-forward="true" selection-start-line="70" selection-start-column="26" selection-end-line="70" selection-end-column="26" />
+                <state relative-caret-position="765">
+                  <caret line="70" column="26" selection-start-line="70" selection-start-column="26" selection-end-line="70" selection-end-column="26" />
                   <folding>
                     <element signature="e#0#12#0" expanded="true" />
                   </folding>
@@ -114,8 +121,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/utils/eval_utils.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="397">
-                  <caret line="102" column="48" lean-forward="true" selection-start-line="102" selection-start-column="48" selection-end-line="102" selection-end-column="48" />
+                <state relative-caret-position="1395">
+                  <caret line="102" column="48" selection-start-line="102" selection-start-column="48" selection-end-line="102" selection-end-column="48" />
                   <folding>
                     <element signature="e#0#12#0" expanded="true" />
                   </folding>
@@ -126,10 +133,22 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/models/sinkhorn_dist.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="450">
-                  <caret line="30" selection-start-line="30" selection-end-line="30" />
+                <state relative-caret-position="3585">
+                  <caret line="242" column="14" selection-start-line="242" selection-start-column="14" selection-end-line="242" selection-end-column="14" />
                   <folding>
                     <element signature="e#0#12#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/models/data/nyuv2_test_split_dataset.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="30">
+                  <caret line="13" column="54" selection-start-line="13" selection-start-column="54" selection-end-line="13" selection-end-column="54" />
+                  <folding>
+                    <element signature="e#0#9#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -148,8 +167,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>&quot;dataset</find>
-      <find>&quot;dataset&quot;</find>
       <find>eval_config[&quot;dataset&quot;]</find>
       <find>losses</find>
       <find>output</find>
@@ -178,6 +195,8 @@
       <find>get_metrics</find>
       <find>rgb_</find>
       <find>device</find>
+      <find>min</find>
+      <find>uncropped</find>
     </findStrings>
     <replaceStrings>
       <replace>prediction</replace>
@@ -197,8 +216,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/evaluate_hints_sid.py" />
-        <option value="$PROJECT_DIR$/data/train_test_split_nyu.py" />
         <option value="$PROJECT_DIR$/utils/inspect.py" />
         <option value="$PROJECT_DIR$/models/core/model_core.py" />
         <option value="$PROJECT_DIR$/evaluate_hints_sid_unet.py" />
@@ -244,17 +261,19 @@
         <option value="$PROJECT_DIR$/models/DORN_nohints.py" />
         <option value="$PROJECT_DIR$/evaluate_dorn_test_split_nohints.py" />
         <option value="$PROJECT_DIR$/models/data/nyuv2_test_split_dataset_hints_sid.py" />
-        <option value="$PROJECT_DIR$/evaluate_dorn_sinkhorn_opt_test_split.py" />
-        <option value="$PROJECT_DIR$/models/DenseDepth_models.py" />
         <option value="$PROJECT_DIR$/models/sinkhorn_dist.py" />
+        <option value="$PROJECT_DIR$/models/DenseDepth_models.py" />
+        <option value="$PROJECT_DIR$/evaluate_dorn_sinkhorn_opt_test_split.py" />
         <option value="$PROJECT_DIR$/evaluate_densedepth_sinkhorn_opt_test_split.py" />
+        <option value="$PROJECT_DIR$/data/process_nyuv2_labeled.py" />
+        <option value="$PROJECT_DIR$/data/labeled_equals_wonka.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds">
     <option name="y" value="23" />
-    <option name="width" value="1440" />
-    <option name="height" value="877" />
+    <option name="width" value="1920" />
+    <option name="height" value="1057" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -262,44 +281,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
-              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
-              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
-              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
-              <item name="depthnet" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
-              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
-              <item name="depthnet" type="462c0819:PsiDirectoryNode" />
-              <item name="model" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
-              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
-              <item name="models" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
-              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
-              <item name="models" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
       <pane id="Scope">
         <subPane subId="Scope 'Project Files'; set:Project Files; class com.intellij.psi.search.scope.ProjectFilesScope">
           <expand>
@@ -334,6 +315,44 @@
               <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
               <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
               <item name="utils" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+              <item name="data" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+              <item name="depthnet" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+              <item name="depthnet" type="462c0819:PsiDirectoryNode" />
+              <item name="model" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+              <item name="models" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+              <item name="models" type="462c0819:PsiDirectoryNode" />
+              <item name="data" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -431,18 +450,19 @@
       <workItem from="1558580811252" duration="5687000" />
       <workItem from="1558733147481" duration="79476000" />
       <workItem from="1559781862536" duration="13467000" />
-      <workItem from="1560194115635" duration="29737000" />
+      <workItem from="1560194115635" duration="42553000" />
+      <workItem from="1560892267831" duration="534000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="616675000" />
+    <option name="totallyTimeSpent" value="630025000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1440" height="877" extended-state="6" />
+    <frame x="0" y="23" width="1920" height="1057" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.20415473" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.27665246" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -506,15 +526,18 @@
       <path value="$PROJECT_DIR$/models/DenseDepth" />
     </ignored-roots>
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/models/DORN_sinkhorn_opt.py</url>
+          <line>184</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/models/dc_removal.py" />
-    <entry file="file://$PROJECT_DIR$/evaluate_dorn_bayesian_opt.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="42" selection-start-line="6" selection-start-column="42" selection-end-line="6" selection-end-column="42" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/evaluate_hints_histogram_matching.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="210">
@@ -860,64 +883,44 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_test_split_dataset.py">
+    <entry file="file://$PROJECT_DIR$/models/data/directory_dataset.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="13" column="54" selection-start-line="13" selection-start-column="54" selection-end-line="13" selection-end-column="54" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="60">
+          <caret line="4" column="56" lean-forward="true" selection-start-line="4" selection-start-column="56" selection-end-line="4" selection-end-column="56" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_sinkhorn_opt.py">
+    <entry file="file://$PROJECT_DIR$/evaluate_densedepth_sinkhorn_opt_test_split.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="319">
-          <caret line="73" column="13" lean-forward="true" selection-start-line="73" selection-end-line="74" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_dorn_sinkhorn_opt_test_split.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="490">
-          <caret line="79" column="20" selection-start-line="79" selection-start-column="20" selection-end-line="79" selection-end-column="20" />
+        <state relative-caret-position="120">
+          <caret line="22" column="29" selection-start-line="22" selection-start-column="29" selection-end-line="22" selection-end-column="29" />
           <folding>
             <element signature="e#23#32#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/directory_dataset.py">
+    <entry file="file://$PROJECT_DIR$/evaluate_sinkhorn_opt.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" column="55" selection-start-line="4" selection-start-column="55" selection-end-line="4" selection-end-column="55" />
+        <state relative-caret-position="885">
+          <caret line="73" column="13" selection-start-line="73" selection-end-line="74" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/sinkhorn_opt.py">
+    <entry file="file://$PROJECT_DIR$/evaluate_dorn_sinkhorn_opt_test_split.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1050">
-          <caret line="70" column="26" lean-forward="true" selection-start-line="70" selection-start-column="26" selection-end-line="70" selection-end-column="26" />
+        <state relative-caret-position="360">
+          <caret line="24" column="26" selection-start-line="24" selection-start-column="26" selection-end-line="24" selection-end-column="26" />
           <folding>
-            <element signature="e#0#12#0" expanded="true" />
+            <element signature="e#23#32#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/utils/eval_utils.py">
+    <entry file="file://$PROJECT_DIR$/models/DenseDepth_models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="397">
-          <caret line="102" column="48" lean-forward="true" selection-start-line="102" selection-start-column="48" selection-end-line="102" selection-end-column="48" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/sinkhorn_dist.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="450">
-          <caret line="30" selection-start-line="30" selection-end-line="30" />
+        <state relative-caret-position="2640">
+          <caret line="197" column="48" selection-start-line="197" selection-start-column="48" selection-end-line="197" selection-end-column="48" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
@@ -926,31 +929,68 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/models/DORN_sinkhorn_opt.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="651">
-          <caret line="206" column="22" selection-start-line="206" selection-start-column="18" selection-end-line="206" selection-end-column="22" />
+        <state relative-caret-position="2130">
+          <caret line="152" selection-start-line="152" selection-end-line="152" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/DenseDepth_models.py">
+    <entry file="file://$PROJECT_DIR$/data/process_nyuv2_labeled.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="379">
-          <caret line="157" column="28" selection-start-line="157" selection-start-column="28" selection-end-line="157" selection-end-column="28" />
+        <state relative-caret-position="750">
+          <caret line="54" column="26" selection-start-line="54" selection-start-column="26" selection-end-line="54" selection-end-column="26" />
+          <folding>
+            <element signature="e#24#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/sinkhorn_opt.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="765">
+          <caret line="70" column="26" selection-start-line="70" selection-start-column="26" selection-end-line="70" selection-end-column="26" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_densedepth_sinkhorn_opt_test_split.py">
+    <entry file="file://$PROJECT_DIR$/utils/eval_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="426">
-          <caret line="105" column="16" selection-start-line="100" selection-start-column="16" selection-end-line="105" selection-end-column="16" />
+        <state relative-caret-position="1395">
+          <caret line="102" column="48" selection-start-line="102" selection-start-column="48" selection-end-line="102" selection-end-column="48" />
           <folding>
-            <element signature="e#23#32#0" expanded="true" />
+            <element signature="e#0#12#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/sinkhorn_dist.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3585">
+          <caret line="242" column="14" selection-start-line="242" selection-start-column="14" selection-end-line="242" selection-end-column="14" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_test_split_dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="13" column="54" selection-start-line="13" selection-start-column="54" selection-end-line="13" selection-end-column="54" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/labeled_equals_wonka.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="45" selection-start-line="8" selection-start-column="45" selection-end-line="8" selection-end-column="45" />
         </state>
       </provider>
     </entry>

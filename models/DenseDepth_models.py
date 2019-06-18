@@ -215,6 +215,7 @@ class DenseDepthSinkhornOpt(DenseDepth):
                                           lr=self.lr, num_sgd_iters=self.sgd_iters, num_sinkhorn_iters=self.sinkhorn_iters,
                                           kde_eps=self.kde_eps,
                                           sinkhorn_eps=self.sinkhorn_eps,
+                                          min_sgd_iters=100,
                                           inv_squared_depths=inv_squared_depths,
                                           scaling=scaling, writer=self.writer, gt=gt,
                                           model=self)
@@ -240,8 +241,8 @@ class DenseDepthSinkhornOpt(DenseDepth):
             log_single_gray_img(self.writer, "depth/pred", pred, self.min_depth, self.max_depth)
             log_single_gray_img(self.writer, "img/mask", mask, 0., 1.)
             if scaling is not None:
-                print("min scaling", torch.min(scaling))
-                print("max scaling", torch.max(scaling))
+                # print("min scaling", torch.min(scaling))
+                # print("max scaling", torch.max(scaling))
                 log_single_gray_img(self.writer, "img/intensity", scaling, 0., 1.)
             rgb_img = vutils.make_grid(rgb_cropped/ 255, nrow=1)
             self.writer.add_image("img/rgb", rgb_img, 0)
