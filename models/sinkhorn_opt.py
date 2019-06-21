@@ -22,6 +22,7 @@ from models.sinkhorn_dist import optimize_depth_map_masked
 class SinkhornOpt:
     """
     Takes as input an initial depth image, an intensity image, and returns the rescaled depth.
+    Operates in pytorch.
     """
     def __init__(self, sgd_iters=250, sinkhorn_iters=40, sigma=2., lam=1e-2, kde_eps=1e-5,
                  sinkhorn_eps=1e-2, dc_eps=1e-5,
@@ -41,17 +42,49 @@ class SinkhornOpt:
         self.remove_dc = remove_dc
         self.use_intensity = use_intensity
         self.use_squared_falloff = use_squared_falloff
+
         self.lr = lr
         self.sid_obj = SIDTorch(sid_bins, alpha, beta, offset)
-        self.one_over_depth_squared = 1./(self.sid_obj.sid_bin_values[:-2] ** 2)
-        self.one_over_depth_squared.requires_grad = False
+        self.inv_squared_depths = None
+        if self.use_squared_falloff:
+            self.inv_squared_depths = (self.sid_obj.sid_bin_values[:self.sid_bins + 1] ** (-2)).unsqueeze(0).unsqueeze(-1).unsqueeze(-1)
+
         C = np.array([[(self.sid_obj.sid_bin_values[i] - self.sid_obj.sid_bin_values[j]).item()**2 for i in range(sid_bins+1)]
                                                                                                    for j in range(sid_bins+1)])
         self.cost_mat = torch.from_numpy(C).float()
+
+        self.optimize_depth_map = lambda depth_index_init, mask, spad, scaling, gt: \
+            optimize_depth_map_masked(depth_index_init, mask, sigma=self.sigma, n_bins=self.sid_bins,
+                                      cost_mat=self.cost_mat, lam=self.lam, gt_hist=spad,
+                                      lr=self.lr, num_sgd_iters=self.sgd_iters,
+                                      num_sinkhorn_iters=self.sinkhorn_iters,
+                                      kde_eps=self.kde_eps,
+                                      sinkhorn_eps=self.sinkhorn_eps,
+                                      inv_squared_depths=self.inv_squared_depths,
+                                      scaling=scaling, writer=self.writer, gt=gt,
+                                      model=self)
+
         self.writer = None
 
     def to(self, device):
         self.sid_obj.to(device)
+        self.cost_mat = self.cost_mat.to(device)
+        if self.inv_squared_depths is not None:
+            self.inv_squared_depths = self.inv_squared_depths.to(device)
+
+    def optimize(self, depth_init, bgr, spad, mask, gt=None):
+        scaling = None
+        if self.use_intensity:
+            scaling = bgr2gray(bgr)/255.
+            if self.writer is not None:
+                log_single_gray_img(self.writer, "img/intensity", scaling, 0., 1.)
+
+        depth_index_init = self.sid_obj.get_sid_index_from_value(depth_init)
+        with torch.enable_grad():
+            depth_index_final, _ = self.optimize_depth_map(depth_index_init, mask, spad, scaling, gt)
+        depth_index_final = torch.floor(depth_index_final).detach().long()
+        pred = self.sid_obj.get_value_from_sid_index(depth_index_final)
+        return pred
 
     def evaluate(self, depth_init, bgr, spad, mask, gt, device):
         """
@@ -67,54 +100,23 @@ class SinkhornOpt:
         if self.writer is not None:
             add_hist_plot(self.writer, "hist/raw_spad", spad)
 
-        denoised_spad = spad
         if self.remove_dc:
-            denoised_spad = self.remove_dc_from_spad_torch(denoised_spad)
-        denoised_spad = denoised_spad / torch.sum(denoised_spad, dim=1, keepdim=True)
+            spad = self.remove_dc_from_spad_torch(spad)
+            if self.writer is not None:
+                add_hist_plot(self.writer, "hist/spad_no_noise", spad)
 
-        # Scaling check
-        scaling = None
-        if self.use_intensity:
-            scaling = bgr2gray(bgr)/255.
-        # Squared depth check
-        inv_squared_depths = None
-        if self.use_squared_falloff:
-            inv_squared_depths = (self.sid_obj.sid_bin_values[:self.sid_bins + 1] ** (-2)).unsqueeze(0).unsqueeze(
-                -1).unsqueeze(-1)
+        spad = spad / torch.sum(spad, dim=1, keepdim=True)
 
         if self.writer is not None:
             import torchvision.utils as vutils
             log_single_gray_img(self.writer, "depth/pred_init", depth_init, self.min_depth, self.max_depth)
             log_single_gray_img(self.writer, "depth/gt", gt, self.min_depth, self.max_depth)
             log_single_gray_img(self.writer, "img/mask", mask, 0., 1.)
-            if scaling is not None:
-                print("min scaling", torch.min(scaling))
-                print("max scaling", torch.max(scaling))
-                log_single_gray_img(self.writer, "img/intensity", scaling, 0., 1.)
             rgb_img = vutils.make_grid(torch.flip(bgr, dims=(1,)) / 255, nrow=1)
             self.writer.add_image("img/rgb", rgb_img, 0)
-            add_hist_plot(self.writer, "hist/spad_no_noise", denoised_spad)
 
-        with torch.enable_grad():
-            depth_index_init = self.sid_obj.get_sid_index_from_value(depth_init)
-            print("max depth index:", torch.max(depth_index_init))
-            print("min depth index:", torch.min(depth_index_init))
-            depth_index_final, depth_hist_final = \
-                optimize_depth_map_masked(depth_index_init, mask, sigma=self.sigma, n_bins=self.sid_bins,
-                                          cost_mat=self.cost_mat, lam=self.lam, gt_hist=denoised_spad,
-                                          lr=self.lr, num_sgd_iters=self.sgd_iters,
-                                          num_sinkhorn_iters=self.sinkhorn_iters,
-                                          kde_eps=self.kde_eps,
-                                          sinkhorn_eps=self.sinkhorn_eps,
-                                          inv_squared_depths=inv_squared_depths,
-                                          scaling=scaling, writer=self.writer, gt=gt,
-                                          model=self)
-            depth_index_final = torch.floor(depth_index_final).detach().long()
-            # depth_index_final = torch.round(depth_index_final).detach().long()
-
-            # Get depth maps and compute metrics
-            pred = self.sid_obj.get_value_from_sid_index(depth_index_final)
-            # Note: align_corners=False gives same behavior as cv2.resize
+        # Do the optimization
+        pred = self.optimize(depth_init, bgr, spad, mask, device, gt=gt)
 
         # Compute metrics
         pred = pred.cpu()
@@ -144,3 +146,36 @@ class SinkhornOpt:
     @staticmethod
     def get_metrics(pred, truth, gt):
         return get_depth_metrics(pred, truth, gt)
+
+
+class SinkhornOptFull:
+    """
+    Just the Sinkhorn Opt class with a built-in initializer.
+    """
+    def __init__(self, initializer, sinkhorn_optimizer):
+        """
+
+        :param initializer: CNN with a predict(rgb, device) method that can be used to get a prediction.
+        :param sinkhorn_optimizer:
+        """
+        self.initializer = initializer
+        self.sinkhorn_opt = sinkhorn_optimizer
+
+    def evaluate(self, rgb, depth, spad, mask, device):
+        # Run RGB through cnn to get depth_init
+        depth_init = self.initializer.predict(rgb, device)
+        # Run sinkhorn optimizer
+        pred = self.sinkhorn_opt.optimize(depth_init, spad, rgb, mask, device)
+
+        # Report metrics
+        metrics = self.get_metrics(pred, depth, mask)
+
+        # Report initial metrics
+        before_metrics = self.get_metrics(depth_init, depth, mask)
+        print("before", before_metrics)
+        return pred, metrics
+
+    @staticmethod
+    def get_metrics(pred, gt, mask):
+        return get_depth_metrics(pred, gt, mask)
+

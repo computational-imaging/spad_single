@@ -41,8 +41,39 @@ def spad_forward(x_index, mask, sigma, n_bins, kde_eps=1e-2,
 #     x_hist = torch.sum(x, dim=(2, 3), keepdim=True) / (x.shape[2] * x.shape[3])
     x_hist = torch.sum(x*weights, dim=(2,3), keepdim=True)
     x_hist = x_hist / torch.sum(x_hist, dim=1, keepdim=True)
-
     return x_hist.squeeze(-1).squeeze(-1)
+
+
+def spad_forward_avg_intensity(x_index, mask, sigma, n_bins, kde_eps=1e-2,
+                               inv_squared_depths=None, scaling=None):
+    """
+    Scaling occurs after single histogram formation, to hopefully prevent intensity artifacts.
+    :param x_index:
+    :param mask:
+    :param sigma:
+    :param n_bins:
+    :param kde_eps:
+    :param inv_squared_depths:
+    :param scaling:
+    :return:
+    """
+    per_pixel_hists = kernel_density_estimation(x_index, sigma, n_bins, eps=kde_eps)
+    x = per_pixel_hists * mask
+    weights = torch.ones_like(x)
+
+    if inv_squared_depths is not None:
+        assert inv_squared_depths.shape[:2] == x.shape[:2] and inv_squared_depths.shape[-2:] == (1, 1)
+        weights = weights * inv_squared_depths
+    #     x_hist = torch.sum(x, dim=(2, 3), keepdim=True) / (x.shape[2] * x.shape[3])
+    x_hist = torch.sum(x * weights, dim=(2, 3), keepdim=True)
+    if scaling is not None:
+        assert scaling.shape[0] == x.shape[0]
+        assert scaling.shape[1] == 1
+        assert scaling.shape[-2:] == x.shape[-2:]
+        weights = weights * scaling
+    x_hist = x_hist / torch.sum(x_hist, dim=1, keepdim=True)
+    return x_hist.squeeze(-1).squeeze(-1)
+
 
 def threshold_and_normalize_pixels(x, eps=1e-2):
     """

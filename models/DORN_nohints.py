@@ -54,11 +54,11 @@ class DORN_nyu_nohints(Model):
                 param.requires_grad = False
             self.eval()
 
-    def predict(self, rgb, rgb_orig, device, resize_output=True):
-        depth_pred = self.forward(rgb)
+    def predict(self, bgr, bgr_orig, device, resize_output=True):
+        depth_pred = self.forward(bgr)
         logprobs = self.to_logprobs(depth_pred)
         if resize_output:
-            original_size = rgb_orig.size()[-2:]
+            original_size = bgr_orig.size()[-2:]
             # Note: align_corners=False gives same behavior as cv2.resize
             depth_pred_full = F.interpolate(depth_pred, size=original_size,
                                             mode="bilinear", align_corners=False)
@@ -66,7 +66,7 @@ class DORN_nyu_nohints(Model):
             return self.ord_decode(logprobs_full, self.sid_obj)
         return self.ord_decode(logprobs, self.sid_obj)
 
-    def get_loss(self, input_, device, resize_output=False):
+    def get_loss(self, bgr, device, resize_output=False):
         """
         :param input_: Dictionary from dataloader
         :param device: Device to run on (e.g. "cpu", "cuda")
@@ -80,7 +80,7 @@ class DORN_nyu_nohints(Model):
         # print("dataloader: model input")
         # print(rgb[:,:,50:55,50:55])
         # two = perf_counter()
-        depth_pred = self.forward(rgb)
+        depth_pred = self.forward(bgr)
         # three = perf_counter()
         # print("Forward pass: {}".format(three - two))
         logprobs = self.to_logprobs(depth_pred)
@@ -214,9 +214,9 @@ class DORN_nyu_nohints(Model):
         depth_mask = vutils.make_grid(input_["mask"], nrow=4, normalize=False)
         writer.add_image(tag + "/depth_mask", depth_mask, it)
 
-    def evaluate(self, rgb, rgb_orig, gt, mask, device):
+    def evaluate(self, bgr, bgr_orig, gt, mask, device):
         # Output full-size depth map, so set resize_output=True
-        pred = self.predict(rgb, rgb_orig, device, resize_output=True)
+        pred = self.predict(bgr, bgr_orig, device, resize_output=True)
         metrics = self.get_metrics(pred,
                                    gt,
                                    mask)

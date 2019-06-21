@@ -2,7 +2,7 @@
 import numpy as np
 
 wonka = np.load("nyu_depth_v2_wonka/eigen_test_rgb.npy")
-labeled = np.load("nyu_depth_v2_labeled_numpy/test_images_.npy").transpose(3, 0, 1, 2)
+labeled = np.load("nyu_depth_v2_labeled_numpy/test_images_.npy").transpose(3, 0, 1, 2) # N x H x W x C
 
 img = labeled[0,:,:,:]
 missing_matches = 0

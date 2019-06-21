@@ -43,7 +43,6 @@ class NYUDepthv2TestDataset(Dataset):
                                     self.crop[2]:self.crop[3]+1,
                                     :
                                     ]
-        # Unnecessary because wonka is already in BGR order.
         if dorn_mode:
             self.rgb = np.flip(self.rgb, axis=3).copy() # N x H x W x C
             self.rgb_cropped = np.flip(self.rgb_cropped, axis=3).copy()
