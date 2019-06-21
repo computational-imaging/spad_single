@@ -18,6 +18,8 @@ def crop_nyu(img, crop):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--root-dir", help="root dir containing the *.mat files",
+                        default="/media/data1/markn1")
     parser.add_argument("--labeled-path", help="location of nyu_depth_v2_labeled.mat",
                        default="nyu_depth_v2_labeled.mat")
     parser.add_argument("--split-path", help="location of splits.mat",
@@ -30,13 +32,14 @@ if __name__ == "__main__":
     crop = WONKA_CROP if args.crop_type == "wonka" else EIGEN_CROP
 
     # Load data from .mat files
+    labeled_path = os.path.join(args.root_dir, args.labeled_path)
     print("Loading data from {}...".format(args.labeled_path))
 
     data = {}
-    labeled = h5py.File(args.labeled_path, 'r')
-    data["images"] = np.array(labeled.get("images")).T      # H x W x C x N
-    data["depths"] = np.array(labeled.get("depths")).T       # H x W x N
-    data["rawDepths"] = np.array(labeled.get("rawDepths")).T # H x W x N
+    labeled = h5py.File(labeled_path, 'r')
+    data["images"] = np.array(labeled.get("images")).T        # H x W x C x N
+    data["depths"] = np.array(labeled.get("depths")).T        # H x W x N
+    data["rawDepths"] = np.array(labeled.get("rawDepths")).T  # H x W x N
 
     print("Cropping according to {}...".format(args.crop_type))
     print(crop)
@@ -46,17 +49,18 @@ if __name__ == "__main__":
     data.update(cropped)
 
     # Load split (subtract 1 since MATLAB is 1-indexed)
-    print("Loading split from {}...".format(args.split_path))
-    split = sio.loadmat(args.split_path)
+    split_path = os.path.join(args.root_dir, args.split_path)
+    print("Loading split from {}...".format(split_path))
+    split = sio.loadmat(split_path)
     trainNdxs = split["trainNdxs"].squeeze() - 1
     testNdxs = split["testNdxs"].squeeze() - 1
 
     # Split into train and test and save
     print("Saving to {}...".format(args.output_dir))
     for key, arr in data.items():
-        np.save(os.path.join(args.output_dir, "train_{}_.npy".format(key)),
+        np.save(os.path.join(args.output_dir, "train_{}.npy".format(key)),
                 arr[..., trainNdxs])
-        np.save(os.path.join(args.output_dir, "test_{}_.npy".format(key)),
+        np.save(os.path.join(args.output_dir, "test_{}.npy".format(key)),
                 arr[..., testNdxs])
     np.save(os.path.join(args.output_dir, "crop.npy"), crop)
 

@@ -25,8 +25,6 @@ def cfg(data_config):
     model_config = {                            # Load pretrained model for testing
         "model_name": "DenseDepth",
         "model_params": {
-            "min_depth": data_config["min_depth"],
-            "max_depth": data_config["max_depth"],
             "existing": os.path.join("models", "nyu.h5"),
         },
         "model_state_dict_fn": None

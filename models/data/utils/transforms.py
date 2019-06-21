@@ -148,8 +148,9 @@ class ToTensorAll(): # pylint: disable=too-few-public-methods
     3D arrays [M, N, C]: transpose(2, 0, 1) to put channels first to make shape [C, M, N]
 
     """
-    def __init__(self, keys):
+    def __init__(self, keys, channels_first=True):
         self.keys = keys
+        self.channels_first = channels_first
 
     def __call__(self, sample):
         for key in self.keys:
@@ -159,7 +160,10 @@ class ToTensorAll(): # pylint: disable=too-few-public-methods
             elif len(arr.shape) == 2:
                 sample[key] = torch.from_numpy(arr).unsqueeze(0).float()
             elif len(arr.shape) == 3:
-                sample[key] = torch.from_numpy(arr.transpose(2, 0, 1)).float()
+                if self.channels_first:
+                    sample[key] = torch.from_numpy(arr.transpose(2, 0, 1)).float()
+                else:
+                    sample[key] = torch.from_numpy(arr).float()
             else:
                 raise TypeError("Array with key {} has {} > 3 dimensions".format(key, len(arr.shape)))
         # if 'depth_sid' in sample:
