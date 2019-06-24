@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import numpy as np
+import torch
 from utils.train_utils import init_randomness
 from collections import defaultdict
 import json
@@ -12,9 +13,9 @@ from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
 # Dataset
-from models.data.nyuv2_test_split_dataset_hints_sid import nyuv2_test_split_ingredient, load_data
+from models.data.nyuv2_labeled_dataset import nyuv2_labeled_ingredient, load_data
 
-ex = Experiment('densedepth_nohints', ingredients=[nyuv2_test_split_ingredient])
+ex = Experiment('densedepth_nyuv2_labeled', ingredients=[nyuv2_labeled_ingredient])
 
 
 # Tensorboardx
@@ -31,8 +32,9 @@ def cfg(data_config):
     }
     ckpt_file = None                            # Keep as None
     save_outputs = True
-    seed = 95290421
+    seed = 95290421 # changing seed does not impact evaluation
     small_run = 0
+    dataset_type = "test"
     entry = None
 
     # print(data_config.keys())
@@ -61,6 +63,7 @@ def main(model_config,
          data_config,
          seed,
          small_run,
+         dataset_type,
          entry):
     # Load the model
     model = make_model(**model_config)
@@ -74,16 +77,19 @@ def main(model_config,
                                                       "densedepth_nohints"))
 
     # Load the data
-    dataset = load_data(dorn_mode=False)
+    train, test = load_data(dorn_mode=False)
+    dataset = train if dataset_type == "train" else test
     eval_fn = lambda input_, device: model.evaluate(input_["rgb"].numpy(),
                                                     input_["crop"][0,:].numpy(),
-                                                    input_["depth_cropped"].numpy(),
-                                                    input_["mask_orig"])
+                                                    input_["depth_cropped"],
+                                                    # input_["rawdepth_cropped"],
+                                                    torch.ones_like(input_["rawdepth_cropped"]))
+                                                    # input_["mask"])
     init_randomness(seed)
 
     if entry is None:
         print("Evaluating the model on {}.".format(data_config["data_name"]))
-        evaluate_model_on_dataset(eval_fn, dataset, small_run, None, save_outputs, output_dir)
+        evaluate_model_on_dataset(eval_fn, dataset, small_run, None, save_outputs, output_dir, mask_key="mask")
     else:
         print("Evaluating {}".format(entry))
         evaluate_model_on_data_entry(eval_fn, dataset, entry, None, save_outputs, output_dir)

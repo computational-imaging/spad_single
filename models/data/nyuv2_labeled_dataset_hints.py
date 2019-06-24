@@ -155,12 +155,12 @@ def load_data(root_dir, train_files, test_files, crop_file, min_depth, max_depth
             Save(["bgr_cropped"], "_orig"),
             ResizeAll((353, 257), keys=["bgr_cropped"]),
             Normalize(transform_mean, transform_var, key="bgr_cropped"),
-            ToTensorAll(keys=["bgr", "bgr_cropped", "bgr_cropped_orig", "depth_cropped", "rawdepth_cropped", "mask"],
+            ToTensorAll(keys=["bgr", "bgr_cropped", "bgr_cropped_orig", "rawdepth_cropped", "mask"],
                         channels_first=dorn_mode)
         ]
     else:
         print("Using dataset in Wonka mode.")
-        transform_list.append(ToTensorAll(keys=["rgb_cropped", "depth_cropped", "rawdepth_cropped", "mask"], channels_first=dorn_mode))
+        transform_list.append(ToTensorAll(keys=["rgb_cropped", "rawdepth_cropped", "mask"], channels_first=dorn_mode))
     train.transform = transforms.Compose(transform_list)
     test.transform = transforms.Compose(transform_list)
     return train, test
