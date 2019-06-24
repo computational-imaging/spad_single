@@ -2,9 +2,9 @@ from .denoising_unet import DenoisingUnetModel
 from .DORN_nohints import DORN_nyu_nohints
 from .DORN_hints import DORN_nyu_hints, DORN_nyu_hints_Unet, DORN_nyu_histogram_matching
 from .DORN_bayesian_opt import DORN_bayesian_opt
-# from .DORN_sinkhorn_opt import DORN_sinkhorn_opt
-# from .DORN_median_matching import DORN_median_matching
-# from .DenseDepth_models import DenseDepth, DenseDepthMedianRescaling, DenseDepthSinkhornOpt
+from .DORN_sinkhorn_opt import DORN_sinkhorn_opt
+from .DORN_median_matching import DORN_median_matching
+from .DenseDepth_models import DenseDepth, DenseDepthMedianRescaling, DenseDepthSinkhornOpt
 # import future models here
 
 

@@ -13,7 +13,7 @@ from models.core.checkpoint import safe_makedir
 from models.core.model_core import Model
 from models.data.utils.sid_utils import SIDTorch
 from models.data.utils.spad_utils import remove_dc_from_spad, bgr2gray
-from models.loss import delta, mse, rmse, rel_abs_diff, rel_sqr_diff, log10
+from models.loss import get_depth_metrics
 from utils.inspect_results import add_hist_plot, log_single_gray_img
 
 from models.DORN_nohints import DORN_nyu_nohints
@@ -38,18 +38,18 @@ class DenseDepth(Model):
         """
 
         :param existing:
-        :param crop: default: Wonka crop
+        :param crop: default crop. Only used if no crop is provided to the predict function.
         """
         super(Model, self).__init__()
         self.model = create_model(existing)
-        self.crop = np.array(crop)
+        self.default_crop = np.array(crop)
 
-    def predict(self, rgb, device, crop=None):
+    def forward(self, rgb, device, crop=None):
         """
         Works in numpy.
         """
         if crop is None:
-            crop = self.crop
+            crop = self.default_crop
         pred = scale_up(2, predict(self.model, rgb/255,
                                    minDepth=10, maxDepth=1000, batch_size=1)[:,:,:,0]) * 10.0
         pred_flip = scale_up(2, predict(self.model, rgb[...,::-1,:]/255,
@@ -61,7 +61,10 @@ class DenseDepth(Model):
         pred_final = 0.5*pred + 0.5*pred_flip[:,:,::-1]
         return pred_final
 
-    def evaluate(self, rgb, crop, gt):
+    def predict(self, rgb, device, crop=None):
+        return self.forward(rgb, device, crop)
+
+    def evaluate(self, rgb, crop, gt, mask):
         """
         Works in numpy, but returns a torch tensor prediction.
         :param rgb: N x H x W x C in RGB order (not BGR)
@@ -69,58 +72,29 @@ class DenseDepth(Model):
         :param gt: N x H x W x C
         :return: torch tensor prediction and metrics dict
         """
-        pred = self.predict(rgb, device=None)
-        metrics = {}
-        metrics["delta1"], metrics["delta2"], metrics["delta3"], \
-        metrics["abs_rel_diff"], metrics["mse"], metrics["rmse"], metrics["log10"] = self.get_metrics(gt, pred)
-        return torch.from_numpy(pred).float(), metrics
+        pred = self.predict(rgb, device=None, crop=crop)
+        pred = torch.from_numpy(pred).cpu().unsqueeze(0).float()
+        metrics = self.get_metrics(pred, gt, mask)
+        return pred, metrics
 
-    # Error computaiton based on https://github.com/tinghuiz/SfMLearner
     @staticmethod
-    def get_metrics(gt, pred):
-        # print(gt.shape)
-        # print(pred.shape)
-        thresh = np.maximum((gt / pred), (pred / gt))
-
-        a1 = (thresh < 1.25).mean()
-        a2 = (thresh < 1.25 ** 2).mean()
-        a3 = (thresh < 1.25 ** 3).mean()
-
-        abs_rel = np.mean(np.abs(gt - pred) / gt)
-
-        mse = ((gt - pred) ** 2).mean()
-        rmse = np.sqrt(mse)
-
-        log_10 = (np.abs(np.log10(gt) - np.log10(pred))).mean()
-        return a1, a2, a3, abs_rel, mse, rmse, log_10
+    def get_metrics(pred, gt, mask):
+        return get_depth_metrics(pred, gt, mask)
 
 
 class DenseDepthMedianRescaling(DenseDepth):
     def __init__(self, min_depth=0., max_depth=10.,
                  existing=os.path.join("models", "nyu.h5"), crop=[ 20, 460,  24, 616]):
-        super(DenseDepthMedianRescaling, self).__init__(existing, crop) # Initializes model as well
+        super(DenseDepthMedianRescaling).__init__(existing, crop) # Initializes model as well
         self.min_depth = min_depth
         self.max_depth = max_depth
 
-
     def predict(self, rgb, gt, device, crop=None):
-        if crop is None:
-            crop = self.crop
-        pred = scale_up(2, predict(self.model, rgb/255,
-                                   minDepth=10, maxDepth=1000, batch_size=1)[:,:,:,0]) * 10.0
-        pred_flip = scale_up(2, predict(self.model, rgb[...,::-1,:]/255,
-                                        minDepth=10, maxDepth=1000, batch_size=1)[:,:,:,0]) * 10.0
-
-        pred = pred[:,crop[0]:crop[1]+1, crop[2]:crop[3]+1]
-        pred_flip = pred_flip[:,crop[0]:crop[1]+1, crop[2]:crop[3]+1]
-
-        pred_combined = 0.5*pred + 0.5*pred_flip[:,:,::-1]
-
+        pred = self.forward(rgb, device, crop)
         # Do median rescaling
         gt_median = np.median(gt)
-        pred_median = np.median(pred_combined)
-        pred_rescaled = np.clip(pred_combined * (gt_median/pred_median), a_min=self.min_depth, a_max=self.max_depth)
-
+        pred_median = np.median(pred)
+        pred_rescaled = np.clip(pred * (gt_median/pred_median), a_min=self.min_depth, a_max=self.max_depth)
         return pred_rescaled
 
 

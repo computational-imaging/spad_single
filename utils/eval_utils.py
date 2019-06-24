@@ -58,7 +58,7 @@ class ResultsManager:
 
 
 def evaluate_model_on_dataset(eval_fn, dataset, small_run, device,
-                              save_outputs, output_dir=None):
+                              save_outputs, output_dir=None, mask_key="mask_orig"):
     """
     Evaluate a depth estimation model on a dataset.
     Aggregate the metrics to get versions of them that are averaged over the entire dataset.
@@ -96,7 +96,7 @@ def evaluate_model_on_dataset(eval_fn, dataset, small_run, device,
             pred, pred_metrics = eval_fn(data, device)
             metrics[entry] = pred_metrics
 
-            num_valid_pixels = torch.sum(data["mask_orig"]).item()
+            num_valid_pixels = torch.sum(data[mask_key]).item()
             alpha = total_num_pixels / (total_num_pixels + num_valid_pixels)
             for metric_name in pred_metrics:
                 avg_metrics[metric_name] = alpha * avg_metrics[metric_name] + (1 - alpha) * pred_metrics[metric_name]

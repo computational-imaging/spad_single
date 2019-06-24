@@ -83,12 +83,13 @@ def main(model_config,
     model = make_model(**model_config)
     model.eval()
     model.to(device)
-    # model.sid_obj.to(device)
+    model.sid_obj.to(device)
 
     # Load the data
     train, test = load_data(dorn_mode=True)
     dataset = test if dataset_type == "test" else train
 
+    print(list((name, entry.shape) for name, entry in dataset[0].items() if isinstance(entry, torch.Tensor)))
     init_randomness(seed)
 
     eval_fn = lambda input_, device: model.evaluate(input_["bgr_cropped"].to(device),
@@ -99,6 +100,6 @@ def main(model_config,
 
     print("Evaluating the model on {} ({})".format(data_config["data_name"],
                                                    dataset_type))
-    evaluate_model_on_dataset(eval_fn, dataset, small_run, device, save_outputs, output_dir)
+    evaluate_model_on_dataset(eval_fn, dataset, small_run, device, save_outputs, output_dir, mask_key="mask")
 
 
