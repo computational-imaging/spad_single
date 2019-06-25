@@ -4,8 +4,8 @@ import numpy as np
 from torch.utils.data import Dataset
 
 from torchvision import transforms
-from models.data.utils.transforms import (ResizeAll, Save, Normalize,
-                                          AddDepthMask, ToTensorAll)
+from models.data.data_utils.transforms import (ResizeAll, Save, Normalize,
+                                               AddDepthMask, ToTensorAll)
 
 from sacred import Experiment
 

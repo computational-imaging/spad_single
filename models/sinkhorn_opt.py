@@ -11,8 +11,8 @@ from time import perf_counter
 
 from models.core.checkpoint import safe_makedir
 from models.core.model_core import Model
-from models.data.utils.sid_utils import SIDTorch
-from models.data.utils.spad_utils import remove_dc_from_spad, bgr2gray
+from models.data.data_utils.sid_utils import SIDTorch
+from models.data.data_utils.spad_utils import remove_dc_from_spad, bgr2gray
 from models.loss import get_depth_metrics
 from utils.inspect_results import add_hist_plot, log_single_gray_img
 

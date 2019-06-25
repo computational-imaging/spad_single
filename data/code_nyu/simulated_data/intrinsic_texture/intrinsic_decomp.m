@@ -25,7 +25,7 @@ function [ res_r, res_s ] = intrinsic_decomp( I, S, depth, sigma_c, sigma_i, sig
 %   Date  : 08/28/2015
 %   Version : 1.0 
 
-% addpath('mex', 'utils');            % basic utilities
+% addpath('mex', 'data_utils');            % basic utilities
     if ~exist('sc','var')
         sigma_c = 0.0001;
     end

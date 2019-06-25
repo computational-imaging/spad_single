@@ -92,14 +92,14 @@ def main(model_config,
     print(list((name, entry.shape) for name, entry in dataset[0].items() if isinstance(entry, torch.Tensor)))
     init_randomness(seed)
 
-    eval_fn = lambda input_, device: model.evaluate(input_["bgr_cropped"].to(device),
-                                                    input_["bgr_cropped_orig"].to(device),
-                                                    input_["rawdepth_cropped"].to(device),
-                                                    input_["mask"].to(device),
+    eval_fn = lambda input_, device: model.evaluate(input_["bgr"].to(device),
+                                                    input_["bgr_orig"].to(device),
+                                                    input_["depth_cropped"].to(device),
+                                                    torch.ones_like(input_["depth_cropped"]).to(device),
                                                     device)
 
     print("Evaluating the model on {} ({})".format(data_config["data_name"],
                                                    dataset_type))
-    evaluate_model_on_dataset(eval_fn, dataset, small_run, device, save_outputs, output_dir, mask_key="mask")
+    evaluate_model_on_dataset(eval_fn, dataset, small_run, device, save_outputs, output_dir)
 
 

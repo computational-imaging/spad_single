@@ -3,9 +3,9 @@ import os
 import numpy as np
 
 from torchvision import transforms
-from models.data.utils.transforms import (Save, ResizeAll, RandomHorizontalFlipAll, Normalize,
-                                          AddDepthMask, ToTensorAll)
-from models.data.utils.sid_utils import AddSIDDepth
+from models.data.data_utils.transforms import (Save, ResizeAll, RandomHorizontalFlipAll, Normalize,
+                                               AddDepthMask, ToTensorAll)
+from models.data.data_utils.sid_utils import AddSIDDepth
 
 from sacred import Experiment
 
@@ -79,7 +79,7 @@ def load_data(train_file, train_dir,
 
     Returns
     -------
-    train, val, test - torch.utils.data.Dataset objects containing the relevant splits
+    train, val, test - torch.data_utils.data.Dataset objects containing the relevant splits
     """
     train = NYUDepthv2Dataset(train_file, train_dir, transform=None,
                               file_types=["rgb", "rawdepth"],

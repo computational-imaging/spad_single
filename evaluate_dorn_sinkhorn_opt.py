@@ -13,7 +13,7 @@ from time import perf_counter
 
 # Dataset
 from models.data.nyuv2_official_hints_sid_dataset import nyuv2_hints_sid_ingredient, load_data
-from models.data.utils.spad_utils import spad_ingredient
+from models.data.data_utils.spad_utils import spad_ingredient
 
 ex = Experiment('eval_dorn_sinkhorn_opt', ingredients=[nyuv2_hints_sid_ingredient, spad_ingredient])
 

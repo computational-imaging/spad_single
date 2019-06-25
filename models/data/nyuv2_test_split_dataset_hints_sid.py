@@ -6,10 +6,10 @@ from torch.utils.data import Dataset
 import cv2
 
 from torchvision import transforms
-from models.data.utils.transforms import (ResizeAll, Save, Normalize,
-                                          AddDepthMask, ToTensorAll)
-from models.data.utils.sid_utils import SID
-from models.data.utils.spad_utils import SimulateSpadIntensity, spad_ingredient
+from models.data.data_utils.transforms import (ResizeAll, Save, Normalize,
+                                               AddDepthMask, ToTensorAll)
+from models.data.data_utils.sid_utils import SID
+from models.data.data_utils.spad_utils import SimulateSpadIntensity, spad_ingredient
 
 from sacred import Experiment
 

@@ -4,11 +4,11 @@ import numpy as np
 
 from torchvision import transforms
 
-from models.data.utils.transforms import (Save, ResizeAll, RandomHorizontalFlipAll, Normalize,
-                                          AddDepthMask, ToTensorAll)
-from models.data.utils.sid_utils import AddSIDDepth, SID
+from models.data.data_utils.transforms import (Save, ResizeAll, RandomHorizontalFlipAll, Normalize,
+                                               AddDepthMask, ToTensorAll)
+from models.data.data_utils.sid_utils import AddSIDDepth, SID
 from models.data.nyuv2_official_nohints_dataset import NYUDepthv2Dataset
-from models.data.utils.spad_utils import spad_ingredient, SimulateSpadIntensity
+from models.data.data_utils.spad_utils import spad_ingredient, SimulateSpadIntensity
 
 
 from sacred import Experiment
@@ -84,7 +84,7 @@ def load_data(train_file, train_dir,
 
     Returns
     -------
-    train, val, test - torch.utils.data.Dataset objects containing the relevant splits
+    train, val, test - torch.data_utils.data.Dataset objects containing the relevant splits
     """
     # print(spad_config)
     train = NYUDepthv2Dataset(train_file, train_dir, transform=None,
