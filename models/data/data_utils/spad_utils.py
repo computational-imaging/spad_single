@@ -371,7 +371,7 @@ if __name__ == "__main__":
     del bin_edges, dorn_decode, d0, d1
     offset = 0.
 
-    from models.data.utils.sid_utils import SID
+    from models.data.data_utils.sid_utils import SID
     sid_obj = SID(sid_bins, alpha, beta, offset)
     layer = get_rescale_layer(1024, min_depth, max_depth, sid_obj)
     print(layer.weight.data[:,0])

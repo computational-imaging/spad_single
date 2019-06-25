@@ -15,7 +15,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from models.core.checkpoint import safe_makedir
 from models.core.model_core import Model
 from models.DORN_nohints import DORN_nyu_nohints
-from models.data.utils.sid_utils import SIDTorch
+from models.data.data_utils.sid_utils import SIDTorch
 from models.pytorch_prototyping.pytorch_prototyping import Unet
 
 class BayesianHints(nn.Module):
@@ -393,7 +393,7 @@ if __name__ == "__main__":
     import numpy as np
     from torch.utils.data import DataLoader
     from models.data.nyuv2_official_hints_sid_dataset import load_data, cfg
-    from models.data.utils.spad_utils import cfg as spad_cfg
+    from models.data.data_utils.spad_utils import cfg as spad_cfg
     data_config = cfg()
     spad_config = spad_cfg()
     # print(config)

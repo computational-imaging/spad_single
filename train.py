@@ -35,7 +35,7 @@ ex.add_source_file(os.path.join("depthnet", "model", "unet_parts.py"))
 @ex.config
 def cfg():
     network_config = {
-        "network_name": "UNet",                 # Class of model to use (see model/utils.py)
+        "network_name": "UNet",                 # Class of model to use (see model/data_utils.py)
         "network_params": {
             "wrapper_name": "DepthNetWrapper",  # {DepthNetWrapper, DORNWrapper}
             "input_nc": 3,                      # Number of input channels

@@ -11,8 +11,8 @@ from time import perf_counter
 
 from models.core.checkpoint import safe_makedir
 from models.core.model_core import Model
-from models.data.utils.sid_utils import SIDTorch
-from models.data.utils.spad_utils import remove_dc_from_spad, bgr2gray
+from models.data.data_utils.sid_utils import SIDTorch
+from models.data.data_utils.spad_utils import remove_dc_from_spad, bgr2gray
 from models.loss import get_depth_metrics
 from utils.inspect_results import add_hist_plot, log_single_gray_img
 
@@ -42,6 +42,14 @@ class DenseDepth(Model):
         """
         super(Model, self).__init__()
         self.model = create_model(existing)
+        # from keras.models import load_model
+        # from models.DenseDepth.layers import BilinearUpSampling2D
+        # # Custom object needed for inference and training
+        # custom_objects = {'BilinearUpSampling2D': BilinearUpSampling2D, 'depth_loss_function': depth_loss_function}
+        #
+        # # Load model into GPU / CPU
+        # print('Loading model...')
+        # model = load_model(args.model, custom_objects=custom_objects, compile=False)
         self.default_crop = np.array(crop)
 
     def forward(self, rgb, device, crop=None):
@@ -70,12 +78,12 @@ class DenseDepth(Model):
         :param rgb: N x H x W x C in RGB order (not BGR)
         :param crop: length-4 array with crop pixel coordinates
         :param gt: N x H x W x C
-        :return: torch tensor prediction and metrics dict
+        :return: torch tensor prediction, metrics dict, and number of valid pixels
         """
         pred = self.predict(rgb, device=None, crop=crop)
         pred = torch.from_numpy(pred).cpu().unsqueeze(0).float()
         metrics = self.get_metrics(pred, gt, mask)
-        return pred, metrics
+        return pred, metrics, torch.sum(mask).item()
 
     @staticmethod
     def get_metrics(pred, gt, mask):
@@ -120,7 +128,7 @@ class DenseDepthSinkhornOpt(SinkhornOptFull):
 
 if __name__ == "__main__":
     from models.data.nyuv2_test_split_dataset_hints_sid import cfg, load_data
-    from models.data.utils.spad_utils import cfg as get_spad_config
+    from models.data.data_utils.spad_utils import cfg as get_spad_config
     from torch.utils.data._utils.collate import default_collate
     data_config = cfg()
     spad_config = get_spad_config()

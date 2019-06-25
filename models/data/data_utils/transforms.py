@@ -128,13 +128,14 @@ class AddDepthMask(): # pylint: disable=too-few-public-methods
 
     Adds the mask based on the depth map in sample[key].
     """
-    def __init__(self, min_depth, max_depth, key):
+    def __init__(self, min_depth, max_depth, key, mask_key="mask"):
         self.key = key
         self.min_depth = min_depth
         self.max_depth = max_depth
+        self.mask_key = mask_key
 
     def __call__(self, sample, eps=1e-6):
-        sample["mask"] = ((sample[self.key] > self.min_depth) & (sample[self.key] < self.max_depth)).astype(np.float32)
+        sample[self.mask_key] = ((sample[self.key] > self.min_depth) & (sample[self.key] < self.max_depth)).astype(np.float32)
         return sample
 
 

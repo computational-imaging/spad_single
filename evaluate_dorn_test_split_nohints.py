@@ -7,7 +7,7 @@ from utils.eval_utils import evaluate_model_on_dataset, evaluate_model_on_data_e
 from collections import defaultdict
 import json
 from models.core.checkpoint import load_checkpoint, safe_makedir
-from models.data.utils.transforms import AddDepthMask
+from models.data.data_utils.transforms import AddDepthMask
 from models import make_model
 from sacred import Experiment
 from sacred.observers import FileStorageObserver

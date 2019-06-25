@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import MSELoss
 import numpy as np
-from models.data.utils.sid_utils import SIDTorch
+from models.data.data_utils.sid_utils import SIDTorch
 from torch.optim import SGD
 import matplotlib
 # matplotlib.use("TKAgg")
@@ -195,10 +195,10 @@ if __name__ == "__main__":
     import os
     import numpy as np
     from torch.utils.data import DataLoader
-    from models.data.utils.sid_utils import SID
+    from models.data.data_utils.sid_utils import SID
     from models.data.nyuv2_official_hints_sid_dataset import load_data, cfg
-    from models.data.utils.spad_utils import SimulateSpad
-    from models.data.utils.spad_utils import cfg as spad_cfg
+    from models.data.data_utils.spad_utils import SimulateSpad
+    from models.data.data_utils.spad_utils import cfg as spad_cfg
     import torchvision.utils as vutils
     import matplotlib
     matplotlib.use("TKAgg")

@@ -58,7 +58,7 @@ class ResultsManager:
 
 
 def evaluate_model_on_dataset(eval_fn, dataset, small_run, device,
-                              save_outputs, output_dir=None, mask_key="mask_orig"):
+                              save_outputs, output_dir=None):
     """
     Evaluate a depth estimation model on a dataset.
     Aggregate the metrics to get versions of them that are averaged over the entire dataset.
@@ -82,9 +82,11 @@ def evaluate_model_on_dataset(eval_fn, dataset, small_run, device,
 
     with torch.no_grad():
         # model.eval()
-        total_num_pixels = 0.
-        avg_metrics = defaultdict(float)
-        metrics = defaultdict(dict)
+        # total_num_pixels = 0.
+        # avg_metrics = defaultdict(float)
+        metric_list = ["delta1", "delta2", "delta3", "rel_abs_diff", "rmse", "mse", "log10"]
+        weights = np.zeros(len(dataset))
+        metrics = np.zeros((len(metric_list), len(dataset)))
         for i, data in enumerate(dataloader):
             # TESTING
             if small_run and i == small_run:
@@ -93,15 +95,11 @@ def evaluate_model_on_dataset(eval_fn, dataset, small_run, device,
             entry = entry if isinstance(entry, str) else entry.item()
             print("Evaluating {}".format(data["entry"][0]))
             # pred, pred_metrics = model.evaluate(data, device)
-            pred, pred_metrics = eval_fn(data, device)
-            metrics[entry] = pred_metrics
+            pred, pred_metrics, pred_weight = eval_fn(data, device)
+            for j, metric_name in enumerate(metric_list):
+                metrics[j, i] = pred_metrics[metric_name]
 
-            num_valid_pixels = torch.sum(data[mask_key]).item()
-            alpha = total_num_pixels / (total_num_pixels + num_valid_pixels)
-            for metric_name in pred_metrics:
-                avg_metrics[metric_name] = alpha * avg_metrics[metric_name] + (1 - alpha) * pred_metrics[metric_name]
-            total_num_pixels += num_valid_pixels
-            print(avg_metrics)
+            weights[i] = pred_weight
             # Option to save outputs:
             if save_outputs:
                 if output_dir is None:
@@ -114,11 +112,26 @@ def evaluate_model_on_dataset(eval_fn, dataset, small_run, device,
                 safe_makedir(os.path.dirname(path))
                 torch.save(save_dict, path)
 
-        with open(os.path.join(output_dir, "avg_metrics.json"), "w") as f:
-            json.dump(avg_metrics, f)
-        with open(os.path.join(output_dir, "metrics.json"), "w") as f:
-            json.dump(metrics, f)
-        print(avg_metrics)
+        # Save metrics
+        np.save(os.path.join(output_dir, "metrics.npy"), metrics)
+        np.save(os.path.join(output_dir, "weights.npy"), weights)
+        # Compute weighted averages:
+        average_metrics = np.average(metrics, weights=weights, axis=1)
+        # Replace RMSE average with actual RMSE
+        # average_metrics[metric_list.index("rmse")] = \
+        #     np.sqrt(average_metrics[metric_list.index("mse")])
+        np.save(os.path.join(output_dir, "avg_metrics.npy"), average_metrics)
+        with open(os.path.join(output_dir, "metric_list.json"), "w") as f:
+            json.dump(metric_list, f)
+        print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rms', 'log_10'))
+        print(
+            "{:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}".format(average_metrics[0],
+                                                                                average_metrics[1],
+                                                                                average_metrics[2],
+                                                                                average_metrics[3],
+                                                                                average_metrics[4],
+                                                                                average_metrics[6]))
+
     print("wrote results to {}".format(output_dir))
 
 

@@ -13,7 +13,7 @@ from time import perf_counter
 
 # Dataset
 from models.data.nyuv2_test_split_dataset_hints_sid import nyuv2_test_split_ingredient, load_data
-from models.data.utils.spad_utils import spad_ingredient
+from models.data.data_utils.spad_utils import spad_ingredient
 
 ex = Experiment('eval_dorn_sinkhorn_opt_test_split', ingredients=[nyuv2_test_split_ingredient, spad_ingredient])
 

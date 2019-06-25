@@ -4,8 +4,8 @@ import numpy as np
 from torch.utils.data import Dataset
 
 from torchvision import transforms
-from models.data.utils.transforms import (ResizeAll, Save, Normalize,
-                                          AddDepthMask, ToTensorAll)
+from models.data.data_utils.transforms import (ResizeAll, Save, Normalize,
+                                               AddDepthMask, ToTensorAll)
 
 from sacred import Experiment
 
@@ -89,7 +89,7 @@ class NYUDepthv2LabeledDataset(Dataset):
         self.transform = transform
 
     def __len__(self):
-        return self.depth.shape[0]
+        return self.depth.shape[-1]
 
     def __getitem__(self, i):
         # Convert to torch tensor
@@ -114,6 +114,9 @@ class NYUDepthv2LabeledDataset(Dataset):
         if self.transform is not None:
             sample = self.transform(sample)
         return sample
+
+    def get_item_by_id(self, entry):
+        return self[int(entry)]
 
 
 @nyuv2_labeled_ingredient.capture
@@ -145,22 +148,23 @@ def load_data(root_dir, train_files, test_files, crop_file, min_depth, max_depth
                                     crop_file,
                                     transform=None, bgr_mode=dorn_mode)
     transform_list = [
-        AddDepthMask(min_depth, max_depth, "rawdepth_cropped"),
+        AddDepthMask(min_depth, max_depth, "rawdepth_cropped", "mask_cropped"),
+        AddDepthMask(min_depth, max_depth, "rawdepth", "mask")
     ]
     if dorn_mode:
         print("Using dataset in DORN mode.")
         transform_mean = np.array([[[103.0626, 115.9029, 123.1516]]]).astype(np.float32)
         transform_var = np.ones((1, 1, 3)).astype(np.float32)
         transform_list += [
-            Save(["bgr_cropped"], "_orig"),
-            ResizeAll((353, 257), keys=["bgr_cropped"]),
-            Normalize(transform_mean, transform_var, key="bgr_cropped"),
-            ToTensorAll(keys=["bgr", "bgr_cropped", "bgr_cropped_orig", "depth_cropped", "rawdepth_cropped", "mask"],
+            Save(["bgr"], "_orig"),
+            ResizeAll((353, 257), keys=["bgr"]),
+            Normalize(transform_mean, transform_var, key="bgr"),
+            ToTensorAll(keys=["bgr", "bgr_orig", "depth_cropped"],
                         channels_first=dorn_mode)
         ]
     else:
         print("Using dataset in Wonka mode.")
-        transform_list.append(ToTensorAll(keys=["rgb_cropped", "depth_cropped", "rawdepth_cropped", "mask"], channels_first=dorn_mode))
+        transform_list.append(ToTensorAll(keys=["rgb", "depth_cropped"], channels_first=dorn_mode))
     train.transform = transforms.Compose(transform_list)
     test.transform = transforms.Compose(transform_list)
     return train, test
@@ -175,7 +179,7 @@ def test_load_data(min_depth, max_depth):
 
     sample = test[300]
     # print(sample["rgb"])
-    print([(key, sample[key].shape) for key in sample])
+    print([(key, sample[key].shape) for key in sample if isinstance(sample[key], torch.Tensor)])
     print(np.min(sample["depth"]))
     print(np.max(sample["depth"]))
     print(sample["rgb"].shape)
@@ -187,11 +191,20 @@ def test_load_data(min_depth, max_depth):
     train, test = load_data(dorn_mode=True)
     sample = test[300]
     # print(sample["rgb"])
-    print([(key, sample[key].shape) for key in sample])
+    print([(key, sample[key].shape) for key in sample if isinstance(sample[key], torch.Tensor)])
     # print(torch.min(sample["depth"]))
     # print(torch.max(sample["depth"]))
     print(sample["bgr"].shape)
     print(sample["bgr"][:, 30, 30]) # Channels should be first
+
+    # Find entries where even inpainted depth has invalid entries
+    for i in range(len(test)):
+        depth = test[i]["depth_cropped"]
+        less_than_zero = torch.sum((depth < 0).float())
+        greater_than_ten = torch.sum((depth > 10.).float())
+        if less_than_zero + greater_than_ten > 0:
+            print("invalid depth entries for image {}".format(i))
+            break
 
 
 

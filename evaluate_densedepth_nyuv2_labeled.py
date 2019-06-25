@@ -6,7 +6,7 @@ from utils.train_utils import init_randomness
 from collections import defaultdict
 import json
 from models.core.checkpoint import load_checkpoint, safe_makedir
-from models.data.utils.transforms import AddDepthMask
+from models.data.data_utils.transforms import AddDepthMask
 from utils.eval_utils import evaluate_model_on_dataset, evaluate_model_on_data_entry
 from models import make_model
 from sacred import Experiment
@@ -41,7 +41,7 @@ def cfg(data_config):
     output_dir = os.path.join("results",
                               data_config["data_name"],    # e.g. nyu_depth_v2
                               "{}_{}".format("test", small_run),
-                              model_config["model_name"])  # e.g. DORN_nyu_nohints
+                              model_config["model_name"] + "_rawdepth")  # e.g. DORN_nyu_nohints
 
     safe_makedir(output_dir)
     ex.observers.append(FileStorageObserver.create(os.path.join(output_dir, "runs")))
@@ -82,14 +82,13 @@ def main(model_config,
     eval_fn = lambda input_, device: model.evaluate(input_["rgb"].numpy(),
                                                     input_["crop"][0,:].numpy(),
                                                     input_["depth_cropped"],
-                                                    # input_["rawdepth_cropped"],
-                                                    torch.ones_like(input_["rawdepth_cropped"]))
-                                                    # input_["mask"])
+                                                    torch.ones_like(input_["depth_cropped"]))
+
     init_randomness(seed)
 
     if entry is None:
         print("Evaluating the model on {}.".format(data_config["data_name"]))
-        evaluate_model_on_dataset(eval_fn, dataset, small_run, None, save_outputs, output_dir, mask_key="mask")
+        evaluate_model_on_dataset(eval_fn, dataset, small_run, None, save_outputs, output_dir)
     else:
         print("Evaluating {}".format(entry))
         evaluate_model_on_data_entry(eval_fn, dataset, entry, None, save_outputs, output_dir)

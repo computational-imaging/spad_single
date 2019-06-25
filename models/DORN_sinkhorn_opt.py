@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import MSELoss
 import numpy as np
-from models.data.utils.sid_utils import SIDTorch
+from models.data.data_utils.sid_utils import SIDTorch
 from models.sinkhorn_dist import optimize_depth_map_masked
-from models.data.utils.spad_utils import remove_dc_from_spad, bgr2gray
+from models.data.data_utils.spad_utils import remove_dc_from_spad, bgr2gray
 from utils.inspect_results import add_hist_plot, log_single_gray_img
 from torch.optim import SGD
 import matplotlib
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     from torch.utils.data import DataLoader
     from utils.train_utils import init_randomness
     from models.data.nyuv2_official_hints_sid_dataset import load_data, cfg
-    from models.data.utils.spad_utils import cfg as spad_cfg
+    from models.data.data_utils.spad_utils import cfg as spad_cfg
     from collections import defaultdict
     data_config = cfg()
     spad_config = spad_cfg()

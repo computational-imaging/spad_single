@@ -15,7 +15,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from models.core.checkpoint import safe_makedir
 from models.core.model_core import Model
 from models.DORN_nohints import DORN_nyu_nohints
-from models.data.utils.sid_utils import SIDTorch
+from models.data.data_utils.sid_utils import SIDTorch
 from models.pytorch_prototyping.pytorch_prototyping import Unet
 
 class DORN_median_matching(DORN_nyu_nohints):

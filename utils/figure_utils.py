@@ -3,7 +3,7 @@ import numpy as np
 import os
 import json
 
-from models.data.utils.sid_utils import SID
+from models.data.data_utils.sid_utils import SID
 
 def get_latest_config(results_dir):
     """

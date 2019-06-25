@@ -11,7 +11,7 @@ from time import perf_counter
 
 from models.core.checkpoint import safe_makedir
 from models.core.model_core import Model
-from models.data.utils.sid_utils import SIDTorch
+from models.data.data_utils.sid_utils import SIDTorch
 from models.loss import get_depth_metrics
 
 
@@ -217,10 +217,16 @@ class DORN_nyu_nohints(Model):
     def evaluate(self, bgr, bgr_orig, gt, mask, device):
         # Output full-size depth map, so set resize_output=True
         pred = self.predict(bgr, bgr_orig, device, resize_output=True)
+        # Crop to ROI according to https://cs.nyu.edu/~deigen/depth/
+        ROI = np.array([20, 460, 24, 616])
+        pred = pred[...,ROI[0]:ROI[1], ROI[2]:ROI[3]]
+        # Clip to proper range
+        pred = torch.clamp(pred, min=self.min_depth, max=self.max_depth)
+        # Mask and gt should be the size of the ROI.
         metrics = self.get_metrics(pred,
                                    gt,
                                    mask)
-        return pred, metrics
+        return pred, metrics, torch.sum(mask).item()
 
     @staticmethod
     def get_metrics(depth_pred, depth_truth, mask):
@@ -1975,8 +1981,8 @@ if __name__ == "__main__":
 
 
     # import cv2
-    # from torch.utils.data import DataLoader
-    # from torchvision import utils
+    # from torch.data_utils.data import DataLoader
+    # from torchvision import data_utils
     # from models.data.nyuv2_official_nohints_sid_dataset import load_data
     # data_name = "nyu_depth_v2"
     # # Paths should be specified relative to the train script, not this file.
@@ -2104,5 +2110,5 @@ if __name__ == "__main__":
     # loss, pred = model.get_loss(input_, device=device, resize_output=True)
     # # ord_score = cv2.resize(pred, (W, H), interpolation=cv2.INTER_LINEAR)
     # depth_out = model.ord_decode(pred, model.sid_obj)
-    # # utils.save_image(depth_out/10., os.path.join("models", "test_{}.png".format(i)))
+    # # data_utils.save_image(depth_out/10., os.path.join("models", "test_{}.png".format(i)))
     #

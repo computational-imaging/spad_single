@@ -9,9 +9,9 @@ from torch.utils.data import Dataset
 import torch.backends.cudnn as cudnn
 
 from torchvision import transforms, utils
-from models.data.utils.transforms import (CropPowerOf2All, DepthProcessing, AddRawDepthMask, AddSIDDepth,
-                                          AddDepthHist, ClipMinMax, NormalizeRGB, ToFloat, ToTensor,
-                                          RandomCropAll, RandomHorizontalFlipAll, ResizeAll)
+from models.data.data_utils.transforms import (CropPowerOf2All, DepthProcessing, AddRawDepthMask, AddSIDDepth,
+                                               AddDepthHist, ClipMinMax, NormalizeRGB, ToFloat, ToTensor,
+                                               RandomCropAll, RandomHorizontalFlipAll, ResizeAll)
 
 from sacred import Experiment
 
@@ -349,7 +349,7 @@ def load_depth_data(train_file, train_dir, train_keywords=None,
 
     Returns
     -------
-    train, val, test - torch.utils.data.Dataset objects containing the relevant splits
+    train, val, test - torch.data_utils.data.Dataset objects containing the relevant splits
     """
     train = DepthDataset(train_file, train_dir, train_keywords, blacklist_file=blacklist_file)
     if test_loader:
@@ -405,13 +405,13 @@ def test_load_data(min_depth, max_depth):
     # Save RGB
     # from itertools import permutations
     # for perm in permutations([0, 1, 2]):
-    #     utils.save_image(torch.tensor(batch["rgb"][0, torch.LongTensor(perm)], dtype=torch.uint8), 
+    #     data_utils.save_image(torch.tensor(batch["rgb"][0, torch.LongTensor(perm)], dtype=torch.uint8),
     #                      "test_rgb_{}.png".format("_".join([str(i) for i in perm])))
     # Save Depth
-    # utils.save_image(batch["depth"][0, :, :, :], "test_depth.png", range=(1e-3, 8.))
-    # utils.save_image(batch["rawdepth"][0, :, :], "test_rawdepth.png", range=(1e-3, 8.))
+    # data_utils.save_image(batch["depth"][0, :, :, :], "test_depth.png", range=(1e-3, 8.))
+    # data_utils.save_image(batch["rawdepth"][0, :, :], "test_rawdepth.png", range=(1e-3, 8.))
     # Save Albedo
-    # utils.save_image(batch["albedo"][0, :, :, :], "test_albedo.png")
+    # data_utils.save_image(batch["albedo"][0, :, :, :], "test_albedo.png")
 
     train, _, _ = load_depth_data(hist_bins=10, hist_range=(min_depth, max_depth),
                                   sid_bins=40, sid_range=(min_depth, max_depth))
@@ -423,5 +423,5 @@ def test_load_data(min_depth, max_depth):
     print(depth_sid)
     # print(depth.dim())
     utils.save_image(depth, "0001_depth_test.png", range=(min_depth, max_depth), normalize=True)
-    # test_out = utils.make_grid(depth, range=(min_depth, max_depth), normalize=True)
+    # test_out = data_utils.make_grid(depth, range=(min_depth, max_depth), normalize=True)
     # print(test_out)
