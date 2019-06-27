@@ -74,7 +74,7 @@ def evaluate_model_on_dataset(eval_fn, dataset, small_run, device,
     # Make dataloader
     dataloader = DataLoader(dataset,
                             batch_size=1,
-                            shuffle=True,
+                            shuffle=False,
                             num_workers=0, # needs to be 0 to not crash autograd profiler.
                             pin_memory=True,
                             worker_init_fn=worker_init_randomness)
