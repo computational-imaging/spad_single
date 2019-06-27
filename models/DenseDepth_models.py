@@ -109,7 +109,7 @@ class DenseDepthMedianRescaling(DenseDepth):
         pred_np = self.forward(rgb)
         pred_rescaled = np.clip(pred_np*(np.median(gt_full)/np.median(pred_np)),
                                 a_min=0., a_max=10.)
-        pred = pred_np[...,crop[0]:crop[1], crop[2]:crop[3]]
+        pred = pred_rescaled[...,crop[0]:crop[1], crop[2]:crop[3]]
         pred = torch.from_numpy(pred).cpu().unsqueeze(0).float()
         metrics = self.get_metrics(pred, gt, mask)
         return pred, metrics, torch.sum(mask).item()
@@ -120,17 +120,18 @@ class DenseDepthHistogramMatching(DenseDepth):
                  existing=os.path.join("models","nyu.h5"), crop=[ 20, 460,  24, 616]):
                  # sid_bins=68, offset=0.,
                  # alpha=0.6569154266167957, beta=9.972175646365525):
-        super(DenseDepthMedianRescaling, self).__init__(existing, crop)
+        super(DenseDepthHistogramMatching, self).__init__(existing, crop)
         self.min_depth = min_depth
         self.max_depth = max_depth
         # self.sid_obj = SID(sid_bins, alpha, beta, offset)
 
     def evaluate(self, rgb, crop, gt, gt_full, mask):
-        pred_init = self.forward(rgb, crop)
+        pred_init = self.forward(rgb)
         # pred_sid_index = self.sid.get_sid_index_from_value(pred_init)
         # gt_hist, _ = np.histogram(gt.cpu().numpy(), bins=self.sid.sid_bin_edges)
         pred = self.hist_match(pred_init, gt_full)
         pred = torch.from_numpy(pred).cpu().unsqueeze(0).float()
+        pred = pred[...,crop[0]:crop[1], crop[2]:crop[3]]
         metrics = self.get_metrics(pred, gt, mask)
         return pred, metrics, torch.sum(mask).item()
 
