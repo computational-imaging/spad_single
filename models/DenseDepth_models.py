@@ -11,7 +11,7 @@ from time import perf_counter
 
 from models.core.checkpoint import safe_makedir
 from models.core.model_core import Model
-from models.data.data_utils.sid_utils import SIDTorch
+from models.data.data_utils.sid_utils import SID
 from models.data.data_utils.spad_utils import remove_dc_from_spad, bgr2gray
 from models.loss import get_depth_metrics
 from utils.inspect_results import add_hist_plot, log_single_gray_img
@@ -52,25 +52,19 @@ class DenseDepth(Model):
         # model = load_model(args.model, custom_objects=custom_objects, compile=False)
         self.default_crop = np.array(crop)
 
-    def forward(self, rgb, device, crop=None):
+    def forward(self, rgb):
         """
         Works in numpy.
         """
-        if crop is None:
-            crop = self.default_crop
         pred = scale_up(2, predict(self.model, rgb/255,
                                    minDepth=10, maxDepth=1000, batch_size=1)[:,:,:,0]) * 10.0
         pred_flip = scale_up(2, predict(self.model, rgb[...,::-1,:]/255,
                                         minDepth=10, maxDepth=1000, batch_size=1)[:,:,:,0]) * 10.0
-
-        pred = pred[:,crop[0]:crop[1], crop[2]:crop[3]]
-        pred_flip = pred_flip[:,crop[0]:crop[1], crop[2]:crop[3]]
-
         pred_final = 0.5*pred + 0.5*pred_flip[:,:,::-1]
         return pred_final
 
-    def predict(self, rgb, device, crop=None):
-        return self.forward(rgb, device, crop)
+    def predict(self, rgb):
+        return self.forward(rgb)
 
     def evaluate(self, rgb, crop, gt, mask):
         """
@@ -80,7 +74,8 @@ class DenseDepth(Model):
         :param gt: N x H x W x C
         :return: torch tensor prediction, metrics dict, and number of valid pixels
         """
-        pred = self.predict(rgb, device=None, crop=crop)
+        pred = self.predict(rgb)
+        pred = pred[:,crop[0]:crop[1], crop[2]:crop[3]]
         pred = torch.from_numpy(pred).cpu().unsqueeze(0).float()
         metrics = self.get_metrics(pred, gt, mask)
         return pred, metrics, torch.sum(mask).item()
@@ -93,17 +88,96 @@ class DenseDepth(Model):
 class DenseDepthMedianRescaling(DenseDepth):
     def __init__(self, min_depth=0., max_depth=10.,
                  existing=os.path.join("models", "nyu.h5"), crop=[ 20, 460,  24, 616]):
-        super(DenseDepthMedianRescaling).__init__(existing, crop) # Initializes model as well
+        super(DenseDepthMedianRescaling, self).__init__(existing, crop) # Initializes model as well
         self.min_depth = min_depth
         self.max_depth = max_depth
 
-    def predict(self, rgb, gt, device, crop=None):
-        pred = self.forward(rgb, device, crop)
-        # Do median rescaling
-        gt_median = np.median(gt)
-        pred_median = np.median(pred)
-        pred_rescaled = np.clip(pred * (gt_median/pred_median), a_min=self.min_depth, a_max=self.max_depth)
-        return pred_rescaled
+    # def forward(self, rgb, gt):
+    #     """
+    #     Works in numpy.
+    #     """
+    #     pred = scale_up(2, predict(self.model, rgb/255,
+    #                                minDepth=10, maxDepth=1000, batch_size=1)[:,:,:,0]) * 10.0
+    #     pred = pred*(np.median(gt)/np.median(pred))
+    #     pred_flip = scale_up(2, predict(self.model, rgb[...,::-1,:]/255,
+    #                                     minDepth=10, maxDepth=1000, batch_size=1)[:,:,:,0]) * 10.0
+    #     pred_flip = pred_flip*(np.median(gt)/np.median(pred_flip))
+    #     pred_final = 0.5*pred + 0.5*pred_flip[:,:,::-1]
+    #     return pred_final
+
+    def evaluate(self, rgb, crop, gt, gt_full, mask):
+        pred_np = self.forward(rgb)
+        pred_rescaled = np.clip(pred_np*(np.median(gt_full)/np.median(pred_np)),
+                                a_min=0., a_max=10.)
+        pred = pred_np[...,crop[0]:crop[1], crop[2]:crop[3]]
+        pred = torch.from_numpy(pred).cpu().unsqueeze(0).float()
+        metrics = self.get_metrics(pred, gt, mask)
+        return pred, metrics, torch.sum(mask).item()
+
+
+class DenseDepthHistogramMatching(DenseDepth):
+    def __init__(self, min_depth=0, max_depth=10.,
+                 existing=os.path.join("models","nyu.h5"), crop=[ 20, 460,  24, 616]):
+                 # sid_bins=68, offset=0.,
+                 # alpha=0.6569154266167957, beta=9.972175646365525):
+        super(DenseDepthMedianRescaling, self).__init__(existing, crop)
+        self.min_depth = min_depth
+        self.max_depth = max_depth
+        # self.sid_obj = SID(sid_bins, alpha, beta, offset)
+
+    def evaluate(self, rgb, crop, gt, gt_full, mask):
+        pred_init = self.forward(rgb, crop)
+        # pred_sid_index = self.sid.get_sid_index_from_value(pred_init)
+        # gt_hist, _ = np.histogram(gt.cpu().numpy(), bins=self.sid.sid_bin_edges)
+        pred = self.hist_match(pred_init, gt_full)
+        pred = torch.from_numpy(pred).cpu().unsqueeze(0).float()
+        metrics = self.get_metrics(pred, gt, mask)
+        return pred, metrics, torch.sum(mask).item()
+
+    @staticmethod
+    def hist_match(source, template):
+        """
+        From https://stackoverflow.com/questions/32655686/histogram-matching-of-two-images-in-python-2-x
+
+        Adjust the pixel values of a grayscale image such that its histogram
+        matches that of a target image
+
+        Arguments:
+        -----------
+            source: np.ndarray
+                Image to transform; the histogram is computed over the flattened
+                array
+            template: np.ndarray
+                Template image; can have different dimensions to source
+        Returns:
+        -----------
+            matched: np.ndarray
+                The transformed output image
+        """
+
+        oldshape = source.shape
+        source = source.ravel()
+        template = template.ravel()
+
+        # get the set of unique pixel values and their corresponding indices and
+        # counts
+        s_values, bin_idx, s_counts = np.unique(source, return_inverse=True,
+                                                return_counts=True)
+        t_values, t_counts = np.unique(template, return_counts=True)
+
+        # take the cumsum of the counts and normalize by the number of pixels to
+        # get the empirical cumulative distribution functions for the source and
+        # template images (maps pixel value --> quantile)
+        s_quantiles = np.cumsum(s_counts).astype(np.float64)
+        s_quantiles /= s_quantiles[-1]
+        t_quantiles = np.cumsum(t_counts).astype(np.float64)
+        t_quantiles /= t_quantiles[-1]
+
+        # interpolate linearly to find the pixel values in the template image
+        # that correspond most closely to the quantiles in the source image
+        interp_t_values = np.interp(s_quantiles, t_quantiles, t_values)
+
+        return interp_t_values[bin_idx].reshape(oldshape)
 
 
 class DenseDepthSinkhornOpt(SinkhornOptFull):

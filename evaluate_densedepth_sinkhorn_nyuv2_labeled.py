@@ -41,7 +41,7 @@ def cfg(data_config):
     output_dir = os.path.join("results",
                               data_config["data_name"],    # e.g. nyu_depth_v2
                               "{}_{}".format("test", small_run),
-                              model_config["model_name"])  # e.g. DORN_nyu_nohints
+                              model_config["model_name"] + "_rawdepth")  # e.g. DORN_nyu_nohints
 
     safe_makedir(output_dir)
     ex.observers.append(FileStorageObserver.create(os.path.join(output_dir, "runs")))

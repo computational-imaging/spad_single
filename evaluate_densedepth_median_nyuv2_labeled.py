@@ -24,7 +24,7 @@ ex = Experiment('densedepth_nyuv2_labeled', ingredients=[nyuv2_labeled_ingredien
 @ex.config
 def cfg(data_config):
     model_config = {                            # Load pretrained model for testing
-        "model_name": "DenseDepth",
+        "model_name": "DenseDepthMedianRescaling",
         "model_params": {
             "existing": os.path.join("models", "nyu.h5"),
         },
@@ -82,6 +82,7 @@ def main(model_config,
     eval_fn = lambda input_, device: model.evaluate(input_["rgb"].numpy(),
                                                     input_["crop"][0,:].numpy(),
                                                     input_["depth_cropped"],
+                                                    input_["depth"].numpy(),
                                                     torch.ones_like(input_["depth_cropped"]))
 
     init_randomness(seed)
