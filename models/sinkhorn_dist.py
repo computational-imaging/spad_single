@@ -111,8 +111,8 @@ def sinkhorn_dist_single(cost_mat, lam, gt_hist, x_hist, num_iters=100, eps=1e-4
                 for two consecutive iterations.
     :return: sinkhorn_dist, transport_matrix
     """
-    # print(gt_hist.shape)
-    # print(x_hist.shape)
+    print(gt_hist.shape)
+    print(x_hist.shape)
     assert gt_hist.shape == x_hist.shape and len(x_hist.shape) == 2
     assert cost_mat.shape[0] == x_hist.shape[1] and cost_mat.shape[0] == cost_mat.shape[1]
 

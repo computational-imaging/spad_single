@@ -24,8 +24,22 @@ ex = Experiment('densedepth_nyuv2_labeled', ingredients=[nyuv2_labeled_ingredien
 @ex.config
 def cfg(data_config):
     model_config = {                            # Load pretrained model for testing
-        "model_name": "DenseDepth",
+        "model_name": "DenseDepthHistogramMatchingWasserstein",
         "model_params": {
+            "sgd_iters": 100,
+            "sinkhorn_iters": 40,
+            "sigma": 0.5,
+            "lam": 1e1,
+            "kde_eps": 1e-4,
+            "sinkhorn_eps": 1e-7,
+            "dc_eps": 1e-5,
+            "lr": 1e5,
+            "min_depth": 0.,
+            "max_depth": 10.,
+            "sid_bins": 68,
+            "offset": 0.,
+            "alpha": 0.6569154266167957,
+            "beta": 9.972175646365525,
             "existing": os.path.join("models", "nyu.h5"),
         },
         "model_state_dict_fn": None
@@ -46,8 +60,10 @@ def cfg(data_config):
     safe_makedir(output_dir)
     ex.observers.append(FileStorageObserver.create(os.path.join(output_dir, "runs")))
 
-    cuda_device = "0"                       # The gpu index to run on. Should be a string
+    cuda_device = "0,1"  # The visible gpus. First one is the tensorflow, second one is pytorch.
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
+    # print("after: {}".format(os.environ["CUDA_VISIBLE_DEVICES"]))
+    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
     # print("after: {}".format(os.environ["CUDA_VISIBLE_DEVICES"]))
     if ckpt_file is not None:
         model_update, _, _ = load_checkpoint(ckpt_file)
@@ -64,10 +80,11 @@ def main(model_config,
          seed,
          small_run,
          dataset_type,
-         entry):
+         entry,
+         device):
     # Load the model
     model = make_model(**model_config)
-    # model.sid_obj.to(device)
+    model.sinkhorn_opt.to(device)
 
     from tensorboardX import SummaryWriter
     from datetime import datetime
@@ -82,13 +99,14 @@ def main(model_config,
     eval_fn = lambda input_, device: model.evaluate(input_["rgb"],
                                                     input_["crop"][0,:],
                                                     input_["depth_cropped"],
-                                                    torch.ones_like(input_["depth_cropped"]))
+                                                    torch.ones_like(input_["depth_cropped"]),
+                                                    device)
 
     init_randomness(seed)
 
     if entry is None:
         print("Evaluating the model on {}.".format(data_config["data_name"]))
-        evaluate_model_on_dataset(eval_fn, dataset, small_run, None, save_outputs, output_dir)
+        evaluate_model_on_dataset(eval_fn, dataset, small_run, device, save_outputs, output_dir)
     else:
         print("Evaluating {}".format(entry))
-        evaluate_model_on_data_entry(eval_fn, dataset, entry, None, save_outputs, output_dir)
+        evaluate_model_on_data_entry(eval_fn, dataset, entry, device, save_outputs, output_dir)

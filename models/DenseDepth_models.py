@@ -34,7 +34,7 @@ class DenseDepth(Model):
 
     Thin wrapper around the Keras implementation.
     """
-    def __init__(self, existing=os.path.join("models", "nyu.h5"), crop=[ 20, 460,  24, 616]):
+    def __init__(self, existing=os.path.join("models", "nyu.h5"), crop=(20, 460,  24, 616)):
         """
 
         :param existing:
@@ -74,8 +74,8 @@ class DenseDepth(Model):
         :param gt: N x H x W x C
         :return: torch tensor prediction, metrics dict, and number of valid pixels
         """
-        pred = self.predict(rgb)
-        pred = pred[:,crop[0]:crop[1], crop[2]:crop[3]]
+        pred = self.predict(rgb.numpy())
+        pred = pred[:, crop[0]:crop[1], crop[2]:crop[3]]
         pred = torch.from_numpy(pred).cpu().unsqueeze(0).float()
         metrics = self.get_metrics(pred, gt, mask)
         return pred, metrics, torch.sum(mask).item()
@@ -87,7 +87,7 @@ class DenseDepth(Model):
 
 class DenseDepthMedianRescaling(DenseDepth):
     def __init__(self, min_depth=0., max_depth=10.,
-                 existing=os.path.join("models", "nyu.h5"), crop=[ 20, 460,  24, 616]):
+                 existing=os.path.join("models", "nyu.h5"), crop=(20, 460,  24, 616)):
         super(DenseDepthMedianRescaling, self).__init__(existing, crop) # Initializes model as well
         self.min_depth = min_depth
         self.max_depth = max_depth
@@ -105,11 +105,24 @@ class DenseDepthMedianRescaling(DenseDepth):
     #     pred_final = 0.5*pred + 0.5*pred_flip[:,:,::-1]
     #     return pred_final
 
-    def evaluate(self, rgb, crop, gt, gt_full, mask):
-        pred_np = self.forward(rgb)
-        pred_rescaled = np.clip(pred_np*(np.median(gt_full)/np.median(pred_np)),
-                                a_min=0., a_max=10.)
-        pred = pred_rescaled[...,crop[0]:crop[1], crop[2]:crop[3]]
+    def evaluate(self, rgb, crop, gt, rawdepth, rawdepth_mask, mask):
+        """
+        https://github.com/tinghuiz/SfMLearner/blob/master/kitti_eval/eval_depth.py
+        -> Crop first, then scale using median
+        -> Clip afterwords.
+        :param rgb:
+        :param crop:
+        :param gt:
+        :param gt_full:
+        :param mask:
+        :return:
+        """
+        pred = self.forward(rgb.numpy())
+        pred = pred[...,crop[0]:crop[1], crop[2]:crop[3]]
+        rawdepth = rawdepth.numpy()
+        rawdepth_mask = rawdepth_mask.numpy()
+        pred = np.clip(pred*(np.median(rawdepth[rawdepth_mask > 0])/np.median(pred[rawdepth_mask > 0])),
+                       a_min=self.min_depth, a_max=self.max_depth)
         pred = torch.from_numpy(pred).cpu().unsqueeze(0).float()
         metrics = self.get_metrics(pred, gt, mask)
         return pred, metrics, torch.sum(mask).item()
@@ -117,7 +130,7 @@ class DenseDepthMedianRescaling(DenseDepth):
 
 class DenseDepthHistogramMatching(DenseDepth):
     def __init__(self, min_depth=0, max_depth=10.,
-                 existing=os.path.join("models","nyu.h5"), crop=[ 20, 460,  24, 616]):
+                 existing=os.path.join("models","nyu.h5"), crop=(20, 460,  24, 616)):
                  # sid_bins=68, offset=0.,
                  # alpha=0.6569154266167957, beta=9.972175646365525):
         super(DenseDepthHistogramMatching, self).__init__(existing, crop)
@@ -125,11 +138,11 @@ class DenseDepthHistogramMatching(DenseDepth):
         self.max_depth = max_depth
         # self.sid_obj = SID(sid_bins, alpha, beta, offset)
 
-    def evaluate(self, rgb, crop, gt, gt_full, mask):
-        pred_init = self.forward(rgb)
+    def evaluate(self, rgb, crop, gt, gt_orig, mask):
+        pred_init = self.forward(rgb.numpy())
         # pred_sid_index = self.sid.get_sid_index_from_value(pred_init)
         # gt_hist, _ = np.histogram(gt.cpu().numpy(), bins=self.sid.sid_bin_edges)
-        pred = self.hist_match(pred_init, gt_full)
+        pred = self.hist_match(pred_init, gt_orig)
         pred = torch.from_numpy(pred).cpu().unsqueeze(0).float()
         pred = pred[...,crop[0]:crop[1], crop[2]:crop[3]]
         metrics = self.get_metrics(pred, gt, mask)
@@ -181,23 +194,54 @@ class DenseDepthHistogramMatching(DenseDepth):
         return interp_t_values[bin_idx].reshape(oldshape)
 
 
-class DenseDepthSinkhornOpt(SinkhornOptFull):
+class DenseDepthHistogramMatchingWasserstein(DenseDepth):
     def __init__(self, sgd_iters=100, sinkhorn_iters=40, sigma=0.5, lam=1e1, kde_eps=1e-4,
                  sinkhorn_eps=1e-7, dc_eps=1e-5,
-                 remove_dc=True, use_intensity=True, use_squared_falloff=True,
                  lr=1e5, min_depth=0., max_depth=10.,
                  sid_bins=68, offset=0.,
                  alpha=0.6569154266167957, beta=9.972175646365525,
-                 existing=os.path.join("models", "nyu.h5")):
-        self.initializer = DenseDepth(existing)
-        self.sinkhorn_opt = SinkhornOpt(sgd_iters=sgd_iters, sinkhorn_iters=sinkhorn_iters, sigma=sigma, lam=lam, kde_eps=kde_eps,
+                 existing=os.path.join("models", "nyu.h5"),
+                 crop=(20, 460,  24, 616)):
+        super(DenseDepthHistogramMatchingWasserstein, self).__init__(existing, crop)
+        self.sinkhorn_opt = SinkhornOpt(sgd_iters=sgd_iters, sinkhorn_iters=sinkhorn_iters, sigma=sigma,
+                                        lam=lam, kde_eps=kde_eps,
                                         sinkhorn_eps=sinkhorn_eps, dc_eps=dc_eps,
-                                        remove_dc=remove_dc, use_intensity=use_intensity, use_squared_falloff=use_squared_falloff,
+                                        remove_dc=False, use_intensity=False, use_squared_falloff=False,
                                         lr=lr, min_depth=min_depth, max_depth=max_depth,
                                         sid_bins=sid_bins,
                                         alpha=alpha, beta=beta, offset=offset)
 
+    def evaluate(self, rgb, crop, gt, mask, device):
+        """
 
+        :param rgb: N x H' x W' x C numpy array
+        :param gt: N x 1 x H x W torch array
+        :param mask: N x 1 x H x W torch array
+        :param device:
+        :return:
+        """
+        # Run RGB through cnn to get depth_init
+        pred_init = self.predict(rgb.numpy())
+        pred_init = pred_init[:, crop[0]:crop[1], crop[2]:crop[3]]
+
+        pred_init = torch.from_numpy(pred_init).unsqueeze(0).float().to(device)
+        extended_bin_edges = self.sinkhorn_opt.sid_obj.sid_bin_edges.cpu().numpy()
+        extended_bin_edges = np.append(extended_bin_edges, float('inf'))
+        gt_hist, _ = np.histogram(gt.cpu().numpy(), bins=extended_bin_edges)
+        gt_hist = torch.from_numpy(gt_hist).unsqueeze(0).unsqueeze(-1).unsqueeze(-1).float().to(device)
+        rgb = rgb.permute(0, 3, 1, 2).to(device)
+
+        mask = mask.to(device)
+        pred = self.sinkhorn_opt.optimize(pred_init, torch.flip(rgb, dims=(1,)), gt_hist, mask, device)
+        pred = pred.cpu()
+        gt = gt.cpu()
+        mask = mask.cpu()
+        metrics = self.get_metrics(pred, gt, mask)
+
+        pred_init = pred_init.cpu()
+        before_metrics = self.get_metrics(pred_init, gt, mask)
+        print("before", before_metrics)
+        return pred, metrics, torch.sum(mask).item()
 
 
 

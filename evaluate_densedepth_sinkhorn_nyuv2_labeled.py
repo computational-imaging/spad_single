@@ -79,8 +79,8 @@ def main(model_config,
     # Load the data
     train, test = load_data(dorn_mode=False)
     dataset = train if dataset_type == "train" else test
-    eval_fn = lambda input_, device: model.evaluate(input_["rgb"].numpy(),
-                                                    input_["crop"][0,:].numpy(),
+    eval_fn = lambda input_, device: model.evaluate(input_["rgb"],
+                                                    input_["crop"][0,:],
                                                     input_["depth_cropped"],
                                                     torch.ones_like(input_["depth_cropped"]))
 

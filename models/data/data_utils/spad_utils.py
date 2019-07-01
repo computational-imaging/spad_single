@@ -13,6 +13,7 @@ def cfg():
     dc_count = 0.1*photon_count     # Simulates ambient + dark count (additional to photon_count
     fwhm_ps = 70.                   # Full-width-at-half-maximum of (Gaussian) SPAD jitter, in picoseconds
 
+    use_poisson = True
     use_intensity = True
     use_squared_falloff = True
     spad_comment = "use_intensity_{}".format(use_intensity) + "_" + \
@@ -22,14 +23,15 @@ def cfg():
 @spad_ingredient.named_config
 def rawhist():
     dc_count = 0.
+    use_poisson = False
     use_intensity = False
     use_squared_falloff = False
 
 
 def bgr2gray(bgr):
     """
-    Numpy / Torch version of cv2.cvtColor(image, cv2.COLOR_BGR2GRAY).
-    :param bgr: tensor with channels in (B, G, R) order
+    Pytorch version of cv2.cvtColor(image, cv2.COLOR_BGR2GRAY).
+    :param bgr: NxCxHxW tensor with channels in (B, G, R) order
     :return: tensor with grayscale image
     """
     if len(bgr.shape) == 4:
@@ -41,7 +43,7 @@ def bgr2gray(bgr):
 
 def simulate_spad(depth_truth, intensity, mask, min_depth, max_depth,
                   spad_bins, photon_count, dc_count, fwhm_ps,
-                  use_intensity, use_squared_falloff):
+                  use_poisson, use_intensity, use_squared_falloff):
     """
     Works in numpy.
     :param depth_truth: The ground truth depth map (z, not distance...)
@@ -53,6 +55,7 @@ def simulate_spad(depth_truth, intensity, mask, min_depth, max_depth,
     :param photon_count: The number of photons to collect
     :param dc_count: The additional fraction of photons to add to account for dark count + ambient light
     :param fwhm_ps: The full-width-at-half-maximum of the laser pulse jitter
+    :param use_poisson: Whether or not to apply poisson noise at the end.
     :param use_intensity: Whether or not to take an intensity image into account when simulating.
     :param use_squared_falloff: Whether or not to take the squared depth into account when simulating
     :return: A simulated spad.
@@ -83,7 +86,8 @@ def simulate_spad(depth_truth, intensity, mask, min_depth, max_depth,
     spad_counts = np.clip(spad_counts, a_min=0., a_max=None)
     # Apply poisson
     # print(np.min(spad_counts))
-    spad_counts = np.random.poisson(spad_counts)
+    if use_poisson:
+        spad_counts = np.random.poisson(spad_counts)
     return spad_counts
 
 # def simulate
@@ -200,7 +204,7 @@ def get_rescale_layer(spad_bins, min_depth, max_depth, sid_obj):
 
 class SimulateSpad:
     def __init__(self, depth_truth_key, albedo_key, mask_key, spad_key, min_depth, max_depth,
-                 spad_bins, photon_count, dc_count, fwhm_ps, use_albedo, use_squared_falloff,
+                 spad_bins, photon_count, dc_count, fwhm_ps, use_poisson, use_albedo, use_squared_falloff,
                  sid_obj=None):
         """
 
@@ -223,11 +227,12 @@ class SimulateSpad:
         self.min_depth = min_depth
         self.max_depth = max_depth
         self.sid_obj = sid_obj
+        self.use_poisson = use_poisson
         self.use_albedo = use_albedo
         self.use_squared_falloff = use_squared_falloff
         self.simulate_spad_fn = \
             lambda d, i, m: simulate_spad(d, i, m, min_depth, max_depth, spad_bins, photon_count, dc_count,
-                                          fwhm_ps, use_albedo, use_squared_falloff)
+                                          fwhm_ps, use_poisson, use_albedo, use_squared_falloff)
 
     def __call__(self, sample):
         spad_counts = self.simulate_spad_fn(sample[self.depth_truth_key],
@@ -241,7 +246,7 @@ class SimulateSpad:
 
 class SimulateSpadIntensity:
     def __init__(self, depth_truth_key, rgb_key, mask_key, spad_key, min_depth, max_depth,
-                 spad_bins, photon_count, dc_count, fwhm_ps, use_albedo, use_squared_falloff,
+                 spad_bins, photon_count, dc_count, fwhm_ps, use_poisson, use_intensity, use_squared_falloff,
                  sid_obj=None):
         """
 
@@ -263,14 +268,15 @@ class SimulateSpadIntensity:
         self.min_depth = min_depth
         self.max_depth = max_depth
         self.sid_obj = sid_obj
-        self.use_albedo = use_albedo
+        self.use_poisson = use_poisson
+        self.use_intensity = use_intensity
         self.use_squared_falloff = use_squared_falloff
         self.simulate_spad_fn = \
             lambda d, i, m: simulate_spad(d, i, m, min_depth, max_depth, spad_bins, photon_count, dc_count,
-                                          fwhm_ps, use_albedo, use_squared_falloff)
+                                          fwhm_ps, use_poisson, use_intensity, use_squared_falloff)
 
     def __call__(self, sample):
-        print(sample[self.rgb_key].shape)
+        # print(sample[self.rgb_key].shape)
         spad_counts = self.simulate_spad_fn(sample[self.depth_truth_key],
                                             bgr2gray(sample[self.rgb_key]).squeeze(-1),
                                             sample[self.mask_key])
