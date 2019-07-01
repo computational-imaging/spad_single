@@ -223,9 +223,7 @@ class DORN_nyu_nohints(Model):
         # Clip to proper range
         pred = torch.clamp(pred, min=self.min_depth, max=self.max_depth)
         # Mask and gt should be the size of the ROI.
-        metrics = self.get_metrics(pred,
-                                   gt,
-                                   mask)
+        metrics = self.get_metrics(pred, gt, mask)
         return pred, metrics, torch.sum(mask).item()
 
     @staticmethod

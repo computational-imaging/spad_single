@@ -36,42 +36,26 @@ class DORN_median_matching(DORN_nyu_nohints):
                                                    frozen, pretrained,
                                                    state_dict_file)
 
-    def predict(self, input_, device, resize_output=True):
-        # one = perf_counter()
-        rgb = input_["rgb"].to(device)
-        # print("dataloader: model input")
-        # print(rgb[:,:,50:55,50:55])
-        # two = perf_counter()
-        depth_pred = self.forward(rgb)
-        # three = perf_counter()
-        # print("Forward pass: {}".format(three - two))
+    def predict(self, bgr, bgr_orig, gt_orig, device, resize_output=True):
+        depth_pred = self.forward(bgr)
         logprobs = self.to_logprobs(depth_pred)
         if resize_output:
-            original_size = input_["rgb_orig"].size()[-2:]
+            original_size = bgr_orig.size()[-2:]
             # Note: align_corners=False gives same behavior as cv2.resize
             depth_pred_full = F.interpolate(depth_pred, size=original_size,
                                             mode="bilinear", align_corners=False)
             logprobs_full = self.to_logprobs(depth_pred_full)
-            return self.ord_decode(logprobs_full, self.sid_obj)
-        return self.ord_decode(logprobs, self.sid_obj)
+            pred_init = self.ord_decode(logprobs_full, self.sid_obj)
+        else:
+            pred_init = self.ord_decode(logprobs, self.sid_obj)
+        pred = pred_init * (torch.median(gt_orig)/torch.median(pred_init))
+        return pred
 
-    def evaluate(self, data, device):
-        # one = perf_counter()
-        pred = self.predict(data, device, resize_output=True)
-
-        # Median matching
-        # Get median from GT depth
-        gt = data["rawdepth_orig"]
-        mask = data["mask_orig"]
-        gt_median = torch.median(gt[mask > 0.])
-        pred_median = torch.median(pred[mask > 0.])
-
-        pred_rescaled = torch.clamp(pred * (gt_median/pred_median), min=self.min_depth, max=self.max_depth)
-        metrics = self.get_metrics(pred_rescaled,
-                                   gt,
-                                   mask)
-        # Also calculate before metrics:
-        before_metrics = self.get_metrics(pred, gt, mask)
-        print("before", before_metrics)
-        return pred, metrics
-
+    def evaluate(self, bgr, bgr_orig, crop, gt, gt_orig, mask, device):
+        pred = self.predict(bgr, bgr_orig, gt_orig, device, resize_output=True)
+        pred = pred[..., crop[0]:crop[1], crop[2]:crop[3]]
+        pred = pred.cpu()
+        gt = gt.cpu()
+        mask = mask.cpu()
+        metrics = self.get_metrics(pred, gt, mask)
+        return pred, metrics, torch.sum(mask).item()

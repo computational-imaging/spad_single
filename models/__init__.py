@@ -5,7 +5,7 @@ from .DORN_bayesian_opt import DORN_bayesian_opt
 from .DORN_sinkhorn_opt import DORN_sinkhorn_opt
 from .DORN_median_matching import DORN_median_matching
 from .DenseDepth_models import DenseDepth, DenseDepthMedianRescaling,\
-                               DenseDepthHistogramMatching, DenseDepthSinkhornOpt
+                               DenseDepthHistogramMatching, DenseDepthHistogramMatchingWasserstein
 # import future models here
 
 

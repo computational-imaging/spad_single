@@ -73,6 +73,15 @@ class SinkhornOpt:
             self.inv_squared_depths = self.inv_squared_depths.to(device)
 
     def optimize(self, depth_init, bgr, spad, mask, gt=None):
+        """
+        Works in pytorch.
+        :param depth_init:
+        :param bgr:
+        :param spad:
+        :param mask:
+        :param gt:
+        :return:
+        """
         scaling = None
         if self.use_intensity:
             scaling = bgr2gray(bgr)/255.

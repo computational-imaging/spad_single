@@ -154,7 +154,7 @@ def evaluate_model_on_data_entry(eval_fn, dataset, entry, device, save_outputs, 
     # print("remove_dc: ", model.remove_dc)
     # print("use_intensity: ", model.use_intensity)
     # print("use_squared_falloff: ", model.use_squared_falloff)
-    pred, pred_metrics = eval_fn(input_, device)
+    pred, pred_metrics, pred_weight = eval_fn(input_, device)
     if save_outputs:
         if output_dir is None:
             raise ValueError("evaluate_model_on_dataset: output_dir is None")
