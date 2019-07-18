@@ -6,13 +6,13 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 from models.data.data_utils.transforms import (ResizeAll, Save, Normalize,
                                                AddDepthMask, ToTensorAll)
-
+from models.data.data_utils.spad_utils import spad_ingredient
 from sacred import Experiment
 
-nyuv2_labeled_ingredient = Experiment('data_config')
+nyuv2_labeled_ingredient = Experiment('data_config', ingredients=[spad_ingredient])
 
 @nyuv2_labeled_ingredient.config
-def cfg():
+def cfg(spad_config):
     data_name = "nyu_depth_v2_labeled"
     root_dir = os.path.join("data", "nyu_depth_v2_labeled_numpy")
     train_files = {
@@ -41,6 +41,20 @@ def cfg():
 
     min_depth = 0.
     max_depth = 10.
+
+    # SID stuff
+    sid_bins = 68   # Number of bins (network outputs 2x this number of channels)
+    bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
+    dorn_decode = np.exp((bin_edges - 1) / 25 - 0.36)
+    d0 = dorn_decode[0]
+    d1 = dorn_decode[1]
+    # Algebra stuff to make the depth bins work out exactly like in the
+    # original DORN code.
+    alpha = (2 * d0 ** 2) / (d1 + d0)
+    beta = alpha * np.exp(sid_bins * np.log(2 * d0 / alpha - 1))
+    del bin_edges, dorn_decode, d0, d1
+    offset = 0.
+
 
 class NYUDepthv2LabeledDataset(Dataset):
     """
@@ -115,9 +129,21 @@ class NYUDepthv2LabeledDataset(Dataset):
             sample = self.transform(sample)
         return sample
 
+    sid_bins = 68   # Number of bins (network outputs 2x this number of channels)
+    bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
+    dorn_decode = np.exp((bin_edges - 1) / 25 - 0.36)
+    d0 = dorn_decode[0]
+    d1 = dorn_decode[1]
+    # Algebra stuff to make the depth bins work out exactly like in the
+    # original DORN code.
+    alpha = (2 * d0 ** 2) / (d1 + d0)
+    beta = alpha * np.exp(sid_bins * np.log(2 * d0 / alpha - 1))
+    del bin_edges, dorn_decode, d0, d1
+    offset = 0.
 
 @nyuv2_labeled_ingredient.capture
-def load_data(root_dir, train_files, test_files, crop_file, min_depth, max_depth, dorn_mode):
+def load_data(root_dir, train_files, test_files, crop_file, min_depth, max_depth, dorn_mode,
+              sid_bins, alpha, beta, offset, spad_config):
     """
     Wonka:
     Input: rgb
@@ -129,8 +155,6 @@ def load_data(root_dir, train_files, test_files, crop_file, min_depth, max_depth
     Output size: Same as unresized bgr_cropped
     Comapre to: rawdepth_cropped, mask
 
-    :param root_dir:  The root directory from which to load the dataset
-    :param use_dorn_normalization: Whether or not to normalize the rgb images according to DORN statistics.
     :return: test: a NYUDepthv2TestDataset object.
     """
 

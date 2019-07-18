@@ -42,6 +42,7 @@ def cfg():
     min_depth = 0.
     max_depth = 10.
 
+
 class NYUDepthv2LabeledDataset(Dataset):
     """
     The official NYUv2 Labeled dataset, loaded from numpy files.

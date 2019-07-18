@@ -1,0 +1,12 @@
+torch
+torchvision
+numpy
+scipy
+scikit-image
+jupyter
+sacred
+opencv-python
+tensorflow
+tensorboardX
+pandas
+

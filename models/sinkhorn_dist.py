@@ -1,7 +1,8 @@
 import torch
+import torch.optim as optim
 import numpy as np
 from pdb import set_trace
-from utils.inspect_results import add_hist_plot, log_single_gray_img, add_diff_map
+from utils.inspect_results import add_hist_plot, log_single_gray_img, add_color_map
 
 mse = torch.nn.MSELoss()
 
@@ -111,8 +112,8 @@ def sinkhorn_dist_single(cost_mat, lam, gt_hist, x_hist, num_iters=100, eps=1e-4
                 for two consecutive iterations.
     :return: sinkhorn_dist, transport_matrix
     """
-    print(gt_hist.shape)
-    print(x_hist.shape)
+    # print(gt_hist.shape)
+    # print(x_hist.shape)
     assert gt_hist.shape == x_hist.shape and len(x_hist.shape) == 2
     assert cost_mat.shape[0] == x_hist.shape[1] and cost_mat.shape[0] == cost_mat.shape[1]
 
@@ -124,18 +125,18 @@ def sinkhorn_dist_single(cost_mat, lam, gt_hist, x_hist, num_iters=100, eps=1e-4
     M = cost_mat[r_mask, :] # C' x C
     K = torch.exp(-lam*M) # C' x C
     K_T = K.transpose(0,1)  # C x C'
-    u = torch.ones_like(r)/r.shape[0] # C' x N
+    u = torch.ones_like(r)*r.shape[0] # C' x N
     for i in range(num_iters):
         temp1 = K_T.mm(u) # C x N
         # print(temp1)
-        v = c/temp1         # C x N
+        v = c/torch.clamp(temp1, min=eps)         # C x N
         # print(v)
         temp2 = K.mm(v) # C' x N
         # print(temp2)
-        u_temp = r/temp2 # C' x N
+        u_temp = r/torch.clamp(temp2, min=eps) # C' x N
         # print(u_temp)
         if torch.sum(torch.abs(u - u_temp)) < eps:
-            print("sinkhorn early stopping.")
+            # print("sinkhorn early stopping.")
             break
         if torch.isnan(u_temp).any().item():
             print("iteration {}".format(i))
@@ -304,6 +305,7 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
 
     print("lr: ", lr)
     print("sigma: ", sigma)
+    print("optimizer: SGD")
     gt_hist = gt_hist.squeeze(-1).squeeze(-1)
 
     if writer is not None:
@@ -314,9 +316,14 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
         # Standard deviation of gt depth
         baseline_rmse = gt[mask > 0].std()
         writer.add_scalar("data/baseline_rmse", baseline_rmse, 0)
+        # GT depth
+        log_single_gray_img(writer, "depth/gt", gt, model.min_depth, model.max_depth)
 
     x_index = x_index_init.clone().detach().float().requires_grad_(True)
     x_best = x_index_init.clone().detach().float().requires_grad_(False)
+    x_hist_best = spad_forward(x_best, mask, sigma, n_bins, kde_eps=kde_eps,
+                               inv_squared_depths=inv_squared_depths,
+                               scaling=scaling)
     # if writer is not None:
     #     writer.add_image('depth_in',)
     loss = torch.tensor(float('inf'))
@@ -343,7 +350,7 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
             pred_temp = model.sid_obj.get_value_from_sid_index(torch.floor(x_best).detach().long())
             log_single_gray_img(writer, "depth/pred", pred_temp, model.min_depth, model.max_depth, global_step=i)
             # Diff image
-            add_diff_map(writer, "depth/diff", gt.cpu(), pred_temp.cpu(), i)
+            add_color_map(writer, "depth/diff", gt.cpu() - pred_temp.cpu(), i)
 
             # RMSE
             metrics = model.get_metrics(pred_temp.cpu(), gt.cpu(), mask.cpu())
@@ -362,6 +369,7 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
             if loss.item() < best_loss:
                 best_loss = loss.item()
                 x_best = x_index.clone().detach().float().requires_grad_(False)
+                x_hist_best = x_hist.clone().detach().float().requires_grad_(False)
             # Do gradient descent step
             if torch.isnan(x_index.grad).any().item():
                 print("nans detected in x.grad")
@@ -369,18 +377,158 @@ def optimize_depth_map_masked(x_index_init, mask, sigma, n_bins,
             x_index -= lr*x_index.grad
             # if torch.sum(torch.abs(lr*x_index.grad)) < sinkhorn_eps: # Reuse sinkhorn eps for sgd convergence.
             rel_improvement = np.abs(prev_loss - loss.item())/loss.item()
-            print("rel_improvement", rel_improvement)
+            # print("rel_improvement", rel_improvement)
             # if loss.item() < sinkhorn_eps:
             if rel_improvement < sinkhorn_eps and i >= min_sgd_iters:
-                x_index = torch.clamp(x_index, min=0., max=n_bins).requires_grad_(True)
+                # x_index = torch.clamp(x_index, min=0., max=n_bins).requires_grad_(True)
                 print("early stopping")
                 return x_best, x_hist
             x_index.grad.zero_()
             x_index = torch.clamp(x_index, min=0., max=n_bins).requires_grad_(True)
         # print("warning: sgd exited before convergence.")
-    return x_best, x_hist
+    return x_best, x_hist_best
+
+def optimize_depth_map_masked_adam(x_index_init, mask, sigma, n_bins,
+                                   cost_mat, lam, gt_hist,
+                                   lr, num_sgd_iters, num_sinkhorn_iters,
+                                   kde_eps=1e-5,
+                                   sinkhorn_eps=1e-2,
+                                   min_sgd_iters=50,
+                                   inv_squared_depths=None,
+                                   scaling=None,
+                                   writer=None, gt=None, model=None):
+    """
+
+    :param x_index_init: Initial depth map. Each pixel is an index in [0, n_bins-1]. N x 1 x H x W
+    :param mask: Mask off pixels with invalid depth. N x 1 x H x W
+    :param sigma: Width parameter for Kernel Density Estimation
+    :param n_bins: Number of bins for each histogram.
+    :param cost_mat: Cost Matrix for sinkhorn computation. n_bins x n_bins
+    :param lam: Controls strength of entropy regularization. Higher = closer to wasserstein.
+    :param gt_hist: The histogram we are trying to match x_index_init to.
+    :param lr: Learning rate for gradient descent.
+    :param num_sgd_iters: Maximum number of gradient descent steps to take.
+    :param num_sinkhorn_iters: Maximum number of sinkhorn iteration steps to take.
+    :param kde_eps: Epsilon used for KDE to prevent 0 values in histogram.
+    :param sinkhorn_eps: Epsilon used to control stopping criterion for the sinkhorn iterations.
+    :param min_sgd_iters: Minimum number of SGD iterations to undergo before stopping.
+    :param inv_squared_depths: 1/depth^2 for each bin in [0, n_bins-1]
+    :param scaling: Per-pixel scaling image.
+    :return:
+    """
+    import torchvision.utils as vutils
+    import matplotlib.pyplot as plt
+
+    print("lr: ", lr)
+    print("sigma: ", sigma)
+    gt_hist = gt_hist.squeeze(-1).squeeze(-1)
+
+    if writer is not None:
+        # Histogram plot
+        add_hist_plot(writer, "hist/gt_hist", gt_hist)
+
+        # RMSE Reference
+        # Standard deviation of gt depth
+        baseline_rmse = gt[mask > 0].std()
+        writer.add_scalar("data/baseline_rmse", baseline_rmse, 0)
+        # GT depth
+        log_single_gray_img(writer, "depth/gt", gt, model.min_depth, model.max_depth)
+
+        add_color_map(writer, "img/cost_mat", cost_mat)
+
+        # https://matplotlib.org/3.1.0/tutorials/colors/colormap-manipulation.html
+        from matplotlib import cm
+        from matplotlib.colors import ListedColormap
+        top = cm.get_cmap('Oranges_r', 128)
+        bottom = cm.get_cmap('Blues', 128)
+
+        newcolors = np.vstack((top(np.linspace(0, 1, 128)),
+                               bottom(np.linspace(0, 1, 128))))
+        newcmp = ListedColormap(newcolors, name='OrangeBlue')
+
+    x_index = x_index_init.clone().detach().float().requires_grad_(True)
+    x_best = x_index_init.clone().detach().float().requires_grad_(False)
+    x_hist_best = spad_forward(x_best, mask, sigma, n_bins, kde_eps=kde_eps,
+                          inv_squared_depths=inv_squared_depths,
+                          scaling=scaling)
+    # if writer is not None:
+    #     writer.add_image('depth_in',)
+    loss = torch.tensor(float('inf'))
+    best_loss = float('inf')
+
+    # optimizer = optim.SGD([x_index], lr=lr)
+    optimizer = optim.Adam([x_index], lr=lr)
+    print("optimizer: {}".format(type(optimizer).__name__))
 
 
+    for i in range(num_sgd_iters):
+        x_hist = spad_forward(x_index, mask, sigma, n_bins, kde_eps=kde_eps,
+                              inv_squared_depths=inv_squared_depths,
+                              scaling=scaling)
+        hist_loss, P = sinkhorn_dist_single(cost_mat, lam,
+                                            gt_hist, x_hist,
+                                            num_iters=num_sinkhorn_iters,
+                                            eps=sinkhorn_eps)
+
+        if not i % 10:
+            print("sinkhorn", hist_loss.item())
+            print("\tbest so far", best_loss)
+
+
+        ###
+        if writer is not None:
+            # Wasserstein Loss
+            writer.add_scalar("data/sinkhorn_dist", hist_loss.item(), i)
+            # Image itself
+            pred_temp = model.sid_obj.get_value_from_sid_index(torch.floor(x_best).detach().long())
+            log_single_gray_img(writer, "depth/pred", pred_temp, model.min_depth, model.max_depth, global_step=i)
+            # Diff image
+            max_abs_diff = torch.max(torch.abs(gt.cpu() - pred_temp.cpu())).item()
+            add_color_map(writer, "depth/diff", pred_temp.cpu() - gt.cpu(), i,
+                          vmin=-max_abs_diff, vmax=max_abs_diff, cmap=newcmp)
+
+            # RMSE
+            metrics = model.get_metrics(pred_temp.cpu(), gt.cpu(), mask.cpu())
+            writer.add_scalar("data/rmse", metrics["rmse"], i)
+
+            # Histogram plot
+            add_hist_plot(writer, "hist/x_hist", x_hist, global_step=i)
+            # Image itself
+
+        ###
+        prev_loss = loss.item()
+        loss = hist_loss
+        optimizer.zero_grad()
+        loss.backward()
+        # Save previous loss for convergence criteria
+        with torch.no_grad():
+            if loss.item() < best_loss:
+                best_loss = loss.item()
+                x_best = x_index.clone().detach().float().requires_grad_(False)
+                x_hist_best = x_hist
+            # Do gradient descent step
+            if torch.isnan(x_index.grad).any().item():
+                print("nans detected in x.grad")
+                break
+            # Visualize gradients
+            if writer is not None:
+                max_abs_grad = torch.max(torch.abs(x_index.grad)).item()
+                add_color_map(writer, "depth/grad", x_index.grad.cpu(), i,
+                              vmin=-max_abs_grad, vmax = max_abs_grad, cmap=newcmp)
+            # x_index -= lr*x_index.grad
+            optimizer.step()
+            x_index.clamp_(min=0., max=n_bins)
+            # if torch.sum(torch.abs(lr*x_index.grad)) < sinkhorn_eps: # Reuse sinkhorn eps for sgd convergence.
+
+            rel_improvement = np.abs(prev_loss - loss.item())/loss.item()
+            # print("rel_improvement", rel_improvement)
+            # if loss.item() < sinkhorn_eps:
+            if rel_improvement < sinkhorn_eps and i >= min_sgd_iters:
+                print("early stopping")
+                return x_best, x_hist_best
+            # x_index = torch.clamp(x_index, min=0., max=n_bins).requires_grad_(True)
+        # print("warning: sgd exited before convergence.")
+    return x_best, x_hist_best
 
 
 

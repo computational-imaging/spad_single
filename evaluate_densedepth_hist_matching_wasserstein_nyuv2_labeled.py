@@ -54,7 +54,7 @@ def cfg(data_config):
     # print(data_config.keys())
     output_dir = os.path.join("results",
                               data_config["data_name"],    # e.g. nyu_depth_v2
-                              "{}_{}".format("test", small_run),
+                              "{}_{}".format(dataset_type, small_run),
                               model_config["model_name"])  # e.g. DORN_nyu_nohints
 
     safe_makedir(output_dir)
@@ -88,10 +88,6 @@ def main(model_config,
 
     from tensorboardX import SummaryWriter
     from datetime import datetime
-    model.writer = SummaryWriter(log_dir=os.path.join("runs",
-                                                      datetime.now().strftime('%b%d'),
-                                                      datetime.now().strftime('%H-%M-%S_') + \
-                                                      "densedepth_nohints"))
 
     # Load the data
     train, test = load_data(dorn_mode=False)
@@ -109,4 +105,8 @@ def main(model_config,
         evaluate_model_on_dataset(eval_fn, dataset, small_run, device, save_outputs, output_dir)
     else:
         print("Evaluating {}".format(entry))
+        model.sinkhorn_opt.writer = SummaryWriter(log_dir=os.path.join("runs",
+                                                                       datetime.now().strftime('%b%d'),
+                                                                       datetime.now().strftime('%H-%M-%S_') + \
+                                                                       "densedepth_hist_match_wass"))
         evaluate_model_on_data_entry(eval_fn, dataset, entry, device, save_outputs, output_dir)

@@ -92,6 +92,7 @@ def main(model_config,
                                                     input_["bgr_orig"].to(device),
                                                     input_["crop"][0,:],
                                                     input_["depth_cropped"].to(device),
+                                                    input_["depth"].to(device),
                                                     torch.ones_like(input_["depth_cropped"]).to(device),
                                                     device)
 
