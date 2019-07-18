@@ -42,10 +42,10 @@ def log_single_gray_img(writer, name, img_tensor, min, max, global_step=0):
     writer.add_image(name, img, global_step=global_step)
 
 
-def add_diff_map(writer, name, gt_tensor, img_tensor, global_step=0):
-    diff = gt_tensor - img_tensor
+def add_color_map(writer, name, tensor, global_step=0, **imshow_kwargs):
+    # diff = gt_tensor - img_tensor
     fig = plt.figure()
-    plt.imshow(diff.cpu().numpy().squeeze())
+    plt.imshow(tensor.cpu().numpy().squeeze(), **imshow_kwargs)
     plt.colorbar()
     writer.add_figure(name, fig, global_step=global_step)
 
@@ -117,6 +117,13 @@ def find_max_differential(loss_diffs, loss_names):
     # rel_abs_diff_sorted = sorted(loss_diffs.items(), key=lambda x: x[1]["rel_abs_diff"], reverse=False)
     # rel_sqr_diff_sorted = sorted(loss_diffs.items(), key=lambda x: x[1]["rel_sqr_diff"], reverse=False)
 
+
+def depth_pt_to_img(filepath):
+    data = torch.load(filepath)
+    entry = data["entry"]
+    img = data["pred"]
+    save_image(img, "{}.png".format(entry), nrow=1, padding=0, range=(0., 10.), normalize=True)
+
 #
 # def find_pixelwise_diffs(img1, img2):
 #     """
@@ -126,5 +133,5 @@ def find_max_differential(loss_diffs, loss_names):
 #     :return: absolute value of difference
 #     """
 #     return np.abs(img1 - img2)
-
+# results/nyu_depth_v2_labeled/test_0/DORN_median_matching/1_out.pt
 

@@ -142,7 +142,7 @@ class DenseDepthHistogramMatching(DenseDepth):
         pred_init = self.forward(rgb.numpy())
         # pred_sid_index = self.sid.get_sid_index_from_value(pred_init)
         # gt_hist, _ = np.histogram(gt.cpu().numpy(), bins=self.sid.sid_bin_edges)
-        pred = self.hist_match(pred_init, gt_orig)
+        pred = self.hist_match(pred_init, gt_orig.numpy())
         pred = torch.from_numpy(pred).cpu().unsqueeze(0).float()
         pred = pred[...,crop[0]:crop[1], crop[2]:crop[3]]
         metrics = self.get_metrics(pred, gt, mask)
@@ -211,7 +211,7 @@ class DenseDepthHistogramMatchingWasserstein(DenseDepth):
                                         sid_bins=sid_bins,
                                         alpha=alpha, beta=beta, offset=offset)
 
-    def evaluate(self, rgb, crop, gt, mask, device):
+    def predict(self, rgb, crop, gt, mask, device):
         """
 
         :param rgb: N x H' x W' x C numpy array
@@ -221,7 +221,7 @@ class DenseDepthHistogramMatchingWasserstein(DenseDepth):
         :return:
         """
         # Run RGB through cnn to get depth_init
-        pred_init = self.predict(rgb.numpy())
+        pred_init = self.forward(rgb.numpy())
         pred_init = pred_init[:, crop[0]:crop[1], crop[2]:crop[3]]
 
         pred_init = torch.from_numpy(pred_init).unsqueeze(0).float().to(device)
@@ -229,20 +229,25 @@ class DenseDepthHistogramMatchingWasserstein(DenseDepth):
         extended_bin_edges = np.append(extended_bin_edges, float('inf'))
         gt_hist, _ = np.histogram(gt.cpu().numpy(), bins=extended_bin_edges)
         gt_hist = torch.from_numpy(gt_hist).unsqueeze(0).unsqueeze(-1).unsqueeze(-1).float().to(device)
-        rgb = rgb.permute(0, 3, 1, 2).to(device)
+        rgb = rgb.permute(0, 3, 1, 2).to(device)  # N x C x H x W
 
         mask = mask.to(device)
-        pred = self.sinkhorn_opt.optimize(pred_init, torch.flip(rgb, dims=(1,)), gt_hist, mask, device)
+        pred = self.sinkhorn_opt.optimize(pred_init, torch.flip(rgb, dims=(1,)), gt_hist, mask, gt)
+
+        # Also print before metrics
+        pred_init = pred_init.cpu()
+        before_metrics = self.get_metrics(pred_init, gt, mask)
+        print("before", before_metrics)
+        return pred
+
+    def evaluate(self, rgb, crop, gt, mask, device):
+        pred = self.predict(rgb, crop, gt, mask, device)
         pred = pred.cpu()
         gt = gt.cpu()
         mask = mask.cpu()
         metrics = self.get_metrics(pred, gt, mask)
-
-        pred_init = pred_init.cpu()
-        before_metrics = self.get_metrics(pred_init, gt, mask)
-        print("before", before_metrics)
+        print("after", metrics)
         return pred, metrics, torch.sum(mask).item()
-
 
 
 if __name__ == "__main__":

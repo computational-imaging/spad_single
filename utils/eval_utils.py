@@ -84,22 +84,24 @@ def evaluate_model_on_dataset(eval_fn, dataset, small_run, device,
         # model.eval()
         # total_num_pixels = 0.
         # avg_metrics = defaultdict(float)
-        metric_list = ["delta1", "delta2", "delta3", "rel_abs_diff", "rmse", "mse", "log10"]
-        weights = np.zeros(len(dataset))
-        metrics = np.zeros((len(metric_list), len(dataset)))
+        metric_list = ["delta1", "delta2", "delta3", "rel_abs_diff", "rmse", "mse", "log10", "weight"]
+        # weights = np.zeros(len(dataset))
+        metrics = np.zeros((len(dataset) if not small_run else small_run, len(metric_list)))
+        entry_list = []
         for i, data in enumerate(dataloader):
             # TESTING
             if small_run and i == small_run:
                 break
             entry = data["entry"][0]
             entry = entry if isinstance(entry, str) else entry.item()
+            entry_list.append(entry)
             print("Evaluating {}".format(data["entry"][0]))
             # pred, pred_metrics = model.evaluate(data, device)
             pred, pred_metrics, pred_weight = eval_fn(data, device)
-            for j, metric_name in enumerate(metric_list):
-                metrics[j, i] = pred_metrics[metric_name]
+            for j, metric_name in enumerate(metric_list[:-1]):
+                metrics[i, j] = pred_metrics[metric_name]
 
-            weights[i] = pred_weight
+            metrics[i, -1] = pred_weight
             # Option to save outputs:
             if save_outputs:
                 if output_dir is None:
@@ -112,17 +114,13 @@ def evaluate_model_on_dataset(eval_fn, dataset, small_run, device,
                 safe_makedir(os.path.dirname(path))
                 torch.save(save_dict, path)
 
-        # Save metrics
-        np.save(os.path.join(output_dir, "metrics.npy"), metrics)
-        np.save(os.path.join(output_dir, "weights.npy"), weights)
+        # Save metrics using pandas
+        metrics_df = pd.DataFrame(data=metrics, index=entry_list, columns=metric_list)
+        metrics_df.to_pickle(path=os.path.join(output_dir, "metrics.pkl"))
         # Compute weighted averages:
-        average_metrics = np.average(metrics, weights=weights, axis=1)
-        # Replace RMSE average with actual RMSE
-        # average_metrics[metric_list.index("rmse")] = \
-        #     np.sqrt(average_metrics[metric_list.index("mse")])
-        np.save(os.path.join(output_dir, "avg_metrics.npy"), average_metrics)
-        with open(os.path.join(output_dir, "metric_list.json"), "w") as f:
-            json.dump(metric_list, f)
+        average_metrics = np.average(metrics_df.ix[:, :-1], weights=metrics_df.weight, axis=0)
+        average_df = pd.Series(data=average_metrics, index=metric_list[:-1])
+        average_df.to_csv(os.path.join(output_dir, "avg_metrics.csv"), header=True)
         print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rms', 'log_10'))
         print(
             "{:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}".format(average_metrics[0],
@@ -150,7 +148,7 @@ def evaluate_model_on_data_entry(eval_fn, dataset, entry, device, save_outputs, 
     input_ = default_collate([input_unbatched])
 
     # Checks
-    print(input_["entry"])
+    print(input_["entry"][0])
     # print("remove_dc: ", model.remove_dc)
     # print("use_intensity: ", model.use_intensity)
     # print("use_squared_falloff: ", model.use_squared_falloff)

@@ -17,7 +17,7 @@ from models.loss import get_depth_metrics
 from utils.inspect_results import add_hist_plot, log_single_gray_img
 
 from models.DORN_nohints import DORN_nyu_nohints
-from models.sinkhorn_dist import optimize_depth_map_masked
+from models.sinkhorn_dist import optimize_depth_map_masked, optimize_depth_map_masked_adam
 
 class SinkhornOpt:
     """
@@ -54,7 +54,7 @@ class SinkhornOpt:
         self.cost_mat = torch.from_numpy(C).float()
 
         self.optimize_depth_map = lambda depth_index_init, mask, spad, scaling, gt: \
-            optimize_depth_map_masked(depth_index_init, mask, sigma=self.sigma, n_bins=self.sid_bins,
+            optimize_depth_map_masked_adam(depth_index_init, mask, sigma=self.sigma, n_bins=self.sid_bins,
                                       cost_mat=self.cost_mat, lam=self.lam, gt_hist=spad,
                                       lr=self.lr, num_sgd_iters=self.sgd_iters,
                                       num_sinkhorn_iters=self.sinkhorn_iters,
@@ -75,11 +75,11 @@ class SinkhornOpt:
     def optimize(self, depth_init, bgr, spad, mask, gt=None):
         """
         Works in pytorch.
-        :param depth_init:
-        :param bgr:
-        :param spad:
-        :param mask:
-        :param gt:
+        :param depth_init: N x 1 x H x W
+        :param bgr: N x C x H x W
+        :param spad: 1 x C' x H x W
+        :param mask: N x 1 x H x W
+        :param gt: N x 1 x H x W
         :return:
         """
         scaling = None
@@ -87,13 +87,15 @@ class SinkhornOpt:
             scaling = bgr2gray(bgr)/255.
             if self.writer is not None:
                 log_single_gray_img(self.writer, "img/intensity", scaling, 0., 1.)
-
+        if self.writer is not None:
+            rgb_img = vutils.make_grid(torch.flip(bgr, dims=(1,)) / 255, nrow=1)
+            self.writer.add_image("img/rgb", rgb_img, 0)
         depth_index_init = self.sid_obj.get_sid_index_from_value(depth_init)
         with torch.enable_grad():
             depth_index_final, _ = self.optimize_depth_map(depth_index_init, mask, spad, scaling, gt)
         depth_index_final = torch.floor(depth_index_final).detach().long()
         pred = self.sid_obj.get_value_from_sid_index(depth_index_final)
-        return pred
+        return pred,
 
     def evaluate(self, depth_init, bgr, spad, mask, gt, device):
         """

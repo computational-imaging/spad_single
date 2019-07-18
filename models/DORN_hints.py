@@ -17,6 +17,7 @@ from models.core.model_core import Model
 from models.DORN_nohints import DORN_nyu_nohints
 from models.data.data_utils.sid_utils import SIDTorch
 from models.pytorch_prototyping.pytorch_prototyping import Unet
+from models.sinkhorn_opt import SinkhornOpt
 
 class BayesianHints(nn.Module):
     def __init__(self, hints_len, sid_bins):
@@ -328,6 +329,70 @@ class DORN_nyu_histogram_matching(DORN_nyu_nohints):
 
         return interp_t_values[bin_idx].reshape(oldshape)
 
+
+class DORN_histogram_matching_wass(DORN_nyu_nohints):
+    def __init__(self, in_channels=3, in_height=257, in_width=353,
+                 sgd_iters=100, sinkhorn_iters=40, sigma=0.5, lam=1e1, kde_eps=1e-4,
+                 sinkhorn_eps=1e-7, dc_eps=1e-5,
+                 lr=1e5, min_depth=0., max_depth=10.,
+                 sid_bins=68, offset=0.,
+                 alpha=0.6569154266167957, beta=9.972175646365525,
+                 frozen=True, pretrained=True,
+                 state_dict_file=os.path.join("models", "torch_params_nyuv2_BGR.pth.tar")):
+        super(DORN_histogram_matching_wass, self).__init__(in_channels, in_height, in_width,
+                                                           sid_bins, offset, min_depth, max_depth,
+                                                           alpha, beta, frozen, pretrained, state_dict_file)
+        self.sinkhorn_opt = SinkhornOpt(sgd_iters=sgd_iters, sinkhorn_iters=sinkhorn_iters, sigma=sigma,
+                                        lam=lam, kde_eps=kde_eps,
+                                        sinkhorn_eps=sinkhorn_eps, dc_eps=dc_eps,
+                                        remove_dc=False, use_intensity=False, use_squared_falloff=False,
+                                        lr=lr, min_depth=min_depth, max_depth=max_depth,
+                                        sid_bins=sid_bins,
+                                        alpha=alpha, beta=beta, offset=offset)
+
+        # Experiment with different cost matrices.
+        # C = np.array([[(i - j)**2 for i in range(sid_bins+1)] for j in range(sid_bins+1)])/(sid_bins+1)**2
+        # self.sinkhorn_opt.cost_mat = torch.from_numpy(C).float()
+
+    def predict(self, bgr, bgr_orig, crop, gt, mask, device, resize_output=True):
+        depth_pred = self.forward(bgr)
+        logprobs = self.to_logprobs(depth_pred)
+        if resize_output:
+            original_size = bgr_orig.size()[-2:]
+            # Note: align_corners=False gives same behavior as cv2.resize
+            depth_pred_full = F.interpolate(depth_pred, size=original_size,
+                                            mode="bilinear", align_corners=False)
+            logprobs_full = self.to_logprobs(depth_pred_full)
+            pred_init = self.ord_decode(logprobs_full, self.sid_obj)
+        else:
+            pred_init = self.ord_decode(logprobs, self.sid_obj)
+
+        pred_init = pred_init[..., crop[0]:crop[1], crop[2]:crop[3]]
+        # Get ground truth depth histogram
+        # Add a bin at the end for pixels past the upper end of the sid discretization
+        extended_bin_edges = self.sinkhorn_opt.sid_obj.sid_bin_edges.cpu().numpy()
+        extended_bin_edges = np.append(extended_bin_edges, float('inf'))
+        gt_hist, _ = np.histogram(gt.cpu().numpy(), bins=extended_bin_edges)
+        gt_hist = torch.from_numpy(gt_hist).unsqueeze(0).unsqueeze(-1).unsqueeze(-1).float().to(device)
+
+        pred = self.sinkhorn_opt.optimize(pred_init, bgr_orig, gt_hist, mask, gt)
+
+        # Also print before:
+        pred_init = pred_init.cpu()
+        gt = gt.cpu()
+        mask = mask.cpu()
+        before_metrics = self.get_metrics(pred_init, gt, mask)
+        print("before", before_metrics)
+        return pred
+
+    def evaluate(self, bgr, bgr_orig, crop, gt, mask, device):
+        pred = self.predict(bgr, bgr_orig, crop, gt, mask, device, resize_output=True)
+        pred = pred.cpu()
+        gt = gt.cpu()
+        mask = mask.cpu()
+        metrics = self.get_metrics(pred, gt, mask)
+        print("after", metrics)
+        return pred, metrics, torch.sum(mask).item()
 
 
 if __name__ == "__main__":

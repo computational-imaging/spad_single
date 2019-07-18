@@ -35,14 +35,13 @@ def move_pixels_according_to(T_count, init_index, weights):
     pred_index = np.zeros_like(init_index)
     index_sets = [np.where(init_index == bin_index) for bin_index in range(T_count.shape[1])]
     for old_bin in marginal_nonzero: # Indexes columns
-        weight_moved = 0
         curr = 0
         for new_bin in range(T_count.shape[0]): # Indexes rows
             weight_to_move = T_count[new_bin, old_bin]
             rows, cols = index_sets[old_bin]
-            total = 0.
-            while total < weight_to_move and curr < len(rows):
-                total += weights[rows[curr], cols[curr]]
+            weight_moved = 0.
+            while weight_moved < weight_to_move and curr < len(rows):
+                weight_moved += weights[rows[curr], cols[curr]]
                 pred_index[rows[curr], cols[curr]] = new_bin
                 curr += 1
     return pred_index
