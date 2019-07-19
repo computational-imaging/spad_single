@@ -26,7 +26,7 @@ class DORN(nn.Module):
         super(DORN, self).__init__()
         self.make_layers(in_channels, in_height, in_width, sid_bins)
 
-        self.in_heignt = in_height
+        self.in_height = in_height
         self.in_width = in_width
         self.in_channels = in_channels
         self.offset = offset
@@ -52,21 +52,26 @@ class DORN(nn.Module):
         super(DORN, self).to(device)
         self.sid_obj.to(device)
 
-    def predict(self, bgr, bgr_orig, resize_output=True):
+    def preprocess(self, rgb, channel_axis=1):
+        rgb = F.interpolate(rgb, size=(self.in_height, self.in_width), mode="bilinear", align_corners=False)
+        bgr = torch.flip(rgb, dims=(channel_axis,))
+        bgr = bgr - torch.tensor([[[[103.0626]], [[115.9029]], [[123.1516]]]]).float()
+        return bgr
+
+    def predict(self, bgr, resize_output=None):
         depth_pred = self.forward(bgr)
         logprobs = self.to_logprobs(depth_pred)
-        if resize_output:
-            original_size = bgr_orig.size()[-2:]
+        if resize_output is not None:
             # Note: align_corners=False gives same behavior as cv2.resize
-            depth_pred_full = F.interpolate(depth_pred, size=original_size,
+            depth_pred_full = F.interpolate(depth_pred, size=resize_output,
                                             mode="bilinear", align_corners=False)
             logprobs_full = self.to_logprobs(depth_pred_full)
             return self.ord_decode(logprobs_full, self.sid_obj)
         return self.ord_decode(logprobs, self.sid_obj)
 
-    def evaluate(self, bgr, bgr_orig, gt, mask):
+    def evaluate(self, bgr, gt, mask, resize_output=(480, 640)):
         # Output full-size depth map, so set resize_output=True
-        pred = self.predict(bgr, bgr_orig, resize_output=True)
+        pred = self.predict(bgr, resize_output=resize_output)
         # Crop to ROI according to https://cs.nyu.edu/~deigen/depth/
         ROI = np.array([20, 460, 24, 616])
         pred = pred[...,ROI[0]:ROI[1], ROI[2]:ROI[3]]
