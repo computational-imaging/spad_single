@@ -104,26 +104,37 @@ def simulate_spad(depth_truth, intensity, mask, min_depth, max_depth,
 @spad_ingredient.automain
 def run(dataset_type,
         output_dir,
+        use_intensity,
+        use_squared_falloff,
+        dc_count,
         _config):  # The entire config dict for this experiment
     print("dataset_type: {}".format(dataset_type))
     dataset = load_data(dataset_type)
     all_spad_counts = []
+    all_intensities = []
     for i in range(len(dataset)):
         print("Simulating SPAD for entry {}".format(i))
         data = default_collate([dataset[i]])
-        intensity = rgb2gray(data["rgb_cropped"].numpy())
+        intensity = rgb2gray(data["rgb_cropped"].numpy()/255.)
         spad_counts = simulate_spad(depth_truth=data["depth_cropped"].numpy(),
                                     intensity=intensity,
                                     mask=np.ones_like(intensity))
         all_spad_counts.append(spad_counts)
+        all_intensities.append(intensity)
 
     output = {
         "config": _config,
-        "spad": np.array(all_spad_counts)
+        "spad": np.array(all_spad_counts),
+        "intensity": np.concatenate(all_intensities),
     }
 
-    print("saving {}_spad.npy to {}".format(dataset_type, output_dir))
-    np.save(os.path.join(output_dir, "{}_spad.npy".format(dataset_type)), output)
+    print("saving {}_int_{}_fall_{}_dc_{}_spad.npy to {}".format(dataset_type,
+                                                                 use_intensity, use_squared_falloff, dc_count,
+                                                                 output_dir))
+    np.save(os.path.join(output_dir, "{}_int_{}_fall_{}_dc_{}_spad.npy".format(dataset_type,
+                                                                               use_intensity,
+                                                                               use_squared_falloff,
+                                                                               dc_count)), output)
 
 
 # def simulate
@@ -136,12 +147,12 @@ def run(dataset_type,
 
 def rescale_bins(spad_counts, min_depth, max_depth, sid_obj):
     """
-
+    Works in Numpy
     :param spad_counts: The histogram of spad counts to rescale.
     :param min_depth: The minimum depth of the histogram.
     :param max_depth: The maximum depth of the histogram.
     :param sid_obj: An object representing a SID.
-    :return: A rescaled histogram in time to be according to the SIDgit
+    :return: A rescaled histogram in time to be according to the SID
 
     Assign photons to sid bins proportionally according to the amount of overlap between
     the sid bin range and the spad_count bin.
