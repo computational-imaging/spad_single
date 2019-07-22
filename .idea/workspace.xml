@@ -2,50 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ebb10411-0152-4c74-83b8-0064780d50e4" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/nyuv2/dorn/DORN.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/dorn/evaluate.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/dorn/nyuv2_labeled_dataset.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/simulate_spad/nyuv2_labeled_dataset.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/simulate_spad/simulate_spad.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/simulate_spad/spad_utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/wasserstein_matching/evaluate.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/wasserstein_matching_test/wasserstein.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/wasserstein_matching_test/wasserstein_hist_match.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_dorn.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/weighted_histogram_matching.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/weighted_histogram_matching.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/evaluate_densedepth_hist_matching_nyuv2_labeled.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_densedepth_hist_matching_nyuv2_labeled.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/evaluate_densedepth_hist_matching_wasserstein_nyuv2_labeled.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_densedepth_hist_matching_wasserstein_nyuv2_labeled.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/evaluate_densedepth_median_nyuv2_labeled.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_densedepth_median_nyuv2_labeled.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/evaluate_densedepth_nyuv2_labeled.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_densedepth_nyuv2_labeled.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/evaluate_densedepth_sinkhorn_nyuv2_labeled.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_densedepth_sinkhorn_nyuv2_labeled.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/evaluate_dorn_hist_matching_wasserstein_nyuv2_labeled.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_dorn_hist_matching_wasserstein_nyuv2_labeled.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/evaluate_dorn_median_nyuv2_labeled.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluate_dorn_median_nyuv2_labeled.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image_wass_matching.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/DORN_hints.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/DORN_hints.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/DenseDepth_models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/DenseDepth_models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/data/nyuv2_labeled_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/nyuv2_labeled_dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/data/nyuv2_labeled_hints_sid_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/data/nyuv2_labeled_hints_sid_dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/sinkhorn_dist.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/sinkhorn_dist.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/sinkhorn_opt.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/sinkhorn_opt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/wass_shifted_gt/get_single_entry.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/wass_shifted_gt/get_single_entry.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/wass_shifted_gt/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/wass_shifted_gt/run.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/wasserstein_matching/image_wass_matching.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/wasserstein_matching_test/image_wass_matching.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/wasserstein_matching/wasserstein_hist_match.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/wasserstein_matching/wasserstein_hist_match.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/wasserstein_matching/wasserstein_matching.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/wasserstein_matching_test/wasserstein_matching.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/dorn/evaluate.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/dorn/evaluate.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/dorn/nyuv2_labeled_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/dorn/nyuv2_labeled_dataset.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/simulate_spad/simulate_spad.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/simulate_spad/simulate_spad.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_dorn.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_dorn.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/simulate_spad.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/simulate_spad.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/spad_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/spad_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/weighted_histogram_matching.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/weighted_histogram_matching.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paper/DepthNet.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/paper/DepthNet.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/sections/results.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/sections/results.tex" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/eval_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/eval_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/inspect_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/inspect_results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wasserstein.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/wasserstein_hist_match.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/wasserstein_matching.ipynb" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -55,65 +20,44 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/nyuv2/dorn/evaluate.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="483">
-              <caret line="117" column="30" selection-start-line="117" selection-end-line="118" />
-              <folding>
-                <element signature="e#23#32#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/weighted_histogram_matching.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="675">
-              <caret line="45" column="54" selection-start-line="45" selection-start-column="54" selection-end-line="45" selection-end-column="54" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/nyuv2/simulate_spad/simulate_spad.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1770">
-              <caret line="118" lean-forward="true" selection-start-line="118" selection-end-line="118" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/nyuv2/simulate_spad/nyuv2_labeled_dataset.py">
+        <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_dorn.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="461">
-              <caret line="127" selection-start-line="127" selection-end-line="127" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/nyuv2/dorn/nyuv2_labeled_dataset.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2235">
-              <caret line="158" column="11" selection-start-line="158" selection-start-column="11" selection-end-line="158" selection-end-column="11" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/models/DORN_median_matching.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="348">
-              <caret line="29" column="62" selection-start-line="29" selection-start-column="62" selection-end-line="29" selection-end-column="62" />
+            <state relative-caret-position="268">
+              <caret line="148" column="72" selection-start-line="148" selection-start-column="72" selection-end-line="148" selection-end-column="72" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/simulate_spad.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="675">
+              <caret line="45" column="86" selection-start-line="45" selection-start-column="86" selection-end-line="45" selection-end-column="86" />
+              <folding>
+                <element signature="e#24#42#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/nyuv2_labeled_dataset.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-160">
+              <caret line="59" column="37" lean-forward="true" selection-start-line="59" selection-start-column="37" selection-end-line="59" selection-end-column="37" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/spad_utils.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="45">
+              <caret line="5" selection-start-line="5" selection-end-line="8" selection-end-column="30" />
             </state>
           </provider>
         </entry>
@@ -124,13 +68,12 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Python Script" />
+        <option value="Jupyter Notebook" />
       </list>
     </option>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>save_dict</find>
-      <find>to_log</find>
       <find>hints_len</find>
       <find>normalize_to</find>
       <find>spad_weight</find>
@@ -159,6 +102,8 @@
       <find>x_best</find>
       <find>bgr</find>
       <find>crop</find>
+      <find>dataset</find>
+      <find>small_run</find>
     </findStrings>
     <replaceStrings>
       <replace>prediction</replace>
@@ -181,11 +126,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/models/data/directory_dataset.py" />
-        <option value="$PROJECT_DIR$/evaluate_dorn_test_split_nohints.py" />
-        <option value="$PROJECT_DIR$/models/data/nyuv2_test_split_dataset_hints_sid.py" />
-        <option value="$PROJECT_DIR$/evaluate_dorn_sinkhorn_opt_test_split.py" />
-        <option value="$PROJECT_DIR$/evaluate_densedepth_sinkhorn_opt_test_split.py" />
         <option value="$PROJECT_DIR$/models/data/nyuv2_test_split_dataset.py" />
         <option value="$PROJECT_DIR$/models/DORN_sinkhorn_opt.py" />
         <option value="$PROJECT_DIR$/utils/__init__.py" />
@@ -222,20 +162,25 @@
         <option value="$PROJECT_DIR$/nyuv2/wass_shifted_gt/get_single_entry.py" />
         <option value="$PROJECT_DIR$/nyuv2/wass_shifted_gt/run.py" />
         <option value="$PROJECT_DIR$/models/data/data_utils/spad_utils.py" />
-        <option value="$PROJECT_DIR$/nyuv2/dorn/DORN.py" />
         <option value="$PROJECT_DIR$/nyuv2/wasserstein_matching/wasserstein_hist_match.py" />
         <option value="$PROJECT_DIR$/nyuv2/wasserstein_matching/evaluate.py" />
-        <option value="$PROJECT_DIR$/nyuv2/dorn/nyuv2_labeled_dataset.py" />
+        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py" />
+        <option value="$PROJECT_DIR$/nyuv2/simulate_spad/nyuv2_labeled_dataset.py" />
         <option value="$PROJECT_DIR$/nyuv2/dorn/evaluate.py" />
         <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/weighted_histogram_matching.py" />
-        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py" />
-        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_dorn.py" />
         <option value="$PROJECT_DIR$/nyuv2/simulate_spad/simulate_spad.py" />
-        <option value="$PROJECT_DIR$/nyuv2/simulate_spad/nyuv2_labeled_dataset.py" />
+        <option value="$PROJECT_DIR$/nyuv2/dorn/DORN.py" />
+        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/run_dorn.py" />
+        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DORN.py" />
+        <option value="$PROJECT_DIR$/nyuv2/dorn/nyuv2_labeled_dataset.py" />
+        <option value="$PROJECT_DIR$/nyuv2/simulate_spad/simulate_spad.ipynb" />
+        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/spad_utils.py" />
+        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/simulate_spad.py" />
+        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_dorn.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="y" value="23" />
     <option name="width" value="1920" />
     <option name="height" value="1057" />
@@ -256,31 +201,7 @@
             <path>
               <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
               <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
-              <item name="models" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
-              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
-              <item name="models" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="data" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
-              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
-              <item name="models" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="data" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="data_utils" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
-              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
               <item name="nyuv2" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
-              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
-              <item name="nyuv2" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="dorn" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
               <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
@@ -352,18 +273,18 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/figures" />
       <recent name="$PROJECT_DIR$/nyuv2/wass_shifted_gt" />
       <recent name="$PROJECT_DIR$/nyuv2" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/models" />
-      <recent name="$PROJECT_DIR$/models/data/utils" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/nyuv2/weighted_histogram_matching" />
       <recent name="$PROJECT_DIR$/nyuv2/simulate_spad" />
       <recent name="$PROJECT_DIR$/nyuv2/wasserstein_matching" />
       <recent name="$PROJECT_DIR$/nyuv2/dorn/models" />
       <recent name="$PROJECT_DIR$/nyuv2/dorn" />
-      <recent name="$PROJECT_DIR$/nyuv2/wass_hyper_search" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -442,18 +363,18 @@
       <workItem from="1562907609236" duration="529000" />
       <workItem from="1562926843296" duration="4000" />
       <workItem from="1562972054468" duration="9715000" />
-      <workItem from="1563393977271" duration="6674000" />
+      <workItem from="1563393977271" duration="28630000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="773140000" />
+    <option name="totallyTimeSpent" value="795096000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1920" height="1057" extended-state="6" />
+    <frame x="0" y="23" width="1440" height="877" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.22014925" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.29584527" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -466,7 +387,7 @@
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" weight="0.3299363" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
-      <window_info anchor="bottom" id="File Transfer" order="10" weight="0.5761658" />
+      <window_info anchor="bottom" id="File Transfer" order="10" weight="0.5757962" />
       <window_info anchor="bottom" id="Terminal" order="11" weight="0.3299363" />
       <window_info anchor="bottom" id="Event Log" order="12" side_tool="true" weight="0.3290566" />
       <window_info anchor="bottom" id="Python Console" order="13" weight="0.24041452" />
@@ -534,106 +455,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/data/compare_wonka_labeled_metrics.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="435">
-          <caret line="29" column="44" selection-start-line="29" selection-start-column="44" selection-end-line="29" selection-end-column="44" />
-          <folding>
-            <element signature="e#24#42#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/DenseDepth/model.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="258">
-          <caret line="26" selection-start-line="26" selection-end-line="26" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/__init__.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/data/labeled_equals_wonka.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret selection-end-line="2" selection-end-column="11" />
-          <folding>
-            <element signature="e#23#41#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/DenseDepth/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="22">
-          <caret line="91" column="56" lean-forward="true" selection-start-line="91" selection-start-column="56" selection-end-line="91" selection-end-column="56" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/DenseDepth/evaluate.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="20" lean-forward="true" selection-start-line="20" selection-end-line="20" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_dorn_sinkhorn_opt_test_split.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-244">
-          <caret line="24" column="26" selection-start-line="24" selection-start-column="26" selection-end-line="24" selection-end-column="26" />
-          <folding>
-            <element signature="e#23#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_dorn_nyuv2_labeled.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="18">
-          <caret line="51" column="34" selection-start-line="51" selection-start-column="34" selection-end-line="51" selection-end-column="34" />
-          <folding>
-            <element signature="e#23#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_densedepth_sinkhorn_opt_test_split.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="499">
-          <caret line="102" selection-start-line="102" selection-end-line="105" selection-end-column="83" />
-          <folding>
-            <element signature="e#23#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_densedepth_nohints.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="14" column="70" selection-start-line="14" selection-start-column="70" selection-end-line="14" selection-end-column="70" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="510">
-          <caret line="34" column="37" selection-start-line="34" selection-start-column="37" selection-end-line="34" selection-end-column="37" />
-          <folding>
-            <element signature="e#0#46#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/models/data/nyuv2_test_split_dataset.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="150">
@@ -711,16 +532,6 @@
           <caret line="76" column="14" selection-start-line="76" selection-start-column="14" selection-end-line="76" selection-end-column="14" />
           <folding>
             <element signature="e#23#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_labeled_dataset.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-300">
-          <caret line="101" column="30" lean-forward="true" selection-start-line="101" selection-start-column="30" selection-end-line="101" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -824,16 +635,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/data_utils/spad_utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="94">
-          <caret line="38" column="90" selection-start-line="38" selection-start-column="90" selection-end-line="38" selection-end-column="90" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/models/DenseDepth_models.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="135">
@@ -888,40 +689,60 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_dorn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="12" column="26" selection-start-line="12" selection-start-column="26" selection-end-line="12" selection-end-column="26" />
-          <folding>
-            <element signature="e#0#6#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/nyuv2/dorn/DORN.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="22" selection-start-line="22" selection-end-line="22" selection-end-column="66" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/nyuv2/dorn/nyuv2_labeled_dataset.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2235">
-          <caret line="158" column="11" selection-start-line="158" selection-start-column="11" selection-end-line="158" selection-end-column="11" />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/nyuv2/wasserstein_matching/evaluate.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="48">
           <caret line="4" column="45" selection-start-line="4" selection-start-column="45" selection-end-line="4" selection-end-column="45" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/dorn/evaluate.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1980">
+          <caret line="132" column="82" selection-start-line="132" selection-start-column="82" selection-end-line="132" selection-end-column="82" />
+          <folding>
+            <element signature="e#23#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/simulate_spad/simulate_spad.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="406">
+          <caret line="128" column="5" lean-forward="true" selection-start-line="128" selection-start-column="5" selection-end-line="128" selection-end-column="5" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/simulate_spad/nyuv2_labeled_dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1770">
+          <caret line="127" selection-start-line="127" selection-end-line="127" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_labeled_dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1515">
+          <caret line="101" column="30" lean-forward="true" selection-start-line="101" selection-start-column="30" selection-end-line="101" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_official_hints_sid_dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="480">
+          <caret line="36" selection-start-line="36" selection-end-line="45" selection-end-column="15" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -935,37 +756,125 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/weighted_histogram_matching.py">
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/run_dorn.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/dorn/DORN.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="675">
-          <caret line="45" column="54" selection-start-line="45" selection-start-column="54" selection-end-line="45" selection-end-column="54" />
+        <state relative-caret-position="558">
+          <caret line="54" column="55" selection-start-line="54" selection-start-column="51" selection-end-line="54" selection-end-column="55" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nyuv2/dorn/evaluate.py">
+    <entry file="file://$PROJECT_DIR$/nyuv2/dorn/nyuv2_labeled_dataset.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="483">
-          <caret line="117" column="30" selection-start-line="117" selection-end-line="118" />
+        <state relative-caret-position="200">
+          <caret line="118" selection-start-line="118" selection-end-line="118" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/data/data_utils/transforms.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="538">
+          <caret line="42" column="24" selection-start-line="42" selection-end-line="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/simulate_spad/simulate_spad.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/weighted_histogram_matching.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/run_dorn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1095">
+          <caret line="99" column="40" selection-start-line="99" selection-start-column="40" selection-end-line="99" selection-end-column="40" />
           <folding>
             <element signature="e#23#32#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nyuv2/simulate_spad/simulate_spad.py">
+    <entry file="file://$PROJECT_DIR$/models/data/data_utils/spad_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1770">
-          <caret line="118" lean-forward="true" selection-start-line="118" selection-end-line="118" />
+        <state relative-caret-position="105">
+          <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nyuv2/simulate_spad/nyuv2_labeled_dataset.py">
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DORN.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="461">
-          <caret line="127" selection-start-line="127" selection-end-line="127" />
+        <state relative-caret-position="825">
+          <caret line="55" column="107" selection-start-line="55" selection-start-column="107" selection-end-line="55" selection-end-column="107" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/weighted_histogram_matching.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="955">
+          <caret line="80" column="25" selection-start-line="80" selection-start-column="25" selection-end-line="80" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/loss.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="4" column="4" selection-start-line="4" selection-start-column="4" selection-end-line="4" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/spad_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="5" selection-start-line="5" selection-end-line="8" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/nyuv2_labeled_dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-160">
+          <caret line="59" column="37" lean-forward="true" selection-start-line="59" selection-start-column="37" selection-end-line="59" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/simulate_spad.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="675">
+          <caret line="45" column="86" selection-start-line="45" selection-start-column="86" selection-end-line="45" selection-end-column="86" />
+          <folding>
+            <element signature="e#24#42#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_dorn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="268">
+          <caret line="148" column="72" selection-start-line="148" selection-start-column="72" selection-end-line="148" selection-end-column="72" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
