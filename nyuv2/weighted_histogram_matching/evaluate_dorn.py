@@ -69,7 +69,7 @@ def run(dataset_type,
     spad_config = spad_dict["config"]
     print("Loading depth data from {}".format(dorn_depth_file))
     depth_data = np.load(dorn_depth_file)
-    dataset = load_data(dataset_type=dataset_type)
+    dataset = load_data(channels_first=True, dataset_type=dataset_type)
 
     # Read SPAD config and determine proper course of action
     dc_count = spad_config["dc_count"]
@@ -180,7 +180,7 @@ def run(dataset_type,
                                          gt,
                                          torch.ones_like(gt))
         if save_outputs:
-            np.save(os.path.join(output_dir, "{}[{}]_{}_out.npy".format(dataset_type, entry, hyper_string)))
+            np.save(os.path.join(output_dir, "dorn_{}[{}]_{}_out.npy".format(dataset_type, entry, hyper_string)))
         print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rms', 'log_10'))
         print(
             "{:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}".format(pred_metrics["delta1"],
