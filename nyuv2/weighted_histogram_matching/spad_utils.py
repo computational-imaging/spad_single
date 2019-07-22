@@ -1,3 +1,4 @@
+# %load spad_utils.py
 import numpy as np
 from scipy.signal import fftconvolve
 import cvxpy as cp
@@ -48,6 +49,7 @@ def simulate_spad(depth_truth, intensity, mask, min_depth, max_depth,
         spad_counts = np.random.poisson(spad_counts)
     return spad_counts
 
+
 def makeGaussianPSF(size, fwhm=3):
     """ Make a gaussian kernel.
     size is the length of the array
@@ -91,12 +93,13 @@ def rescale_bins(spad_counts, min_depth, max_depth, sid_obj):
             left = curr
     return sid_counts
 
-def remove_dc_from_spad(noisy_spad, bin_edges, lam=1e-2, eps_rel=1e-5):
+def remove_dc_from_spad(noisy_spad, bin_edges, bin_weight, lam=1e-2, eps_rel=1e-5):
     """
     Works in numpy.
     :param noisy_spad: Length C array with the raw spad histogram to denoise.
     :param bin_edges: Length C+1 array with the bin widths in meters of the original bins.
-    :param lam: float value controlling strength of L1 regularization on the signal
+    :param bin_weight: Length C nonnegative array controlling relative strength of L1 regularization on each bin.
+    :param lam: float value controlling strength of overall L1 regularization on the signal
     :param eps: float value controlling precision of solver
     """
     assert len(noisy_spad.shape) == 1
@@ -106,7 +109,7 @@ def remove_dc_from_spad(noisy_spad, bin_edges, lam=1e-2, eps_rel=1e-5):
     spad_equalized = noisy_spad / bin_widths
     x = cp.Variable((C,), "signal")
     z = cp.Variable((1,), "noise")
-    obj = cp.Minimize(cp.sum_squares(spad_equalized - (x + z)) + lam * cp.norm(x, 1))
+    obj = cp.Minimize(cp.sum_squares(spad_equalized - (x + z)) + lam * cp.sum(bin_weight*cp.abs(x)))
     constr = [
         x >= 0,
 #         z >= 0
@@ -117,13 +120,13 @@ def remove_dc_from_spad(noisy_spad, bin_edges, lam=1e-2, eps_rel=1e-5):
     return denoised_spad
 
 
-
 def preprocess_spad(spad_sid, sid_obj, correct_falloff, remove_dc, **dc_kwargs):
     if remove_dc:
-        spad_sid = remove_dc_from_spad(spad_sid, sid_obj.sid_bin_edges, **dc_kwargs)
+        spad_sid = remove_dc_from_spad(spad_sid, sid_obj.sid_bin_edges, sid_obj.sid_bin_values[:-2]**2, **dc_kwargs)
     if correct_falloff:
         spad_sid = spad_sid * sid_obj.sid_bin_values[:-2]**2
     return spad_sid
+
 
 def simulate_spad_sid(depth, intensity, mask, min_depth, max_depth,
                       sid_obj, spad_bins, photon_count, dc_count, fwhm_ps,
@@ -135,6 +138,7 @@ def simulate_spad_sid(depth, intensity, mask, min_depth, max_depth,
                                 use_jitter)
     spad_sid = rescale_bins(spad_counts, min_depth, max_depth, sid_obj)
     return spad_sid
+
 
 from collections import OrderedDict
 spad_types = OrderedDict([

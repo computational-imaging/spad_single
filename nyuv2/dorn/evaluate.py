@@ -92,15 +92,15 @@ def main(dataset_type,
                     outputs.append(pred.cpu().numpy())
 
             if save_outputs:
-                np.save(os.path.join(output_dir, "all_outputs.npy"), np.concatenate(outputs, axis=0))
+                np.save(os.path.join(output_dir, "{}_outputs.npy".format(dataset_type)), np.concatenate(outputs, axis=0))
 
             # Save metrics using pandas
             metrics_df = pd.DataFrame(data=metrics, index=entry_list, columns=metric_list)
-            metrics_df.to_pickle(path=os.path.join(output_dir, "metrics.pkl"))
+            metrics_df.to_pickle(path=os.path.join(output_dir, "{}_metrics.pkl".format(dataset_type)))
             # Compute weighted averages:
             average_metrics = np.average(metrics_df.ix[:, :-1], weights=metrics_df.weight, axis=0)
             average_df = pd.Series(data=average_metrics, index=metric_list[:-1])
-            average_df.to_csv(os.path.join(output_dir, "avg_metrics.csv"), header=True)
+            average_df.to_csv(os.path.join(output_dir, "{}_avg_metrics.csv".format(dataset_type)), header=True)
             print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rms', 'log_10'))
             print(
                 "{:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}".format(average_metrics[0],
@@ -130,7 +130,7 @@ def main(dataset_type,
                                                          data["depth_cropped"].to(device),
                                                          torch.ones_like(data["depth_cropped"]).to(device))
         if save_outputs:
-            np.save(os.path.join(output_dir, "{}_out.npy".format(entry)))
+            np.save(os.path.join(output_dir, "{}_{}_out.npy".format(dataset_type, entry)))
         print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rms', 'log_10'))
         print(
             "{:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}".format(pred_metrics["delta1"],

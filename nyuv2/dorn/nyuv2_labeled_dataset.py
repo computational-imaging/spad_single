@@ -116,11 +116,6 @@ class NYUDepthv2LabeledDataset(Dataset):
 @nyuv2_labeled_ingredient.capture
 def load_data(dataset_type, root_dir, train_files, test_files, crop, min_depth, max_depth):
     """
-    DORN:
-    Input: Resized version of bgr_cropped
-    Output size: Same as unresized bgr_cropped
-    Comapre to: rawdepth_cropped, mask
-
     :param root_dir:  The root directory from which to load the dataset
     :param use_dorn_normalization: Whether or not to normalize the rgb images according to DORN statistics.
     :return: test: a NYUDepthv2TestDataset object.

@@ -5,7 +5,7 @@ import pandas as pd
 from sacred import Experiment
 from weighted_histogram_matching import image_histogram_match
 from models.data.data_utils.sid_utils import SID
-from simulate_spad import rescale_bins
+from spad_utils import rescale_bins, preprocess_spad
 from nyuv2_labeled_dataset import nyuv2_labeled_ingredient, load_data
 
 from models.loss import get_depth_metrics
@@ -16,7 +16,19 @@ ex = Experiment("dorn_weighted_hist_match", ingredients=[nyuv2_labeled_ingredien
 def cfg(data_config):
     data_dir = "data"
     dataset_type = "test"
-    spad_file = os.path.join(data_dir, "{}_int_True_fall_False_dc_0.0_spad.npy".format(dataset_type))
+    use_intensity = True
+    use_squared_falloff = True
+    dc_count = 1e5
+    use_jitter = True
+    use_poisson = True
+    hyper_string = "{}_int_{}_fall_{}_dc_{}_jit_{}_poiss_{}".format(
+        dataset_type,
+        use_intensity,
+        use_squared_falloff,
+        dc_count,
+        use_jitter,
+        use_poisson)
+    spad_file = os.path.join(data_dir, "{}_spad.npy".format(hyper_string))
     dorn_depth_file = os.path.join(data_dir, "dorn_{}_outputs.npy".format(dataset_type))
 
     # SID params
@@ -32,22 +44,30 @@ def cfg(data_config):
     del bin_edges, dorn_decode, d0, d1
     offset = 0.
 
+    # SPAD Denoising params
+    lam = 3e2
+    eps_rel = 1e-5
+
     entry = None
     save_outputs = True
     small_run = 0
+    output_dir = "results"
 
 
 @ex.automain
 def run(dataset_type,
         spad_file,
         dorn_depth_file,
-        sid_bins, alpha, beta, offset,
-        entry, save_outputs, small_run):
+        hyper_string,
+        sid_bins, alpha, beta, offset, lam, eps_rel,
+        entry, save_outputs, small_run, output_dir):
     # Load all the data:
+    print("Loading SPAD data from {}".format(spad_file))
     spad_dict = np.load(spad_file).item()
     spad_data = spad_dict["spad"]
     intensity_data = spad_dict["intensity"]
     spad_config = spad_dict["config"]
+    print("Loading depth data from {}".format(dorn_depth_file))
     depth_data = np.load(dorn_depth_file)
     dataset = load_data(dataset_type=dataset_type)
 
@@ -74,46 +94,48 @@ def run(dataset_type,
         entry_list = []
         outputs = []
         for i in range(depth_data.shape[0]):
+            if small_run and i == small_run:
+                break
+            entry_list.append(i)
+
             print("Evaluating {}[{}]".format(dataset_type, i))
             # Rescale SPAD
             spad_rescaled = rescale_bins(spad_data[i,...], min_depth, max_depth, sid_obj)
             weights = np.ones_like(depth_data[i, 0, ...])
             if use_intensity:
                 weights = intensity_data[i, 0, ...]
-            if use_squared_falloff:
-                spad_rescaled *= sid_obj.sid_bin_values[:-2]
-            if dc_count > 0:
-                raise NotImplementedError
-                # pass  # Solve cvxpy problem
+            spad_rescaled = preprocess_spad(spad_rescaled, sid_obj, use_squared_falloff, dc_count > 0.,
+                                            lam=lam, eps_rel=eps_rel)
 
             pred, _ = image_histogram_match(depth_data[i, 0, ...], spad_rescaled, weights, sid_obj)
             # break
             # Calculate metrics
-            gt = dataset[i]["depth_cropped"]
+            gt = dataset[i]["depth_cropped"].unsqueeze(0)
+            # print(gt.dtype)
+            # print(pred.shape)
 
-            pred_metrics = get_depth_metrics(torch.from_numpy(pred).unsqueeze(0).unsqueeze(0),
+            pred_metrics = get_depth_metrics(torch.from_numpy(pred).unsqueeze(0).unsqueeze(0).float(),
                                              gt,
                                              torch.ones_like(gt))
-
 
             for j, metric_name in enumerate(metric_list[:-1]):
                 metrics[i, j] = pred_metrics[metric_name]
 
-            metrics[i, -1] = pred_weight
+            metrics[i, -1] = np.size(pred)
             # Option to save outputs:
             if save_outputs:
-                outputs.append(pred.cpu().numpy())
+                outputs.append(pred)
 
         if save_outputs:
-            np.save(os.path.join(output_dir, "dorn_{}_outputs.npy".format(dataset_type)), np.concatenate(outputs, axis=0))
+            np.save(os.path.join(output_dir, "dorn_{}_outputs.npy".format(hyper_string)), np.array(outputs))
 
-            # Save metrics using pandas
+        # Save metrics using pandas
         metrics_df = pd.DataFrame(data=metrics, index=entry_list, columns=metric_list)
-        metrics_df.to_pickle(path=os.path.join(output_dir, "dorn_{}_metrics.pkl".format(dataset_type)))
+        metrics_df.to_pickle(path=os.path.join(output_dir, "dorn_{}_metrics.pkl".format(hyper_string)))
         # Compute weighted averages:
         average_metrics = np.average(metrics_df.ix[:, :-1], weights=metrics_df.weight, axis=0)
         average_df = pd.Series(data=average_metrics, index=metric_list[:-1])
-        average_df.to_csv(os.path.join(output_dir, "dorn_{}_avg_metrics.csv".format(dataset_type)), header=True)
+        average_df.to_csv(os.path.join(output_dir, "dorn_{}_avg_metrics.csv".format(hyper_string)), header=True)
         print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rms', 'log_10'))
         print(
             "{:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}".format(average_metrics[0],
@@ -124,37 +146,49 @@ def run(dataset_type,
                                                                                 average_metrics[6]))
 
 
-        print("wrote results to {}".format(output_dir))
+        print("wrote results to {} ({})".format(output_dir, hyper_string))
 
-else:
-    input_unbatched = dataset.get_item_by_id(entry)
-    # for key in ["rgb", "albedo", "rawdepth", "spad", "mask", "rawdepth_orig", "mask_orig", "albedo_orig"]:
-    #     input_[key] = input_[key].unsqueeze(0)
-    from torch.utils.data._utils.collate import default_collate
+    else:
+        input_unbatched = dataset.get_item_by_id(entry)
+        # for key in ["rgb", "albedo", "rawdepth", "spad", "mask", "rawdepth_orig", "mask_orig", "albedo_orig"]:
+        #     input_[key] = input_[key].unsqueeze(0)
+        from torch.utils.data._utils.collate import default_collate
 
-    data = default_collate([input_unbatched])
+        data = default_collate([input_unbatched])
 
-    # Checks
-    entry = data["entry"][0]
-    entry = entry if isinstance(entry, str) else entry.item()
-    print("Entry: {}".format(entry))
-    # print("remove_dc: ", model.remove_dc)
-    # print("use_intensity: ", model.use_intensity)
-    # print("use_squared_falloff: ", model.use_squared_falloff)
-    pred, pred_metrics, pred_weight = model.evaluate(data["bgr"].to(device),
-                                                     data["bgr_orig"].to(device),
-                                                     data["depth_cropped"].to(device),
-                                                     torch.ones_like(data["depth_cropped"]).to(device))
-    if save_outputs:
-        np.save(os.path.join(output_dir, "{}_{}_out.npy".format(dataset_type, entry)))
-    print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rms', 'log_10'))
-    print(
-        "{:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}".format(pred_metrics["delta1"],
-                                                                            pred_metrics["delta2"],
-                                                                            pred_metrics["delta3"],
-                                                                            pred_metrics["rel_abs_diff"],
-                                                                            pred_metrics["rms"],
-                                                                            pred_metrics["log10"]))
+        # Checks
+        entry = data["entry"][0]
+        i = int(entry)
+        entry = entry if isinstance(entry, str) else entry.item()
+        print("Evaluating {}[{}]".format(dataset_type, i))
+        # Rescale SPAD
+        spad_rescaled = rescale_bins(spad_data[i, ...], min_depth, max_depth, sid_obj)
+        weights = np.ones_like(depth_data[i, 0, ...])
+        if use_intensity:
+            weights = intensity_data[i, 0, ...]
+        spad_rescaled = preprocess_spad(spad_rescaled, sid_obj, use_squared_falloff, dc_count > 0.,
+                                        lam=lam, eps_rel=eps_rel)
+
+        pred, _ = image_histogram_match(depth_data[i, 0, ...], spad_rescaled, weights, sid_obj)
+        # break
+        # Calculate metrics
+        gt = data["depth_cropped"]
+        print(gt.shape)
+        print(pred.shape)
+
+        pred_metrics = get_depth_metrics(torch.from_numpy(pred).unsqueeze(0).unsqueeze(0),
+                                         gt,
+                                         torch.ones_like(gt))
+        if save_outputs:
+            np.save(os.path.join(output_dir, "{}[{}]_{}_out.npy".format(dataset_type, entry, hyper_string)))
+        print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rms', 'log_10'))
+        print(
+            "{:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}".format(pred_metrics["delta1"],
+                                                                                pred_metrics["delta2"],
+                                                                                pred_metrics["delta3"],
+                                                                                pred_metrics["rel_abs_diff"],
+                                                                                pred_metrics["rms"],
+                                                                                pred_metrics["log10"]))
 
 
 
