@@ -2,14 +2,56 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ebb10411-0152-4c74-83b8-0064780d50e4" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/PyTorch/data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/PyTorch/loss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/PyTorch/model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/PyTorch/train.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/PyTorch/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/augment.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/callbacks.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/demo.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/evaluate.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/layers.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/loss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/train.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/DenseDepthModel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/evaluate.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/densedepth/nyuv2_labeled_dataset.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/PyTorch/data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/PyTorch/loss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/PyTorch/model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/PyTorch/train.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/PyTorch/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/augment.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/callbacks.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/demo.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/evaluate.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/layers.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/loss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/train.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepthModel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/run_densedepth.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/dorn/evaluate.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/dorn/evaluate.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/dorn/nyuv2_labeled_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/dorn/nyuv2_labeled_dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/simulate_spad/simulate_spad.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/simulate_spad/simulate_spad.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_dorn.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_dorn.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/simulate_spad.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/simulate_spad.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/spad_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/spad_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/weighted_histogram_matching.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/weighted_histogram_matching.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/nyuv2_labeled_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/nyuv2_labeled_dataset.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/run_dorn.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/run_dorn.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paper/DepthNet.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/paper/DepthNet.xlsx" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -21,15 +63,76 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_dorn.py">
+        <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="268">
-              <caret line="148" column="72" selection-start-line="148" selection-start-column="72" selection-end-line="148" selection-end-column="72" />
+            <state relative-caret-position="236">
+              <caret line="59" column="18" selection-start-line="59" selection-start-column="18" selection-end-line="59" selection-end-column="18" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
             </state>
           </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/run_densedepth.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="615">
+              <caret line="57" column="45" selection-start-line="57" selection-start-column="45" selection-end-line="57" selection-end-column="45" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/data.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_dorn.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="301">
+              <caret line="71" column="45" selection-start-line="71" selection-start-column="45" selection-end-line="71" selection-end-column="45" />
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepthModel.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-67" />
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/utils.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-14">
+              <folding>
+                <element signature="e#0#18#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/densedepth/evaluate.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-103">
+              <caret line="29" column="26" selection-start-line="29" selection-start-column="26" selection-end-line="29" selection-end-column="26" />
+              <folding>
+                <element signature="e#23#32#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/data.py">
+          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
@@ -47,17 +150,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/nyuv2_labeled_dataset.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-160">
-              <caret line="59" column="37" lean-forward="true" selection-start-line="59" selection-start-column="37" selection-end-line="59" selection-end-column="37" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/spad_utils.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="45">
-              <caret line="5" selection-start-line="5" selection-end-line="8" selection-end-column="30" />
+            <state relative-caret-position="292">
+              <caret line="135" column="39" selection-start-line="135" selection-start-column="39" selection-end-line="135" selection-end-column="39" />
             </state>
           </provider>
         </entry>
@@ -67,15 +161,13 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="Jupyter Notebook" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>hints_len</find>
-      <find>normalize_to</find>
       <find>spad_weight</find>
       <find>min_depth</find>
       <find>plt</find>
@@ -104,6 +196,8 @@
       <find>crop</find>
       <find>dataset</find>
       <find>small_run</find>
+      <find>s</find>
+      <find>dorn</find>
     </findStrings>
     <replaceStrings>
       <replace>prediction</replace>
@@ -126,12 +220,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/models/data/nyuv2_test_split_dataset.py" />
-        <option value="$PROJECT_DIR$/models/DORN_sinkhorn_opt.py" />
-        <option value="$PROJECT_DIR$/utils/__init__.py" />
-        <option value="$PROJECT_DIR$/models/data/utils/transforms.py" />
-        <option value="$PROJECT_DIR$/evaluate_nohints_sid.py" />
-        <option value="$PROJECT_DIR$/evaluate_densedepth_nohints.py" />
         <option value="$PROJECT_DIR$/models/DenseDepth/model.py" />
         <option value="$PROJECT_DIR$/data/labeled_equals_wonka.py" />
         <option value="$PROJECT_DIR$/data/compare_wonka_labeled_metrics.py" />
@@ -164,19 +252,25 @@
         <option value="$PROJECT_DIR$/models/data/data_utils/spad_utils.py" />
         <option value="$PROJECT_DIR$/nyuv2/wasserstein_matching/wasserstein_hist_match.py" />
         <option value="$PROJECT_DIR$/nyuv2/wasserstein_matching/evaluate.py" />
-        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py" />
         <option value="$PROJECT_DIR$/nyuv2/simulate_spad/nyuv2_labeled_dataset.py" />
         <option value="$PROJECT_DIR$/nyuv2/dorn/evaluate.py" />
         <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/weighted_histogram_matching.py" />
         <option value="$PROJECT_DIR$/nyuv2/simulate_spad/simulate_spad.py" />
         <option value="$PROJECT_DIR$/nyuv2/dorn/DORN.py" />
-        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/run_dorn.py" />
         <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DORN.py" />
         <option value="$PROJECT_DIR$/nyuv2/dorn/nyuv2_labeled_dataset.py" />
         <option value="$PROJECT_DIR$/nyuv2/simulate_spad/simulate_spad.ipynb" />
         <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/spad_utils.py" />
         <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/simulate_spad.py" />
+        <option value="$PROJECT_DIR$/nyuv2/densedepth/DenseDepth.py" />
+        <option value="$PROJECT_DIR$/nyuv2/densedepth/evaluate.py" />
+        <option value="$PROJECT_DIR$/nyuv2/densedepth/DenseDepthModel.py" />
+        <option value="$PROJECT_DIR$/nyuv2/densedepth/nyuv2_labeled_dataset.py" />
+        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/nyuv2_labeled_dataset.py" />
         <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_dorn.py" />
+        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/run_dorn.py" />
+        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/run_densedepth.py" />
+        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py" />
       </list>
     </option>
   </component>
@@ -202,12 +296,6 @@
               <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
               <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
               <item name="nyuv2" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-            </path>
-            <path>
-              <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
-              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
-              <item name="nyuv2" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="simulate_spad" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
               <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
@@ -281,10 +369,10 @@
     </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/nyuv2/weighted_histogram_matching" />
+      <recent name="$PROJECT_DIR$/nyuv2/wasserstein_matching_test" />
+      <recent name="$PROJECT_DIR$/nyuv2/densedepth" />
       <recent name="$PROJECT_DIR$/nyuv2/simulate_spad" />
       <recent name="$PROJECT_DIR$/nyuv2/wasserstein_matching" />
-      <recent name="$PROJECT_DIR$/nyuv2/dorn/models" />
-      <recent name="$PROJECT_DIR$/nyuv2/dorn" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -363,12 +451,12 @@
       <workItem from="1562907609236" duration="529000" />
       <workItem from="1562926843296" duration="4000" />
       <workItem from="1562972054468" duration="9715000" />
-      <workItem from="1563393977271" duration="28630000" />
+      <workItem from="1563393977271" duration="32446000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="795096000" />
+    <option name="totallyTimeSpent" value="798912000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="877" extended-state="6" />
@@ -378,7 +466,7 @@
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.3284974" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32738853" />
       <window_info anchor="bottom" id="Run" order="2" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
@@ -455,97 +543,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_test_split_dataset.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="150">
-          <caret line="21" column="18" lean-forward="true" selection-start-line="21" selection-start-column="18" selection-end-line="21" selection-end-column="18" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/DORN_nohints.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1698">
-          <caret line="1341" column="8" selection-start-line="1341" selection-start-column="8" selection-end-line="1341" selection-end-column="8" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-            <element signature="e#10104#36641#0" />
-            <element signature="e#36683#53746#0" />
-            <element signature="e#53782#70776#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_densedepth_median_nyuv2_labeled.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="55">
-          <caret line="32" column="57" lean-forward="true" selection-start-line="32" selection-start-column="57" selection-end-line="32" selection-end-column="57" />
-          <folding>
-            <element signature="e#23#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_densedepth_hist_matching_nyuv2_labeled.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="529">
-          <caret line="72" column="33" selection-start-line="72" selection-start-column="33" selection-end-line="72" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_densedepth_sinkhorn_nyuv2_labeled.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="514">
-          <caret line="74" column="21" lean-forward="true" selection-start-line="74" selection-start-column="21" selection-end-line="74" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_test_split_dataset_hints_sid.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="27" selection-start-line="27" selection-end-line="38" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_dorn_median_nyuv2_labeled.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="874">
-          <caret line="94" selection-start-line="94" selection-end-line="94" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_dorn_hist_matching_nyuv2_labeled.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="750">
-          <caret line="60" column="52" lean-forward="true" selection-start-line="60" selection-start-column="52" selection-end-line="60" selection-end-column="52" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/evaluate_densedepth_nyuv2_labeled.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="544">
-          <caret line="76" column="14" selection-start-line="76" selection-start-column="14" selection-end-line="76" selection-end-column="14" />
-          <folding>
-            <element signature="e#23#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/data/nyuv2_labeled_hints_sid_dataset.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="320">
-          <caret line="155" selection-start-line="155" selection-end-line="155" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/models/sinkhorn_opt.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="765">
@@ -635,16 +632,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/DenseDepth_models.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="203" column="17" selection-start-line="203" selection-start-column="17" selection-end-line="203" selection-end-column="41" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/models/DORN_hints.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="206">
@@ -689,23 +676,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/nyuv2/wasserstein_matching/evaluate.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="48">
           <caret line="4" column="45" selection-start-line="4" selection-start-column="45" selection-end-line="4" selection-end-column="45" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/nyuv2/dorn/evaluate.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1980">
-          <caret line="132" column="82" selection-start-line="132" selection-start-column="82" selection-end-line="132" selection-end-column="82" />
-          <folding>
-            <element signature="e#23#32#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -800,16 +774,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/run_dorn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1095">
-          <caret line="99" column="40" selection-start-line="99" selection-start-column="40" selection-end-line="99" selection-end-column="40" />
-          <folding>
-            <element signature="e#23#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/models/data/data_utils/spad_utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
@@ -851,10 +815,58 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/models/DenseDepth_models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="12" selection-start-column="12" selection-end-line="85" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/dorn/evaluate.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1301">
+          <caret line="132" column="82" selection-start-line="132" selection-start-column="82" selection-end-line="132" selection-end-column="82" />
+          <folding>
+            <element signature="e#23#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/densedepth/DenseDepthModel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="603">
+          <caret line="57" column="49" selection-start-line="57" selection-start-column="49" selection-end-line="57" selection-end-column="49" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepthModel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-67" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/densedepth/nyuv2_labeled_dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="616">
+          <caret line="143" column="40" selection-start-line="143" selection-start-column="35" selection-end-line="143" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/nyuv2_labeled_dataset.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-160">
-          <caret line="59" column="37" lean-forward="true" selection-start-line="59" selection-start-column="37" selection-end-line="59" selection-end-column="37" />
+        <state relative-caret-position="292">
+          <caret line="135" column="39" selection-start-line="135" selection-start-column="39" selection-end-line="135" selection-end-column="39" />
         </state>
       </provider>
     </entry>
@@ -868,10 +880,65 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/data.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/densedepth/evaluate.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-103">
+          <caret line="29" column="26" selection-start-line="29" selection-start-column="26" selection-end-line="29" selection-end-column="26" />
+          <folding>
+            <element signature="e#23#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/densedepth/DenseDepth/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-14">
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_dorn.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="268">
-          <caret line="148" column="72" selection-start-line="148" selection-start-column="72" selection-end-line="148" selection-end-column="72" />
+        <state relative-caret-position="301">
+          <caret line="71" column="45" selection-start-line="71" selection-start-column="45" selection-end-line="71" selection-end-column="45" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/run_dorn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-91">
+          <caret line="48" column="45" selection-start-line="48" selection-start-column="45" selection-end-line="48" selection-end-column="45" />
+          <folding>
+            <element signature="e#23#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/wasserstein_matching_test/DenseDepth/data.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/run_densedepth.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="615">
+          <caret line="57" column="45" selection-start-line="57" selection-start-column="45" selection-end-line="57" selection-end-column="45" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/DenseDepth/data.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="236">
+          <caret line="59" column="18" selection-start-line="59" selection-start-column="18" selection-end-line="59" selection-end-column="18" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>

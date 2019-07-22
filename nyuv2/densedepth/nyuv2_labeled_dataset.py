@@ -114,7 +114,7 @@ class NYUDepthv2LabeledDataset(Dataset):
 
 
 @nyuv2_labeled_ingredient.capture
-def load_data(channels_first, dataset_type, root_dir, train_files, test_files, crop, min_depth, max_depth):
+def load_data(dataset_type, root_dir, train_files, test_files, crop, min_depth, max_depth):
     """
     DORN:
     Input: Resized version of bgr_cropped
@@ -141,7 +141,7 @@ def load_data(channels_first, dataset_type, root_dir, train_files, test_files, c
         AddDepthMask(min_depth, max_depth, "rawdepth_cropped", "mask_cropped"),
         AddDepthMask(min_depth, max_depth, "rawdepth", "mask"),
         ToTensorAll(keys=["rgb", "rgb_cropped", "depth_cropped"],
-                    channels_first=channels_first)
+                    channels_first=False)
     ]
     dataset.transform = transforms.Compose(transform_list)
     return dataset

@@ -13,11 +13,11 @@ import numpy as np
 import pandas as pd
 
 # Model
-from DORN import DORN
+from DenseDepthModel import DenseDepth
 # Dataset
 from nyuv2_labeled_dataset import nyuv2_labeled_ingredient, load_data
 
-ex = Experiment('eval_dorn_nyuv2_labeled', ingredients=[nyuv2_labeled_ingredient])
+ex = Experiment('eval_densedepth_nyuv2_labeled', ingredients=[nyuv2_labeled_ingredient])
 
 @ex.config
 def cfg(data_config):
@@ -46,14 +46,10 @@ def main(dataset_type,
          device):
 
     # Load the data
-    dataset = load_data(channels_first=True, dataset_type=dataset_type)
+    dataset = load_data(channels_first=False, dataset_type=dataset_type)
 
     # Load the model
-    model = DORN()
-    model.eval()
-    model.to(device)
-
-
+    model = DenseDepth()
 
     init_randomness(seed)
 
@@ -78,9 +74,8 @@ def main(dataset_type,
                 entry = entry if isinstance(entry, str) else entry.item()
                 entry_list.append(entry)
                 print("Evaluating {}".format(data["entry"][0]))
-
-                bgr = model.preprocess(data["rgb"])
-                pred, pred_metrics, pred_weight = model.evaluate(bgr.to(device),
+                # pred, pred_metrics = model.evaluate(data, device)
+                pred, pred_metrics, pred_weight = model.evaluate(data["rgb"].to(device),
                                                                  data["depth_cropped"].to(device),
                                                                  torch.ones_like(data["depth_cropped"]).to(device))
                 for j, metric_name in enumerate(metric_list[:-1]):
@@ -92,15 +87,15 @@ def main(dataset_type,
                     outputs.append(pred.cpu().numpy())
 
             if save_outputs:
-                np.save(os.path.join(output_dir, "dorn_{}_outputs.npy".format(dataset_type)), np.concatenate(outputs, axis=0))
+                np.save(os.path.join(output_dir, "densedepth_{}_outputs.npy".format(dataset_type)), np.concatenate(outputs, axis=0))
 
             # Save metrics using pandas
             metrics_df = pd.DataFrame(data=metrics, index=entry_list, columns=metric_list)
-            metrics_df.to_pickle(path=os.path.join(output_dir, "dorn_{}_metrics.pkl".format(dataset_type)))
+            metrics_df.to_pickle(path=os.path.join(output_dir, "densedepth_{}_metrics.pkl".format(dataset_type)))
             # Compute weighted averages:
             average_metrics = np.average(metrics_df.ix[:, :-1], weights=metrics_df.weight, axis=0)
             average_df = pd.Series(data=average_metrics, index=metric_list[:-1])
-            average_df.to_csv(os.path.join(output_dir, "dorn_{}_avg_metrics.csv".format(dataset_type)), header=True)
+            average_df.to_csv(os.path.join(output_dir, "densedepth_{}_avg_metrics.csv".format(dataset_type)), header=True)
             print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rms', 'log_10'))
             print(
                 "{:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}".format(average_metrics[0],
@@ -125,8 +120,7 @@ def main(dataset_type,
         # print("remove_dc: ", model.remove_dc)
         # print("use_intensity: ", model.use_intensity)
         # print("use_squared_falloff: ", model.use_squared_falloff)
-        pred, pred_metrics, pred_weight = model.evaluate(data["bgr"].to(device),
-                                                         data["bgr_orig"].to(device),
+        pred, pred_metrics, pred_weight = model.evaluate(data["rgb"].to(device),
                                                          data["depth_cropped"].to(device),
                                                          torch.ones_like(data["depth_cropped"]).to(device))
         if save_outputs:
