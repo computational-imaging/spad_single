@@ -14,13 +14,13 @@ def find_movement(hist_from, hist_to):
         for col in range(len(hist_to)):
             pixels_rem = hist_from[row] - np.sum(movement[row, :col])
             pixels_req = hist_to[col] - np.sum(movement[:row, col])
-            if np.minimum(pixels_rem, pixels_req) < 0:
-                print(row, col)
-                print(hist_from[row])
-                print(hist_to[col])
-                print(pixels_rem, pixels_req)
-                raise Exception()
-            movement[row, col] = np.minimum(pixels_rem, pixels_req)
+            # if np.minimum(pixels_rem, pixels_req) < 0:
+            #     print(row, col)
+            #     print(hist_from[row])
+            #     print(hist_to[col])
+            #     print(pixels_rem, pixels_req)
+            #     raise Exception()
+            movement[row, col] = np.clip(np.minimum(pixels_rem, pixels_req), a_min=0., a_max=None)
     return movement
 
 
