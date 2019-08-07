@@ -55,7 +55,7 @@ def run(dataset_type,
         use_poisson,
         _config):  # The entire config dict for this experiment
     print("dataset_type: {}".format(dataset_type))
-    dataset = load_data(dataset_type)
+    dataset = load_data(channels_first=True, dataset_type=dataset_type)
     all_spad_counts = []
     all_intensities = []
     for i in range(len(dataset)):

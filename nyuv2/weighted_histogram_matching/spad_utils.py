@@ -79,7 +79,7 @@ def rescale_bins(spad_counts, min_depth, max_depth, sid_obj):
 
     # Convert sid_bin_edges_m into units of spad bins
     sid_bin_edges_bin = sid_bin_edges_m * len(spad_counts) / (max_depth - min_depth)
-
+    # print(sid_bin_edges_bin[-1])
     # Map spad_counts onto sid_bin indices
     sid_counts = np.zeros(sid_obj.sid_bins)
     for i in range(sid_obj.sid_bins):
