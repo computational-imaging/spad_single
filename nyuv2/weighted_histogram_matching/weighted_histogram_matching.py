@@ -95,6 +95,27 @@ def image_histogram_match(init, gt_hist, weights, sid_obj):
     return pred, (init_index, init_hist, pred_index, pred_hist, T_count)
 
 
+def image_histogram_match_lin(init, gt_hist, weights, min_depth, max_depth):
+    weights = weights * (np.sum(gt_hist) / np.sum(weights))
+    n_bins = len(gt_hist)
+    bin_edges = np.linspace(min_depth, max_depth, n_bins + 1)
+    bin_values = (bin_edges[1:] + bin_edges[:-1])/2
+    init_index = np.clip(np.floor((init - min_depth)*n_bins/(max_depth - min_depth)).astype('int'),
+                         a_min=0., a_max=n_bins-1)
+    init_hist, _ = np.histogram(init_index, weights=weights, bins=range(n_bins+1))
+    if (gt_hist < 0).any():
+        print("Negative values in gt_hist")
+        raise Exception()
+    T_count = find_movement(init_hist, gt_hist)
+#     pred_index = move_pixels_raster(T_count, init_index, weights)
+#     pred_index = move_pixels(T_count, init_index, weights)
+#     pred_index = move_pixels_better(T_count, init_index, weights)
+    pred_index = move_pixels_vectorized(T_count, init_index, weights)
+    pred = np.take(bin_values, pred_index)
+    pred_hist, _ = np.histogram(pred_index, weights=weights, bins=range(n_bins+1))
+    return pred, (init_index, init_hist, pred_index, pred_hist, T_count)
+
+
 def summarize_in_subplot(axs, col, img, hist, gt, title):
     axs[0, col].set_title(title, fontsize=24)
     axs[0, col].imshow(img, vmin=0., vmax=10.)

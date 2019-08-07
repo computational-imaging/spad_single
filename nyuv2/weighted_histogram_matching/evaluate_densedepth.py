@@ -5,7 +5,8 @@ import pandas as pd
 from sacred import Experiment
 from weighted_histogram_matching import image_histogram_match
 from models.data.data_utils.sid_utils import SID
-from spad_utils import rescale_bins, preprocess_spad
+from spad_utils import rescale_bins
+from remove_dc_from_spad import remove_dc_from_spad_poisson
 from nyuv2_labeled_dataset import nyuv2_labeled_ingredient, load_data
 
 from models.loss import get_depth_metrics
@@ -33,19 +34,12 @@ def cfg(data_config):
 
     # SID params
     sid_bins = 68
-    bin_edges = np.array(range(sid_bins + 1)).astype(np.float32)
-    dorn_decode = np.exp((bin_edges - 1) / 25 - 0.36)
-    d0 = dorn_decode[0]
-    d1 = dorn_decode[1]
-    # Algebra stuff to make the depth bins work out exactly like in the
-    # original DORN code.
-    alpha = (2 * d0 ** 2) / (d1 + d0)
-    beta = alpha * np.exp(sid_bins * np.log(2 * d0 / alpha - 1))
-    del bin_edges, dorn_decode, d0, d1
-    offset = 0.
+    alpha = 0.6569154266167957
+    beta = 9.972175646365525
+    offset = 0
 
     # SPAD Denoising params
-    lam = 3e2
+    lam = 1e1 if use_poisson else 1e-1
     eps_rel = 1e-5
 
     entry = None
@@ -63,7 +57,7 @@ def run(dataset_type,
         entry, save_outputs, small_run, output_dir):
     # Load all the data:
     print("Loading SPAD data from {}".format(spad_file))
-    spad_dict = np.load(spad_file).item()
+    spad_dict = np.load(spad_file, allow_pickle=True).item()
     spad_data = spad_dict["spad"]
     intensity_data = spad_dict["intensity"]
     spad_config = spad_dict["config"]
@@ -75,6 +69,7 @@ def run(dataset_type,
     dc_count = spad_config["dc_count"]
     use_intensity = spad_config["use_intensity"]
     use_squared_falloff = spad_config["use_squared_falloff"]
+    use_poisson = spad_config["use_poisson"]
     min_depth = spad_config["min_depth"]
     max_depth = spad_config["max_depth"]
 
@@ -99,20 +94,36 @@ def run(dataset_type,
             entry_list.append(i)
 
             print("Evaluating {}[{}]".format(dataset_type, i))
-            # Rescale SPAD
-            spad_rescaled = rescale_bins(spad_data[i,...], min_depth, max_depth, sid_obj)
+            spad = spad_data[i,...]
+            # spad = preprocess_spad_ambient_estimate(spad, min_depth, max_depth,
+            #                                             correct_falloff=use_squared_falloff,
+            #                                             remove_dc= dc_count > 0.,
+            #                                             global_min_depth=np.min(depth_data),
+            #                                             n_std=1. if use_poisson else 0.01)
+            # Rescale SPAD_data
+            spad_rescaled = rescale_bins(spad, min_depth, max_depth, sid_obj)
             weights = np.ones_like(depth_data[i, 0, ...])
             if use_intensity:
                 weights = intensity_data[i, 0, ...]
-            spad_rescaled = preprocess_spad(spad_rescaled, sid_obj, use_squared_falloff, dc_count > 0.,
-                                            lam=lam, eps_rel=eps_rel)
-
+            # spad_rescaled = preprocess_spad_sid_gmm(spad_rescaled, sid_obj, use_squared_falloff, dc_count > 0.)
+            if dc_count > 0.:
+                #                 spad_sid = remove_dc_from_spad(spad_sid,
+                #                                            sid_obj.sid_bin_edges,
+                #                                            sid_obj.sid_bin_values[:-2]**2,
+                #                                            lam=1e1 if spad_config["use_poisson"] else 1e-1,
+                #                                            eps_rel=1e-5)
+                spad_rescaled = remove_dc_from_spad_poisson(spad_rescaled,
+                                                            sid_obj.sid_bin_edges,
+                                                            lam=lam)
+            if use_squared_falloff:
+                spad_rescaled = spad_rescaled * sid_obj.sid_bin_values[:-2] ** 2
             pred, _ = image_histogram_match(depth_data[i, 0, ...], spad_rescaled, weights, sid_obj)
             # break
             # Calculate metrics
             gt = dataset[i]["depth_cropped"].unsqueeze(0)
             # print(gt.dtype)
             # print(pred.shape)
+            # print(pred[20:30, 20:30])
 
             pred_metrics = get_depth_metrics(torch.from_numpy(pred).unsqueeze(0).unsqueeze(0).float(),
                                              gt,
@@ -125,6 +136,7 @@ def run(dataset_type,
             # Option to save outputs:
             if save_outputs:
                 outputs.append(pred)
+            print("\tAvg RMSE = {}".format(np.mean(metrics[:i+1, metric_list.index("rmse")])))
 
         if save_outputs:
             np.save(os.path.join(output_dir, "densedepth_{}_outputs.npy".format(hyper_string)), np.array(outputs))
@@ -136,7 +148,7 @@ def run(dataset_type,
         average_metrics = np.average(metrics_df.ix[:, :-1], weights=metrics_df.weight, axis=0)
         average_df = pd.Series(data=average_metrics, index=metric_list[:-1])
         average_df.to_csv(os.path.join(output_dir, "densedepth_{}_avg_metrics.csv".format(hyper_string)), header=True)
-        print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rms', 'log_10'))
+        print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rmse', 'log_10'))
         print(
             "{:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}".format(average_metrics[0],
                                                                                 average_metrics[1],
@@ -162,32 +174,64 @@ def run(dataset_type,
         entry = entry if isinstance(entry, str) else entry.item()
         print("Evaluating {}[{}]".format(dataset_type, i))
         # Rescale SPAD
-        spad_rescaled = rescale_bins(spad_data[i, ...], min_depth, max_depth, sid_obj)
+        spad = spad_data[i, ...]
+        spad_rescaled = rescale_bins(spad, min_depth, max_depth, sid_obj)
+        print("spad_rescaled", spad_rescaled)
         weights = np.ones_like(depth_data[i, 0, ...])
         if use_intensity:
             weights = intensity_data[i, 0, ...]
-        spad_rescaled = preprocess_spad(spad_rescaled, sid_obj, use_squared_falloff, dc_count > 0.,
-                                        lam=lam, eps_rel=eps_rel)
+        # spad_rescaled = preprocess_spad_sid_gmm(spad_rescaled, sid_obj, use_squared_falloff, dc_count > 0.)
+        # spad_rescaled = preprocess_spad_sid(spad_rescaled, sid_obj, use_squared_falloff, dc_count > 0.
+        #                                     )
 
+        if dc_count > 0.:
+            spad_rescaled = remove_dc_from_spad(spad_rescaled,
+                                           sid_obj.sid_bin_edges,
+                                           sid_obj.sid_bin_values[:-2] ** 2,
+                                           lam=1e1 if use_poisson else 1e-1,
+                                           eps_rel=1e-5)
+        if use_squared_falloff:
+            spad_rescaled = spad_rescaled * sid_obj.sid_bin_values[:-2] ** 2
+        # print(spad_rescaled)
         pred, _ = image_histogram_match(depth_data[i, 0, ...], spad_rescaled, weights, sid_obj)
         # break
         # Calculate metrics
         gt = data["depth_cropped"]
         print(gt.shape)
         print(pred.shape)
+        print(gt[:,:,40, 60])
+        print(depth_data[i,0,40,60])
+        print("before rmse: ", np.sqrt(np.mean((gt.numpy() - depth_data[i,0,...])**2)))
 
-        pred_metrics = get_depth_metrics(torch.from_numpy(pred).unsqueeze(0).unsqueeze(0),
+        before_metrics = get_depth_metrics(torch.from_numpy(depth_data[i,0,...]).unsqueeze(0).unsqueeze(0).float(),
+                                           gt,
+                                           torch.ones_like(gt))
+        pred_metrics = get_depth_metrics(torch.from_numpy(pred).unsqueeze(0).unsqueeze(0).float(),
                                          gt,
                                          torch.ones_like(gt))
         if save_outputs:
-            np.save(os.path.join(output_dir, "densedepth_{}[{}]_{}_out.npy".format(dataset_type, entry, hyper_string)))
-        print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rms', 'log_10'))
+            np.save(os.path.join(output_dir, "densedepth_{}[{}]_{}_out.npy".format(dataset_type, entry, hyper_string)),
+                    pred)
+
+        print("before:")
+        print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rmse', 'log_10'))
+        print(
+            "{:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}".format(before_metrics["delta1"],
+                                                                                before_metrics["delta2"],
+                                                                                before_metrics["delta3"],
+                                                                                before_metrics["rel_abs_diff"],
+                                                                                before_metrics["rmse"],
+                                                                                before_metrics["log10"]))
+        print("after:")
+
+
+        print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rmse', 'log_10'))
         print(
             "{:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}".format(pred_metrics["delta1"],
                                                                                 pred_metrics["delta2"],
                                                                                 pred_metrics["delta3"],
                                                                                 pred_metrics["rel_abs_diff"],
-                                                                                pred_metrics["rms"],
+                                                                                pred_metrics["rmse"],
                                                                                 pred_metrics["log10"]))
 
 
