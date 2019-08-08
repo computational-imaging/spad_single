@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="ebb10411-0152-4c74-83b8-0064780d50e4" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/DepthNet.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/paper/DepthNet.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/remove_dc_from_spad.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/remove_dc_from_spad.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -16,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="401">
-              <caret line="39" lean-forward="true" selection-start-line="39" selection-end-line="39" />
+            <state relative-caret-position="431">
+              <caret line="41" column="13" selection-start-line="41" selection-start-column="13" selection-end-line="41" selection-end-column="13" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -56,22 +56,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/models/DenseDepth_models.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="452">
-              <caret line="176" column="16" lean-forward="true" selection-start-line="176" selection-start-column="16" selection-end-line="176" selection-end-column="16" />
-              <folding>
-                <element signature="e#0#12#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/remove_dc_from_spad.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-154">
-              <caret line="89" column="54" lean-forward="true" selection-start-line="89" selection-start-column="54" selection-end-line="89" selection-end-column="54" />
+            <state relative-caret-position="288">
+              <caret line="117" column="31" selection-start-line="117" selection-start-column="31" selection-end-line="117" selection-end-column="31" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -203,8 +191,8 @@
         <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/run_densedepth.py" />
         <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/simulate_spad.py" />
         <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/spad_utils.py" />
-        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/remove_dc_from_spad.py" />
         <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/weighted_histogram_matching.py" />
+        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/remove_dc_from_spad.py" />
         <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py" />
       </list>
     </option>
@@ -384,18 +372,18 @@
       <workItem from="1563393977271" duration="53308000" />
       <workItem from="1564360644581" duration="3355000" />
       <workItem from="1564723768129" duration="2760000" />
-      <workItem from="1565041240343" duration="19041000" />
+      <workItem from="1565041240343" duration="20201000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="844930000" />
+    <option name="totallyTimeSpent" value="846090000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1920" height="1057" extended-state="6" />
+    <frame x="0" y="23" width="1440" height="877" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.30810234" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.31733525" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -825,16 +813,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/simulate_spad.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="17" column="36" selection-start-line="17" selection-start-column="36" selection-end-line="17" selection-end-column="36" />
-          <folding>
-            <element signature="e#24#42#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/run_densedepth.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="39">
@@ -849,16 +827,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/spad_utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="275">
-          <caret line="31" lean-forward="true" selection-start-line="31" selection-end-line="31" />
-          <folding>
-            <element signature="e#22#40#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/models/DenseDepth_models.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="452">
@@ -869,20 +837,40 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/spad_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="275">
+          <caret line="31" lean-forward="true" selection-start-line="31" selection-end-line="31" />
+          <folding>
+            <element signature="e#22#40#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/remove_dc_from_spad.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-154">
-          <caret line="89" column="54" lean-forward="true" selection-start-line="89" selection-start-column="54" selection-end-line="89" selection-end-column="54" />
+        <state relative-caret-position="288">
+          <caret line="117" column="31" selection-start-line="117" selection-start-column="31" selection-end-line="117" selection-end-column="31" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/simulate_spad.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="17" column="36" selection-start-line="17" selection-start-column="36" selection-end-line="17" selection-end-column="36" />
+          <folding>
+            <element signature="e#24#42#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="401">
-          <caret line="39" lean-forward="true" selection-start-line="39" selection-end-line="39" />
+        <state relative-caret-position="431">
+          <caret line="41" column="13" selection-start-line="41" selection-start-column="13" selection-end-line="41" selection-end-column="13" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>

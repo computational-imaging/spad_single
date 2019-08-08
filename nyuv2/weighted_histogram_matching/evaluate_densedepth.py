@@ -39,7 +39,7 @@ def cfg(data_config):
     offset = 0
 
     # SPAD Denoising params
-    lam = 1e0 if use_poisson else 1e-1
+    lam = 1e1 if use_poisson else 1e-1
     eps_rel = 1e-5
 
     entry = None

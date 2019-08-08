@@ -115,7 +115,7 @@ def remove_dc_from_spad_poisson(noisy_spad, bin_edges,
     x = cp.Variable((C,), "signal")
     z = cp.Variable((1,), "dc")
     obj = -spad_normalized*cp.log(z + x) + cp.sum(z + x) + \
-          lam*cp.norm(x, 2)
+          lam*cp.sum_squares(x)
 #           lam*cp.square(cp.norm(cp.multiply(bin_weight, x), 2))
 #     obj = -spad_equalized*cp.log(z + x) + cp.sum(z + x) + lam*cp.sum_squares(x)
     constr = [
