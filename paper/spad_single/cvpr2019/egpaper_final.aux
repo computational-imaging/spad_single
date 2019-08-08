@@ -22,29 +22,32 @@
 \@writefile{toc}{\contentsline {paragraph}{Depth Imaging}{4321}{section*.1}}
 \@writefile{toc}{\contentsline {paragraph}{Monocular Depth Estimation}{4321}{section*.2}}
 \@writefile{toc}{\contentsline {paragraph}{Deep Sensor Fusion}{4321}{section*.3}}
+\@writefile{toc}{\contentsline {paragraph}{Histogram Matching}{4321}{section*.4}}
 \@writefile{toc}{\contentsline {section}{\numberline {3}\hskip -1em.\nobreakspace  {}Method}{4321}{section.3}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.1}\hskip -1em.\nobreakspace  {}Measurement Model}{4321}{subsection.3.1}}
 \newlabel{single_loc_spad}{{1}{4321}{\hskip -1em.~Measurement Model}{equation.3.1}{}}
-\newlabel{global_hints}{{2}{4321}{\hskip -1em.~Measurement Model}{equation.3.2}{}}
-\citation{something}
+\newlabel{global_hints}{{2}{4322}{\hskip -1em.~Measurement Model}{equation.3.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces \textbf  {Overview of the full pipeline} We use a CNN to get an initial per-pixel depth estimate. We then perform gradient descent to optimize that estimate using the SPAD forward model and the dual-Sinkhorn distance .\relax }}{4322}{figure.caption.9}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}\hskip -1em.\nobreakspace  {}Monocular depth estimation with global depth hints}{4322}{subsection.3.2}}
-\@writefile{toc}{\contentsline {paragraph}{Initialization via CNN}{4322}{section*.5}}
-\@writefile{toc}{\contentsline {paragraph}{Differentiable Histogram Matching}{4322}{section*.6}}
-\newlabel{KDE}{{3}{4322}{Differentiable Histogram Matching}{equation.3.3}{}}
-\newlabel{diff_forward}{{4}{4322}{Differentiable Histogram Matching}{equation.3.4}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Sample Image. Top Left is the RGB image. Top Right is ground truth depth. Bottom Left is Raw ground truth depth histogram. Bottom Right is simulated SPAD measurements. Notice how closer depths are magnified and far depths are attenuated.\relax }}{4323}{table.caption.4}}
+\@writefile{toc}{\contentsline {paragraph}{Initialization via CNN}{4322}{section*.6}}
+\@writefile{toc}{\contentsline {paragraph}{SPAD Denoising}{4322}{section*.7}}
 \citation{Fu. et al}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Sample Image. Top Left is the RGB image. Top Right is ground truth depth. Bottom Left is Raw ground truth depth histogram. Bottom Right is simulated SPAD measurements. Notice how closer depths are magnified and far depths are attenuated.\relax }}{4323}{table.caption.5}}
+\@writefile{toc}{\contentsline {paragraph}{Exact Histogram Matching}{4323}{figure.caption.9}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}\hskip -1em.\nobreakspace  {}Implementation Details}{4323}{subsection.3.3}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}\hskip -1em.\nobreakspace  {}Hardware Prototype}{4323}{section.4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}\hskip -1em.\nobreakspace  {}Setup}{4323}{subsection.4.1}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}\hskip -1em.\nobreakspace  {}Assessment}{4323}{section.5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}\hskip -1em.\nobreakspace  {}Implementation}{4323}{subsection.5.1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}\hskip -1em.\nobreakspace  {}Results}{4323}{subsection.5.2}}
+\@writefile{toc}{\contentsline {paragraph}{NYU Depth v2}{4323}{section*.12}}
 \citation{nyudepth}
 \citation{nyudepth}
 \citation{nyudepth}
 \citation{nyudepth}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces \textbf  {Overview of the full pipeline} We use a CNN to get an initial per-pixel depth estimate. We then perform gradient descent to optimize that estimate using the SPAD forward model and the dual-Sinkhorn distance.\relax }}{4324}{figure.caption.7}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}\hskip -1em.\nobreakspace  {}Implementation Details}{4324}{subsection.3.3}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}\hskip -1em.\nobreakspace  {}Assessment}{4324}{section.4}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}\hskip -1em.\nobreakspace  {}Implementation}{4324}{subsection.4.1}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}\hskip -1em.\nobreakspace  {}Results}{4324}{subsection.4.2}}
-\@writefile{toc}{\contentsline {paragraph}{NYU Depth v2}{4324}{section*.8}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}\hskip -1em.\nobreakspace  {}Discussion}{4324}{section.5}}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Results on the NYU Depth v2 test set \cite  {nyudepth}.\relax }}{4325}{table.caption.9}}
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Results on the NYU Depth v2 test set \cite  {nyudepth}.\relax }}{4325}{table.caption.10}}
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces \textbf  {NYU Depth v2} Qualitative comparison of the raw output of DORN, the corrected depth map when the ground-truth depth histogram is used, and the corrected depth when the simulated SPAD measurements are used.\relax }}{4326}{table.caption.11}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces \textbf  {Hardware setup}\relax }}{4324}{figure.caption.10}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \textbf  {Hardware results}\relax }}{4324}{figure.caption.11}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces \textbf  {Comparing our results with other methods}\relax }}{4324}{figure.caption.15}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}\hskip -1em.\nobreakspace  {}Discussion}{4324}{section.6}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Results on the NYU Depth v2 test set \cite  {nyudepth}.\relax }}{4325}{table.caption.13}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Results on the NYU Depth v2 test set \cite  {nyudepth}.\relax }}{4325}{table.caption.14}}

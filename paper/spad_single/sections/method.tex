@@ -68,80 +68,30 @@ from the tradeoff between size of and distance to an object. The next step,
 differentiable histogram matching, will resolve this ambiguity using the depth
 information present in the SPAD histogram.
 
-\paragraph{Differentiable Histogram Matching}
-Given our initial depth map estimate, our goal is now to refine that depth map
-so that it agrees with the information provided by the SPAD histogram.
-Figure showing just the differentiable histogram matching part of the model.
-At a high level, we perform local optimization over the pixels of the depth map
-to make it consistent with the observed measurements $h[n]$.
-Given per-pixel depth, we can simulate SPAD histogram formation using equation
-\ref{global_hints}, where we approximate $\lambda_{x,y}[n]$ using kernel density
-estimation \cite{something} as:
-\begin{equation}
-  \hat \lambda^{(i)}_{x,y}[n] = \frac{1}{\sigma\sqrt{2 \pi}}\exp\paren*{-\frac{1}{2\sigma^2}(n - \hat z^{(i)}(x,y))} \label{KDE}
-\end{equation}
-where $\hat z^{(i)}(x, y)$ is our estimate of the depth at pixel $(x,y)$ at
-iteration $i$.
-
-Once we have $\lambda^{(i)}$, we compute $\hat h[n]$ according to the rest of
-the SPAD histogram formation model (neglecting the Poisson sampling) as follows
-\begin{equation}
-  \hat h[n] = \sum_{x,y}\alpha_{x,y}\eta \lambda_{x,y}[n] + b. \label{diff_forward}
-\end{equation}
-Finally, given two histograms, we can compute the Wasserstein Distance between
-them. As described in \ref{Cuturi et. al.}, the Wasserstein Distance or ``earth
-mover's distance'' measures the distance between two probability distributions
-by calculating the minimum cost of moving the mass required to turn the first
-distribution into the second. It is particularly desirable
-because unlike the KL divergence or the simple RMSE, the Wasserstein Distance scales with
-separation as well as magnitude (see figure). Although the computation of the
-Wasserstein Distance requires solving a linear program, there is a regularized
-version known as the dual-Sinkhorn Distance
-which can be computed via Sinkhorn-Knopp Iterations in a fast and differentiable manner.
-We refer the reader to \ref{Cuturi et. al.} for details, but provide the
-optimization problem here.
-
-Given histograms $h, \hat h$ in $\Delta^n$ and a cost matrix $C$ in $\R^{n \times
-  n}$, the dual-Sinkhorn Divergence is found by solving
-the optimization problem
-\begin{equation}
-    \begin{aligned}
-    &\text{minimize} && \langle W, C \rangle  - \frac{1}{\lambda}h(W) \\
-    &\text{subject to} && W^Th = \bm{1} \\
-    &                  && W\hat h = \bm{1} \\
-    &                  && W \succeq 0 \\
-  \end{aligned}
-\end{equation}
-where $W \in \Delta^{n \times n}$ is the optimization variable, $\bm{1}$ denotes the
-vector of all ones, $h(\cdot)$ is the entropy of a probability distribution, and
-$\langle \cdot, \cdot \rangle$ denotes the inner product of two matrices.
+\paragraph{SPAD Denoising}
 \begin{itemize}
-\item Pseudocode for sinkhorn iterations?
-  \item Not sure what figure to use...
+  \item Discuss MLE for SPAD denoising
+  \item Write optimization problem for SPAD denoising
+  \item Show performance on a few examples 
 \end{itemize}
-\newpage
+\paragraph{Exact Histogram Matching}
 \begin{figure}
-  \includegraphics[width=\textwidth/2]{sections/figures/full_pipeline/full_pipeline.png}
+  \includegraphics[width=\textwidth/2]{sections/figures/full_pipeline/full_pipeline.jpeg}
   \caption{\textbf{Overview of the full pipeline} We use a CNN to get an initial
   per-pixel depth estimate. We then perform gradient descent to optimize that
-  estimate using the SPAD forward model and the dual-Sinkhorn distance.}
+  estimate using the SPAD forward model and the dual-Sinkhorn distance
+  .}
 \end{figure}
+An image's \textit{histogram} is a pair of vectors $(h, b)$ where $h_i$ is the number of
+pixels of the image whose value lies in the range $[b_i, b_i+1)$.
+Then, given a source image $S$ with histogram $(h_s, b)$ and a target histogram
+$(h_t, b)$, histogram matching generates a new image $M$ such that $h_m \approx
+h_t$ and the pixel values in $M$ are in the same relative order as in $S$.
 
 
 \subsection{Implementation Details}
-For the Monocular Depth Estimator, we use a pretrained version of the
-the Deep Ordinal Regression Network (DORN) \cite{}. We use the implementation of
-the Sinkhorn Iteration (for calculating the dual-Sinkhorn distance)
-from \ref{Cuturi et. al.} We update the depth map using gradient descent.
-Everything is implemented in PyTorch.
-We run the model on a NVIDIA Titan X GPU, where it takes approximately 5 seconds
-to fully process a single RGB-SPAD data pair.
-Table with hyperparameters (defer to supplementary info?)
-\begin{itemize}
-\item Kernel Density Estimation (sigma)
-\item Sinkhorn Iterations (maximum number, epsilon tolerance)
-\item Gradient Descent (learning rate, epsilon tolerance, max iterations)
-\item Simulation hyperparameters ($\eta, b$)
-\end{itemize}
+For the Monocular Depth Estimator, we use pretrained versions of the
+the Deep Ordinal Regression Network (DORN) \cite{} and the DenseDepth Network.
+The exact histogram matching method is as described in \cite{}.
 
 
