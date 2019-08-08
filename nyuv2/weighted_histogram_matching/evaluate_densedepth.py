@@ -33,13 +33,13 @@ def cfg(data_config):
     densedepth_depth_file = os.path.join(data_dir, "densedepth_{}_outputs.npy".format(dataset_type))
 
     # SID params
-    sid_bins = 68
+    sid_bins = 140
     alpha = 0.6569154266167957
     beta = 9.972175646365525
     offset = 0
 
     # SPAD Denoising params
-    lam = 1e1 if use_poisson else 1e-1
+    lam = 1e0 if use_poisson else 1e-1
     eps_rel = 1e-5
 
     entry = None
@@ -113,8 +113,8 @@ def run(dataset_type,
                 #                                            lam=1e1 if spad_config["use_poisson"] else 1e-1,
                 #                                            eps_rel=1e-5)
                 spad_rescaled = remove_dc_from_spad_poisson(spad_rescaled,
-                                                            sid_obj.sid_bin_edges,
-                                                            lam=lam)
+                                                       sid_obj.sid_bin_edges,
+                                                       lam=lam)
             if use_squared_falloff:
                 spad_rescaled = spad_rescaled * sid_obj.sid_bin_values[:-2] ** 2
             pred, _ = image_histogram_match(depth_data[i, 0, ...], spad_rescaled, weights, sid_obj)
