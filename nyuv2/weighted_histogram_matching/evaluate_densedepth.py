@@ -6,7 +6,7 @@ from sacred import Experiment
 from weighted_histogram_matching import image_histogram_match
 from models.data.data_utils.sid_utils import SID
 from spad_utils import rescale_bins
-from remove_dc_from_spad import remove_dc_from_spad_poisson
+from remove_dc_from_spad import remove_dc_from_spad_poisson, remove_dc_from_spad_ambient_estimate
 from nyuv2_labeled_dataset import nyuv2_labeled_ingredient, load_data
 
 from models.loss import get_depth_metrics
@@ -29,7 +29,8 @@ def cfg(data_config):
         dc_count,
         use_jitter,
         use_poisson)
-    spad_file = os.path.join(data_dir, "{}_spad.npy".format(hyper_string))
+    spad_file = os.path.join(data_dir, "{}_spad{}.npy".format(hyper_string,
+                                                               "_denoised" if dc_count > 0. else ""))
     densedepth_depth_file = os.path.join(data_dir, "densedepth_{}_outputs.npy".format(dataset_type))
 
     # SID params
@@ -41,6 +42,7 @@ def cfg(data_config):
     # SPAD Denoising params
     lam = 1e1 if use_poisson else 1e-1
     eps_rel = 1e-5
+    n_std = 0.5
 
     entry = None
     save_outputs = True
@@ -53,7 +55,8 @@ def run(dataset_type,
         spad_file,
         densedepth_depth_file,
         hyper_string,
-        sid_bins, alpha, beta, offset, lam, eps_rel,
+        sid_bins, alpha, beta, offset,
+        lam, eps_rel, n_std,
         entry, save_outputs, small_run, output_dir):
     # Load all the data:
     print("Loading SPAD data from {}".format(spad_file))
@@ -101,7 +104,7 @@ def run(dataset_type,
             #                                             global_min_depth=np.min(depth_data),
             #                                             n_std=1. if use_poisson else 0.01)
             # Rescale SPAD_data
-            spad_rescaled = rescale_bins(spad, min_depth, max_depth, sid_obj)
+            # spad_rescaled = rescale_bins(spad, min_depth, max_depth, sid_obj)
             weights = np.ones_like(depth_data[i, 0, ...])
             if use_intensity:
                 weights = intensity_data[i, 0, ...]
@@ -112,11 +115,23 @@ def run(dataset_type,
                 #                                            sid_obj.sid_bin_values[:-2]**2,
                 #                                            lam=1e1 if spad_config["use_poisson"] else 1e-1,
                 #                                            eps_rel=1e-5)
-                spad_rescaled = remove_dc_from_spad_poisson(spad_rescaled,
-                                                       sid_obj.sid_bin_edges,
-                                                       lam=lam)
+                # spad_rescaled = remove_dc_from_spad_poisson(spad_rescaled,
+                #                                        sid_obj.sid_bin_edges,
+                #                                        lam=lam)
+                spad = remove_dc_from_spad_ambient_estimate(spad,
+                                                            min_depth, max_depth,
+                                                            global_min_depth=np.min(depth_data),
+                                                            n_std=n_std)
+                # print(spad[:10])
+                # print(spad)
+
+
             if use_squared_falloff:
-                spad_rescaled = spad_rescaled * sid_obj.sid_bin_values[:-2] ** 2
+                # spad_rescaled = spad_rescaled * sid_obj.sid_bin_values[:-2] ** 2
+                bin_edges = np.linspace(min_depth, max_depth, len(spad) + 1)
+                bin_values = (bin_edges[1:] + bin_edges[:-1])/2
+                spad = spad * bin_values ** 2
+            spad_rescaled = rescale_bins(spad, min_depth, max_depth, sid_obj)
             pred, _ = image_histogram_match(depth_data[i, 0, ...], spad_rescaled, weights, sid_obj)
             # break
             # Calculate metrics
