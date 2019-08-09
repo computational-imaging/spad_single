@@ -115,7 +115,8 @@ def remove_dc_from_spad_poisson(noisy_spad, bin_edges,
     x = cp.Variable((C,), "signal")
     z = cp.Variable((1,), "dc")
     obj = -spad_normalized*cp.log(z + x) + cp.sum(z + x) + \
-          lam*cp.sum_squares(x)
+          lam*cp.norm(x, 2)
+          # lam*cp.sum_squares(x)
 #           lam*cp.square(cp.norm(cp.multiply(bin_weight, x), 2))
 #     obj = -spad_equalized*cp.log(z + x) + cp.sum(z + x) + lam*cp.sum_squares(x)
     constr = [
@@ -134,6 +135,30 @@ def remove_dc_from_spad_poisson(noisy_spad, bin_edges,
     frac = orig_sum *np.sum(signal)/(np.sum(signal) + len(spad_equalized)*noise)
     denoised_spad = np.clip(frac * signal * bin_widths, a_min=0., a_max=None)
     return denoised_spad
+
+
+
+def remove_dc_from_spad_ambient_estimate(spad, min_depth, max_depth, global_min_depth, n_std=1., axs=None):
+    assert len(spad.shape) == 1
+    assert global_min_depth > min_depth
+    def anscombe(x):
+        return 2*np.sqrt(x + 3./8)
+    def inv_anscombe(x):
+        return (x/2)**2 - 3./8
+    N = len(spad)
+    # Estimate ambient level from first few bins of spad
+    t = (global_min_depth - min_depth)/(max_depth - min_depth)
+    M = np.mean(spad[:int(np.floor(t*N))])
+    # print(M)
+#     spad = anscombe(spad)
+#     spad = scipy.signal.medfilt(spad, kernel_size=5)
+#     spad = inv_anscombe(spad)
+    cutoff = M + n_std*np.sqrt(M)
+    spad_denoised = np.clip((spad - cutoff), a_min=0., a_max=None)
+    if axs is not None:
+        axs[0].bar(range(len(spad)), spad, log=True)
+        axs[0].axhline(y=cutoff, color='r', linewidth=0.5)
+    return spad_denoised
 
 
 import sklearn.mixture as skmix
@@ -166,30 +191,30 @@ def remove_dc_from_spad_gmm(h, n_components=4, weight_concentration_prior=1e0, d
     h_denoised[h_denoised > cutoff] -= dc
     return h_denoised
 
-import scipy
-def remove_dc_from_spad_ambient_estimate(spad, min_depth, max_depth, global_min_depth, n_std=1., axs=None):
-    assert len(spad.shape) == 1
-    assert global_min_depth > min_depth
-
-    def anscombe(x):
-        return 2 * np.sqrt(x + 3. / 8)
-
-    def inv_anscombe(x):
-        return (x / 2) ** 2 - 3. / 8
-
-    N = len(spad)
-    # Estimate ambient level from first few bins of spad
-    t = (global_min_depth - min_depth) / (max_depth - min_depth)
-    M = np.mean(spad[:int(np.floor(t * N))])
-    spad = anscombe(spad)
-    spad = scipy.signal.medfilt(spad, kernel_size=5)
-    spad = inv_anscombe(spad)
-    cutoff = M + n_std * np.sqrt(M)
-    spad_denoised = np.clip((spad - cutoff), a_min=0., a_max=None)
-    if axs is not None:
-        axs[0].bar(range(len(spad)), spad, log=True)
-        axs[0].axhline(y=cutoff, color='r', linewidth=0.5)
-    return spad_denoised
+# import scipy
+# def remove_dc_from_spad_ambient_estimate(spad, min_depth, max_depth, global_min_depth, n_std=1., axs=None):
+#     assert len(spad.shape) == 1
+#     assert global_min_depth > min_depth
+#
+#     def anscombe(x):
+#         return 2 * np.sqrt(x + 3. / 8)
+#
+#     def inv_anscombe(x):
+#         return (x / 2) ** 2 - 3. / 8
+#
+#     N = len(spad)
+#     # Estimate ambient level from first few bins of spad
+#     t = (global_min_depth - min_depth) / (max_depth - min_depth)
+#     M = np.mean(spad[:int(np.floor(t * N))])
+#     spad = anscombe(spad)
+#     spad = scipy.signal.medfilt(spad, kernel_size=5)
+#     spad = inv_anscombe(spad)
+#     cutoff = M + n_std * np.sqrt(M)
+#     spad_denoised = np.clip((spad - cutoff), a_min=0., a_max=None)
+#     if axs is not None:
+#         axs[0].bar(range(len(spad)), spad, log=True)
+#         axs[0].axhline(y=cutoff, color='r', linewidth=0.5)
+#     return spad_denoised
 
 
 def preprocess_spad_ambient_estimate(spad, min_depth, max_depth, correct_falloff, remove_dc, **opt_kwargs):
