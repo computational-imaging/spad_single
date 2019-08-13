@@ -2,16 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ebb10411-0152-4c74-83b8-0064780d50e4" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/paper/spad_single/sections/.#results.tex" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/paper/spad_single/sections/simulation.tex" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth_standard.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/remove_dc_from_spad.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/remove_dc_from_spad.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/DepthNet.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/paper/DepthNet.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/auto/egpaper_final.el" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/auto/egpaper_final.el" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.aux" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.aux" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.tex" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -21,14 +15,23 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="95">
-              <caret line="125" column="22" selection-start-line="125" selection-start-column="22" selection-end-line="125" selection-end-column="22" />
+            <state relative-caret-position="1195">
+              <caret line="124" column="52" selection-start-line="124" selection-start-column="52" selection-end-line="124" selection-end-column="52" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth_standard.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="135">
+              <caret line="20" column="30" lean-forward="true" selection-start-line="20" selection-start-column="30" selection-end-line="20" selection-end-column="30" />
             </state>
           </provider>
         </entry>
@@ -63,11 +66,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/remove_dc_from_spad.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1770">
-              <caret line="118" column="27" selection-start-line="118" selection-start-column="27" selection-end-line="118" selection-end-column="27" />
+            <state relative-caret-position="435">
+              <caret line="189" column="49" lean-forward="true" selection-start-line="189" selection-start-column="49" selection-end-line="189" selection-end-column="49" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -99,7 +102,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>spad_config</find>
       <find>simulate_spad</find>
       <find>img_to</find>
       <find>c</find>
@@ -129,6 +131,7 @@
       <find>Exception</find>
       <find>load_data</find>
       <find>gmm</find>
+      <find>idx</find>
     </findStrings>
     <replaceStrings>
       <replace>prediction</replace>
@@ -151,7 +154,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/data/labeled_equals_wonka.py" />
         <option value="$PROJECT_DIR$/data/compare_wonka_labeled_metrics.py" />
         <option value="$PROJECT_DIR$/models/data/data_utils/transforms.py" />
         <option value="$PROJECT_DIR$/evaluate_dorn_nyuv2_labeled.py" />
@@ -200,14 +202,15 @@
         <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/simulate_spad.py" />
         <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/spad_utils.py" />
         <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/weighted_histogram_matching.py" />
-        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/remove_dc_from_spad.py" />
+        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth_standard.py" />
         <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py" />
+        <option value="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/remove_dc_from_spad.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-809" />
-    <option name="y" value="23" />
+    <option name="x" value="108" />
+    <option name="y" value="79" />
     <option name="width" value="1920" />
     <option name="height" value="1057" />
   </component>
@@ -218,6 +221,26 @@
     </navigator>
     <panes>
       <pane id="Scope">
+        <subPane subId="Scope 'Default Changelist'; set:Default Changelist; class com.intellij.packageDependencies.ChangeListScope">
+          <expand>
+            <path>
+              <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="nyuv2" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="nyuv2" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="weighted_histogram_matching" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
         <subPane subId="Scope 'Project Files'; set:Project Files; class com.intellij.psi.search.scope.ProjectFilesScope">
           <expand>
             <path>
@@ -228,6 +251,12 @@
               <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
               <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
               <item name="nyuv2" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="nyuv2" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="weighted_histogram_matching" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
           </expand>
           <select />
@@ -281,19 +310,19 @@
     <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/nyuv2/weighted_histogram_matching" />
-      <recent name="$PROJECT_DIR$/nyuv2/wasserstein_matching_test" />
-      <recent name="$PROJECT_DIR$/nyuv2/densedepth" />
-      <recent name="$PROJECT_DIR$/nyuv2/simulate_spad" />
-      <recent name="$PROJECT_DIR$/nyuv2/wasserstein_matching" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/figures" />
       <recent name="$PROJECT_DIR$/nyuv2/wass_shifted_gt" />
       <recent name="$PROJECT_DIR$/nyuv2" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/models" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/nyuv2/weighted_histogram_matching" />
+      <recent name="$PROJECT_DIR$/nyuv2/wasserstein_matching_test" />
+      <recent name="$PROJECT_DIR$/nyuv2/densedepth" />
+      <recent name="$PROJECT_DIR$/nyuv2/simulate_spad" />
+      <recent name="$PROJECT_DIR$/nyuv2/wasserstein_matching" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -375,17 +404,18 @@
       <workItem from="1563393977271" duration="53308000" />
       <workItem from="1564360644581" duration="3355000" />
       <workItem from="1564723768129" duration="2760000" />
-      <workItem from="1565041240343" duration="26502000" />
+      <workItem from="1565041240343" duration="33094000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="852391000" />
+    <option name="totallyTimeSpent" value="858983000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1440" height="877" extended-state="6" />
+    <frame x="0" y="23" width="1920" height="1057" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.31733525" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.23614073" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -398,7 +428,7 @@
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" weight="0.3299363" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
-      <window_info anchor="bottom" id="File Transfer" order="10" visible="true" weight="0.5745223" />
+      <window_info anchor="bottom" id="File Transfer" order="10" weight="0.5745223" />
       <window_info anchor="bottom" id="Terminal" order="11" weight="0.3299363" />
       <window_info anchor="bottom" id="Event Log" order="12" side_tool="true" weight="0.3290566" />
       <window_info anchor="bottom" id="Python Console" order="13" weight="0.24041452" />
@@ -466,16 +496,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/models/sinkhorn_opt.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="765">
-          <caret line="51" selection-start-line="51" selection-end-line="53" selection-end-column="51" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/utils/figure_utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-626">
@@ -835,16 +855,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/remove_dc_from_spad.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1770">
-          <caret line="118" column="27" selection-start-line="118" selection-start-column="27" selection-end-line="118" selection-end-column="27" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/spad_utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="275">
@@ -869,12 +879,29 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth_standard.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="20" column="30" lean-forward="true" selection-start-line="20" selection-start-column="30" selection-end-line="20" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/evaluate_densedepth.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="95">
-          <caret line="125" column="22" selection-start-line="125" selection-start-column="22" selection-end-line="125" selection-end-column="22" />
+        <state relative-caret-position="1195">
+          <caret line="124" column="52" selection-start-line="124" selection-start-column="52" selection-end-line="124" selection-end-column="52" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/remove_dc_from_spad.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="435">
+          <caret line="189" column="49" lean-forward="true" selection-start-line="189" selection-start-column="49" selection-end-line="189" selection-end-column="49" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -6,7 +6,7 @@ from sacred import Experiment
 from weighted_histogram_matching import image_histogram_match
 from models.data.data_utils.sid_utils import SID
 from spad_utils import rescale_bins
-from remove_dc_from_spad import remove_dc_from_spad_poisson, remove_dc_from_spad_ambient_estimate, remove_dc_from_spad_edge
+from remove_dc_from_spad import remove_dc_from_spad_poisson, remove_dc_from_spad_ambient_estimate, remove_dc_from_spad
 from nyuv2_labeled_dataset import nyuv2_labeled_ingredient, load_data
 
 from models.loss import get_depth_metrics
@@ -29,9 +29,11 @@ def cfg(data_config):
         dc_count,
         use_jitter,
         use_poisson)
-    # spad_file = os.path.join(data_dir, "{}_spad{}.npy".format(hyper_string,
-    #                                                            "_denoised" if dc_count > 0. and use_poisson else ""))
-    spad_file = os.path.join(data_dir, "{}_spad.npy".format(hyper_string))
+    level = 6
+    method = "Bayes"
+    spad_file = os.path.join(data_dir, "{}_spad_denoised_{}.npy".format(hyper_string,
+                                                                        "{}_{}".format(level, method)
+                                                                        if dc_count > 0. and use_poisson else ""))
     densedepth_depth_file = os.path.join(data_dir, "densedepth_{}_outputs.npy".format(dataset_type))
 
     # SID params
@@ -48,6 +50,7 @@ def cfg(data_config):
     entry = None
     save_outputs = True
     small_run = 0
+    subsampling = 1 # How much to subsample the data
     output_dir = "results"
 
 
@@ -58,7 +61,7 @@ def run(dataset_type,
         hyper_string,
         sid_bins, alpha, beta, offset,
         lam, eps_rel, n_std,
-        entry, save_outputs, small_run, output_dir):
+        entry, save_outputs, small_run, subsampling, output_dir):
     # Load all the data:
     print("Loading SPAD data from {}".format(spad_file))
     spad_dict = np.load(spad_file, allow_pickle=True).item()
@@ -71,18 +74,15 @@ def run(dataset_type,
 
     # Read SPAD config and determine proper course of action
     dc_count = spad_config["dc_count"]
-    ambient = spad_config["dc_count"]/spad_config["spad_bins"]
     use_intensity = spad_config["use_intensity"]
     use_squared_falloff = spad_config["use_squared_falloff"]
     use_poisson = spad_config["use_poisson"]
     min_depth = spad_config["min_depth"]
     max_depth = spad_config["max_depth"]
 
-    print("ambient: ", ambient)
     print("dc_count: ", dc_count)
     print("use_intensity: ", use_intensity)
     print("use_squared_falloff:", use_squared_falloff)
-    print("ambient")
 
     print("spad_data.shape", spad_data.shape)
     print("depth_data.shape", depth_data.shape)
@@ -92,53 +92,57 @@ def run(dataset_type,
 
     if entry is None:
         metric_list = ["delta1", "delta2", "delta3", "rel_abs_diff", "rmse", "mse", "log10", "weight"]
-        metrics = np.zeros((len(dataset) if not small_run else small_run, len(metric_list)))
+        print(len(dataset)//subsampling)
+        metrics = np.zeros((len(dataset)//subsampling+1 if not small_run else small_run, len(metric_list)))
         entry_list = []
         outputs = []
         for i in range(depth_data.shape[0]):
-            if small_run and i == small_run:
-                break
-            entry_list.append(i)
+            idx = i * subsampling
 
-            print("Evaluating {}[{}]".format(dataset_type, i))
-            spad = spad_data[i,...]
+            if idx >= depth_data.shape[0] or (small_run and i >= small_run):
+                break
+            entry_list.append(idx)
+
+            print("Evaluating {}[{}]".format(dataset_type, idx))
+            spad = spad_data[idx,...]
             # spad = preprocess_spad_ambient_estimate(spad, min_depth, max_depth,
             #                                             correct_falloff=use_squared_falloff,
             #                                             remove_dc= dc_count > 0.,
             #                                             global_min_depth=np.min(depth_data),
             #                                             n_std=1. if use_poisson else 0.01)
             # Rescale SPAD_data
-            # spad_rescaled = rescale_bins(spad, min_depth, max_depth, sid_obj)
-            weights = np.ones_like(depth_data[i, 0, ...])
+            spad_rescaled = rescale_bins(spad, min_depth, max_depth, sid_obj)
+            weights = np.ones_like(depth_data[idx, 0, ...])
             if use_intensity:
-                weights = intensity_data[i, 0, ...]
+                weights = intensity_data[idx, 0, ...]
             # spad_rescaled = preprocess_spad_sid_gmm(spad_rescaled, sid_obj, use_squared_falloff, dc_count > 0.)
             if dc_count > 0.:
-                # spad_rescaled = remove_dc_from_spad(spad_rescaled,
-                #                            sid_obj.sid_bin_edges,
-                #                            sid_obj.sid_bin_values[:-2]**2,
-                #                            lam=1e1 if spad_config["use_poisson"] else 1e-1,
-                #                            eps_rel=1e-5)
+                spad_rescaled = remove_dc_from_spad(spad_rescaled,
+                                           sid_obj.sid_bin_edges,
+                                           sid_obj.sid_bin_values[:-2]**2,
+                                           lam=1e-1 if spad_config["use_poisson"] else 1e-1,
+                                           eps_rel=1e-5)
                 # spad_rescaled = remove_dc_from_spad_poisson(spad_rescaled,
                 #                                        sid_obj.sid_bin_edges,
                 #                                        lam=lam)
-                spad = remove_dc_from_spad_edge(spad,
-                                                ambient=ambient,
-                                                grad_th=10 * ambient)
+                # spad = remove_dc_from_spad_ambient_estimate(spad,
+                #                                             min_depth, max_depth,
+                #                                             global_min_depth=np.min(depth_data),
+                #                                             n_std=n_std)
                 # print(spad[:10])
                 # print(spad)
 
 
             if use_squared_falloff:
-                # spad_rescaled = spad_rescaled * sid_obj.sid_bin_values[:-2] ** 2
-                bin_edges = np.linspace(min_depth, max_depth, len(spad) + 1)
-                bin_values = (bin_edges[1:] + bin_edges[:-1])/2
-                spad = spad * bin_values ** 2
-            spad_rescaled = rescale_bins(spad, min_depth, max_depth, sid_obj)
-            pred, _ = image_histogram_match(depth_data[i, 0, ...], spad_rescaled, weights, sid_obj)
+                spad_rescaled = spad_rescaled * sid_obj.sid_bin_values[:-2] ** 2
+                # bin_edges = np.linspace(min_depth, max_depth, len(spad) + 1)
+                # bin_values = (bin_edges[1:] + bin_edges[:-1])/2
+                # spad = spad * bin_values ** 2
+            # spad_rescaled = rescale_bins(spad, min_depth, max_depth, sid_obj)
+            pred, _ = image_histogram_match(depth_data[idx, 0, ...], spad_rescaled, weights, sid_obj)
             # break
             # Calculate metrics
-            gt = dataset[i]["depth_cropped"].unsqueeze(0)
+            gt = dataset[idx]["depth_cropped"].unsqueeze(0)
             # print(gt.dtype)
             # print(pred.shape)
             # print(pred[20:30, 20:30])

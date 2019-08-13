@@ -20,7 +20,9 @@ def remove_dc_from_spad(noisy_spad, bin_edges, bin_weight, lam=1e-2, eps_rel=1e-
     print("lam", lam)
     print("eps_rel", eps_rel)
     # print("spad_equalized", spad_equalized)
-    obj = cp.Minimize(cp.sum_squares(spad_equalized - (x + z)) + lam * cp.sum(bin_weight*cp.abs(x)))
+    orig_sum = np.sum(spad_equalized)
+    spad_normalized = spad_equalized/orig_sum
+    obj = cp.Minimize(cp.sum_squares(spad_normalized - (x + z)) + lam * cp.sum(bin_weight*cp.abs(x)))
     constr = [
         x >= 0,
         # z >= 0
@@ -159,6 +161,37 @@ def remove_dc_from_spad_ambient_estimate(spad, min_depth, max_depth, global_min_
         axs[0].bar(range(len(spad)), spad, log=True)
         axs[0].axhline(y=cutoff, color='r', linewidth=0.5)
     return spad_denoised
+
+
+import cv2
+def sobel_edge_detection(x, thresh, ax=None):
+    grad = cv2.Sobel(x, cv2.CV_64F, 1, 0)
+    if ax is not None:
+        ax.bar(range(len(grad.squeeze())), np.abs(grad.squeeze()) / 2, log=True)
+        ax.axhline(y=thresh, color='r', linewidth=0.5)
+    return np.abs(grad) / 2 >= thresh
+
+
+def remove_dc_from_spad_edge(spad, ambient, grad_th=1e3, n_std=1.):
+    """
+    Create a "bounding box" that is bounded on the left and the right
+    by using the gradients and below by using the ambient estimate.
+    """
+    # Detect edges:
+    assert len(spad.shape) == 1
+    spad_2d = spad.reshape(1, -1).astype("float")
+    edges = sobel_edge_detection(spad_2d, grad_th)
+    first = np.nonzero(edges)[1][0]
+    last = np.nonzero(edges)[1][-1]
+    below = ambient + n_std * np.sqrt(ambient)
+    # Walk first and last backward and forward until we encounter a value below the threshold
+    while first >= 0 and spad[first] > below:
+        first -= 1
+    while last < len(spad) and spad[last] > below:
+        last += 1
+    spad[:first] = 0.
+    spad[last + 1:] = 0.
+    return np.clip(spad - ambient, a_min=0., a_max=None)
 
 
 import sklearn.mixture as skmix
