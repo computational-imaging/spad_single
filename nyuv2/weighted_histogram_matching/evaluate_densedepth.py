@@ -124,7 +124,7 @@ def run(dataset_type,
                 #                                        lam=lam)
                 spad = remove_dc_from_spad_edge(spad,
                                                 ambient=ambient,
-                                                grad_th=10 * ambient)
+                                                grad_th=3 * ambient)
                 # print(spad[:10])
                 # print(spad)
 
