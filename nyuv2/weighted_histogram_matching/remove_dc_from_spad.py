@@ -172,6 +172,28 @@ def sobel_edge_detection(x, thresh, ax=None):
     return np.abs(grad) / 2 >= thresh
 
 
+# def remove_dc_from_spad_edge(spad, ambient, grad_th=1e3, n_std=1.):
+#     """
+#     Create a "bounding box" that is bounded on the left and the right
+#     by using the gradients and below by using the ambient estimate.
+#     """
+#     # Detect edges:
+#     assert len(spad.shape) == 1
+#     spad_2d = spad.reshape(1, -1).astype("float")
+#     edges = sobel_edge_detection(spad_2d, grad_th)
+#     first = np.nonzero(edges)[1][0]
+#     last = np.nonzero(edges)[1][-1]
+#     below = ambient + n_std * np.sqrt(ambient)
+#     # Walk first and last backward and forward until we encounter a value below the threshold
+#     while first >= 0 and spad[first] > below:
+#         first -= 1
+#     while last < len(spad) and spad[last] > below:
+#         last += 1
+#     spad[:first] = 0.
+#     spad[last + 1:] = 0.
+#     return np.clip(spad - ambient, a_min=0., a_max=None)
+
+
 def remove_dc_from_spad_edge(spad, ambient, grad_th=1e3, n_std=1.):
     """
     Create a "bounding box" that is bounded on the left and the right
@@ -179,20 +201,18 @@ def remove_dc_from_spad_edge(spad, ambient, grad_th=1e3, n_std=1.):
     """
     # Detect edges:
     assert len(spad.shape) == 1
-    spad_2d = spad.reshape(1, -1).astype("float")
-    edges = sobel_edge_detection(spad_2d, grad_th)
-    first = np.nonzero(edges)[1][0]
-    last = np.nonzero(edges)[1][-1]
-    below = ambient + n_std * np.sqrt(ambient)
+    edges = np.abs(np.diff(spad)) > grad_th
+    first = np.nonzero(edges)[0][1] + 1  # Want the right side of the first edge
+    last = np.nonzero(edges)[0][-1]      # Want the left side of the second edge
+    below = ambient + n_std*np.sqrt(ambient)
     # Walk first and last backward and forward until we encounter a value below the threshold
     while first >= 0 and spad[first] > below:
         first -= 1
     while last < len(spad) and spad[last] > below:
         last += 1
     spad[:first] = 0.
-    spad[last + 1:] = 0.
+    spad[last+1:] = 0.
     return np.clip(spad - ambient, a_min=0., a_max=None)
-
 
 import sklearn.mixture as skmix
 def remove_dc_from_spad_gmm(h, n_components=4, weight_concentration_prior=1e0, depth_values=None, axs=None):
