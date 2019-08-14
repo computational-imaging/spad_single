@@ -5,7 +5,8 @@ import pandas as pd
 from sacred import Experiment
 from weighted_histogram_matching import image_histogram_match
 from models.data.data_utils.sid_utils import SID
-from spad_utils import rescale_bins, preprocess_spad
+from spad_utils import rescale_bins
+from remove_dc_from_spad import remove_dc_from_spad_edge
 from nyuv2_labeled_dataset import nyuv2_labeled_ingredient, load_data
 
 from models.loss import get_depth_metrics
@@ -63,7 +64,7 @@ def run(dataset_type,
         entry, save_outputs, small_run, output_dir):
     # Load all the data:
     print("Loading SPAD data from {}".format(spad_file))
-    spad_dict = np.load(spad_file).item()
+    spad_dict = np.load(spad_file, allow_pickle=True).item()
     spad_data = spad_dict["spad"]
     intensity_data = spad_dict["intensity"]
     spad_config = spad_dict["config"]
@@ -73,6 +74,7 @@ def run(dataset_type,
 
     # Read SPAD config and determine proper course of action
     dc_count = spad_config["dc_count"]
+    ambient = spad_config["dc_count"]/spad_config["spad_bins"]
     use_intensity = spad_config["use_intensity"]
     use_squared_falloff = spad_config["use_squared_falloff"]
     min_depth = spad_config["min_depth"]
@@ -99,14 +101,19 @@ def run(dataset_type,
             entry_list.append(i)
 
             print("Evaluating {}[{}]".format(dataset_type, i))
-            # Rescale SPAD
-            spad_rescaled = rescale_bins(spad_data[i,...], min_depth, max_depth, sid_obj)
+            spad = spad_data[i,...]
             weights = np.ones_like(depth_data[i, 0, ...])
             if use_intensity:
                 weights = intensity_data[i, 0, ...]
-            spad_rescaled = preprocess_spad(spad_rescaled, sid_obj, use_squared_falloff, dc_count > 0.,
-                                            lam=lam, eps_rel=eps_rel)
-
+            if dc_count > 0.:
+                spad = remove_dc_from_spad_edge(spad,
+                                                ambient=ambient,
+                                                grad_th=3 * ambient)
+            if use_squared_falloff:
+                bin_edges = np.linspace(min_depth, max_depth, len(spad) + 1)
+                bin_values = (bin_edges[1:] + bin_edges[:-1])/2
+                spad = spad * bin_values ** 2
+            spad_rescaled = rescale_bins(spad, min_depth, max_depth, sid_obj)
             pred, _ = image_histogram_match(depth_data[i, 0, ...], spad_rescaled, weights, sid_obj)
             # break
             # Calculate metrics

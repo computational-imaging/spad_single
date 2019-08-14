@@ -34,6 +34,7 @@
     "array"
     "tabularx"
     "bm"
+    "multirow"
     "hyperref")
    (TeX-add-symbols
     "cvprPaperID"
