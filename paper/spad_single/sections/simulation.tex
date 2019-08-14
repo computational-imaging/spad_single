@@ -33,31 +33,9 @@ Alhashim, Wonka (2019) rescaled using GT depth"&0.888&\textbf{0.978}&\textbf{0.9
 %%%
 \begin{table*}
 \begin{center}
-\begin{tabular}{lccc|ccc}
-  \toprule
-    & $\delta^1 \uparrow$ & $\delta^2\uparrow$ & $\delta^3 \uparrow$ & RMSE $\downarrow$ & rel $\downarrow$ & $log_{10} \downarrow$ \\
-  \midrule
-  DORN (cite)&0.846&0.954&0.983&0.501&0.120&0.053 \\
-DenseNet(cite))&0.847&0.973&0.994&0.461&0.123&0.054 \\
-  \midrule
-  DORN (rescaled) & 0.872 & 0.967 & 0.989 & 0.548 & 0.111 & 0.048 \\
-  DORN (Wass) & 0.847 & 0.953 & 0.983 & 0.499 & 0.117 & 0.053 \\
-  DORN (Histogram Matching) & 0.902 & 0.973 & 0.991 & 0.424 & 0.099 & 0.042 \\
-  DenseNet (rescaled) &0.888 & 0.978&0.995&0.409&0.106&0.045 \\
-  DenseNet (Wass) & - & - & - & - & - & - \\ 
-  DenseNet (Histogram Matching) &\textbf{0.930} &\textbf{0.984}&\textbf{0.995}&\textbf{0.338}&\textbf{0.080}&\textbf{0.034}\\
-  \midrule
-  DORN (Median SPAD Rescaling) & - & - & - & - & - & - \\
-  DORN + Wasserstein (intensity/falloff) & 0.835 & 0.953 & 0.984 & 0.521 & 0.129 & 0.060 \\
-  DenseDepth (Median SPAD Rescaling) & - & - & - & - & - & - \\
-  DenseDepth + Wasserstein (intensity/falloff) & 0.867 & 0.974 & 0.994 & 0.445 & 0.114 & 0.050 \\
-  \midrule
-  \bottomrule
-\end{tabular} 
+\input{sections/figures/sim_table.tex}
 \end{center}
-\caption{Results on the NYU Depth v2 test set \cite{nyudepth}.}
 \end{table*}
-
 \begin{figure}
   \includegraphics[width=\textwidth/2]{sections/figures/comparison.jpeg}
   \caption{\textbf{Comparing our results with other methods}}
