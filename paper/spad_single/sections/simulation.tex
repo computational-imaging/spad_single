@@ -9,37 +9,123 @@ The NYU Depth v2 Dataset consists of 249 training and 215 testing scenes of
 RGB-D data captured using a Microsoft Kinect. We used a version of DORN
 pretrained according to \cite{Fu. et al} as our CNN.
 \newpage
-\begin{table*}
-\begin{center}
-\begin{tabular}{lccc|ccc}
-  \toprule
-    & $\delta^1 \uparrow$ & $\delta^2\uparrow$ & $\delta^3 \uparrow$ & RMSE $\downarrow$ & rel $\downarrow$ & $log_{10} \downarrow$ \\
-  \midrule
-Eigen et. al. & 0.769 & 0.950 & 0.988 & 0.641 & 0.158 & - \\ 
-Laina et. al.&0.811&0.953&0.988&0.573&0.127&0.055 \\
-DORN&0.818&0.950&0.982&0.620&0.137&0.063 \\
-  DORN (rescaled) & 0.872 & 0.967 & 0.989 & 0.548 & 0.111 & 0.048 \\
-Alhashim, Wonka (2019)&0.847&0.973&0.994&0.548(0.461)&0.123&0.053 \\
-Alhashim, Wonka (2019) rescaled using GT depth"&0.888&\textbf{0.978}&\textbf{0.995}&\textbf{0.499}(0.409)&\textbf{0.106}&\textbf{0.045} \\
-  \midrule
-  Ours (raw depth counts) & \textbf{0.899} & 0.970 & 0.990 & 0.529 & 0.199 & 0.055 \\
-  Ours (DORN) (intensity/falloff) & 0.835 & 0.953 & 0.984 & 0.521 & 0.129 & 0.060 \\
-  Ours (DenseDepth) (intensity/falloff) & 0.867 & 0.974 & 0.994 & 0.445 & 0.114 & 0.050 \\
-  \bottomrule
-\end{tabular} 
-\end{center}
-\caption{Results on the NYU Depth v2 test set \cite{nyudepth}.}
-\end{table*}
+% \begin{table*}
+% \begin{center}
+% \begin{tabular}{lccc|ccc}
+%   \toprule
+%     & $\delta^1 \uparrow$ & $\delta^2\uparrow$ & $\delta^3 \uparrow$ & RMSE $\downarrow$ & rel $\downarrow$ & $log_{10} \downarrow$ \\
+%   \midrule
+% Eigen et. al. & 0.769 & 0.950 & 0.988 & 0.641 & 0.158 & - \\ 
+% Laina et. al.&0.811&0.953&0.988&0.573&0.127&0.055 \\
+% DORN&0.818&0.950&0.982&0.620&0.137&0.063 \\
+%   DORN (rescaled) & 0.872 & 0.967 & 0.989 & 0.548 & 0.111 & 0.048 \\
+% Alhashim, Wonka (2019)&0.847&0.973&0.994&0.548(0.461)&0.123&0.053 \\
+% Alhashim, Wonka (2019) rescaled using GT depth"&0.888&\textbf{0.978}&\textbf{0.995}&\textbf{0.499}(0.409)&\textbf{0.106}&\textbf{0.045} \\
+%   \midrule
+%   Ours (raw depth counts) & \textbf{0.899} & 0.970 & 0.990 & 0.529 & 0.199 & 0.055 \\
+%   Ours (DORN) (intensity/falloff) & 0.835 & 0.953 & 0.984 & 0.521 & 0.129 & 0.060 \\
+%   Ours (DenseDepth) (intensity/falloff) & 0.867 & 0.974 & 0.994 & 0.445 & 0.114 & 0.050 \\
+%   \bottomrule
+% \end{tabular} 
+% \end{center}
+% \caption{Results on the NYU Depth v2 test set \cite{nyudepth}.}
+% \end{table*}
 %%%
 \begin{table*}
 \begin{center}
 \input{sections/figures/sim_table.tex}
+\caption{Simulated Results on NYU Depth v2. Bold indicates best performance for
+  that metric, while underline indicates second best.}
 \end{center}
 \end{table*}
-\begin{figure}
-  \includegraphics[width=\textwidth/2]{sections/figures/comparison.jpeg}
-  \caption{\textbf{Comparing our results with other methods}}
-\end{figure}
+
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_18_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_21_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_25_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_194_comparison.png}
+  \caption{Results on DenseDepth}
+\end{figure*}
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_285_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_42_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_52_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_53_comparison.png}
+  \caption{Results on DenseDepth}
+\end{figure*}
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_103_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_224_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_226_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_352_comparison.png}
+  \caption{Results on DenseDepth}
+\end{figure*}
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_362_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_379_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_107_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_187_comparison.png}
+  \caption{Results on DenseDepth}
+\end{figure*}
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_140_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_244_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_527_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_529_comparison.png}
+  \caption{Results on DenseDepth}
+\end{figure*}
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_529_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_219_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_329_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_346_comparison.png}
+  \caption{Results on DenseDepth}
+\end{figure*}
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_616_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_390_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_412_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_420_comparison.png}
+  \caption{Results on DenseDepth}
+\end{figure*}
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_428_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_457_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_468_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_477_comparison.png}
+  \caption{Results on DenseDepth}
+\end{figure*}
+%   \includegraphics[height=3cm]{sections/figures/comparison/densedepth_499_comparison.png}
+%   \includegraphics[height=3cm]{sections/figures/comparison/densedepth_258_comparison.png}
+%   \includegraphics[height=3cm]{sections/figures/comparison/densedepth_341_comparison.png}
+
+% Densedepth:
+% - Office: 18, 21
+% - Bathroom: 25, 194, 285
+% - Bookstore: 42
+% - Kitchen: 52, 53, 103, 224, 226, 352, 362, 379
+% - Office: 107, 187
+% - Living Room: 140, 244, 527, 529
+% - Dining Room: 219, 329, 346, 616
+% - Bedroom: 390, 412, 420, 428, 457*, 468*, 477, 499
+% Failure Cases: 258, 338(?), 341, 537 649 (minor)
+% 
+% DORN:
+% - Office: 8, 14, 15, 23, 26
+% - Living room: 63, 67, 140, 170, 522, 548, 569, 585, 633
+% - Office: 105, 220, 252, 259* (interesting)
+% - Kitchen: 178
+% - Dining Room: 219
+% - Bathroom: 280, 293, 313
+% - Bedroom: 413, 477, 502
+% 
+% Failure Cases: 96, 266(?)
+ 
+
+% \begin{figure}
+%   \includegraphics[width=\textwidth/2]{sections/figures/comparison.jpeg}
+%   \caption{\textbf{Comparing our results with other methods}}
+% \end{figure}
 
   
 
