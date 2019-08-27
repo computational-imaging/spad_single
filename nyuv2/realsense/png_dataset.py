@@ -10,10 +10,10 @@ from models.data.data_utils.transforms import (ResizeAll, Save, Normalize,
 
 from sacred import Experiment
 
-png_labeled_ingredient = Experiment('data_config')
+png_ingredient = Experiment('data_config')
 
 
-@png_labeled_ingredient.config
+@png_ingredient.config
 def cfg():
     data_name = "realsense_packard"
     rootdir = "data"
@@ -72,6 +72,8 @@ class PNGDataset(Dataset):
         depth = []
         rawDepth = []
         imgs = []
+        self.i_to_entry = []
+        self.entry_to_i = {}
         for scene, n_img in scene_dict.items():
             for i in range(n_img):
                 # print("loading {}[{}]".format(scene, i))
@@ -88,6 +90,8 @@ class PNGDataset(Dataset):
                 if not bgr_mode:
                     # Flip color channel
                     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                self.i_to_entry.append("{}_{}".format(scene, i))
+                self.entry_to_i["{}_{}".format(scene, i)] = len(imgs)
                 imgs.append(img)
         self.depth = np.array(depth)
         self.rawDepth = np.array(rawDepth)
@@ -118,7 +122,7 @@ class PNGDataset(Dataset):
             "rawDepth_cropped": self.rawDepth_cropped[i, ...],
             "rawDepth": self.rawDepth[i, ...],
             "crop": self.crop,
-            "entry": str(i)
+            "entry": self.i_to_entry[i]
         }
         if self.bgr_mode:
             sample.update({
@@ -135,10 +139,10 @@ class PNGDataset(Dataset):
         return sample
 
     def get_item_by_id(self, entry):
-        return self[int(entry)]
+        return self[self.entry_to_i[entry]]
 
 
-@png_labeled_ingredient.capture
+@png_ingredient.capture
 def load_data(channels_first, rootdir, scene_dict, min_depth, max_depth, crop):
     """
     Load the dataset from files and initialize transforms accordingly.
@@ -158,7 +162,7 @@ def load_data(channels_first, rootdir, scene_dict, min_depth, max_depth, crop):
 ###########
 # Testing #
 ###########
-@png_labeled_ingredient.automain
+@png_ingredient.automain
 def test_load_data(rootdir, scene_dict, min_depth, max_depth, crop):
     # from torch.utils.data._utils.collate import default_collate
     #
@@ -168,12 +172,13 @@ def test_load_data(rootdir, scene_dict, min_depth, max_depth, crop):
     # print(data["rgb"].shape)
     # print(data["depth_cropped"])
 
-    dataset = load_data(rootdir, scene_dict, min_depth, max_depth, crop)
+    dataset = load_data(channels_first=False)
     # print(dataset.depth.shape)
     # print(dataset.rawDepth.shape)
     # print(dataset.rgb.shape)
+    print(dataset[2])
     print(dataset[0]["rgb"].shape)
-    print(dataset[1]["depth"])
+    print(dataset.get_item_by_id("couches[2]")["depth"])
 
 
 
