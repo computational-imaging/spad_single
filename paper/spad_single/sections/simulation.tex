@@ -7,7 +7,7 @@
 \paragraph{NYU Depth v2}
 The NYU Depth v2 Dataset consists of 249 training and 215 testing scenes of
 RGB-D data captured using a Microsoft Kinect. We used a version of DORN
-pretrained according to \cite{Fu. et al} as our CNN.
+pretrained according to \cite{Fu2018} as our CNN.
 \newpage
 % \begin{table*}
 % \begin{center}
@@ -35,9 +35,21 @@ pretrained according to \cite{Fu. et al} as our CNN.
 \begin{center}
 \input{sections/figures/sim_table.tex}
 \caption{Simulated Results on NYU Depth v2. Bold indicates best performance for
-  that metric, while underline indicates second best.}
+  that metric, while underline indicates second best. The proposed scheme
+  outperforms DenseDepth and DORN on all metrics, and even outperforms the
+  median rescaling scheme, which has access to the true median depth value.}
 \end{center}
 \end{table*}
+
+
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_468_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_194_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_258_comparison.png}
+  \caption{Selected Results on DenseDepth. First two examples demonstrate
+    capability of proposed method to correct initial scaling/translation errors.
+    Last example shows potential pitfall when ordinal depth is predicted incorrectly.}
+\end{figure*}
 
 \begin{figure*}
   \includegraphics[width=\textwidth]{sections/figures/comparison/densedepth_18_comparison.png}
@@ -98,7 +110,55 @@ pretrained according to \cite{Fu. et al} as our CNN.
 %   \includegraphics[height=3cm]{sections/figures/comparison/densedepth_499_comparison.png}
 %   \includegraphics[height=3cm]{sections/figures/comparison/densedepth_258_comparison.png}
 %   \includegraphics[height=3cm]{sections/figures/comparison/densedepth_341_comparison.png}
-
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_8_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_14_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_15_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_23_comparison.png}
+  \caption{Results on DORN}
+\end{figure*}
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_26_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_63_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_67_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_140_comparison.png}
+  \caption{Results on DORN}
+\end{figure*}
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_170_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_522_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_548_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_569_comparison.png}
+  \caption{Results on DORN}
+\end{figure*}
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_585_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_633_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_105_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_220_comparison.png}
+  \caption{Results on DORN}
+\end{figure*}
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_252_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_259_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_178_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_219_comparison.png}
+  \caption{Results on DORN}
+\end{figure*}
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_280_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_293_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_313_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_413_comparison.png}
+  \caption{Results on DORN}
+\end{figure*}
+\begin{figure*}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_477_comparison.png}
+  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_502_comparison.png}
+%  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_428_comparison.png}
+%  \includegraphics[width=\textwidth]{sections/figures/comparison/dorn_428_comparison.png}
+  \caption{Results on DORN}
+\end{figure*}
 % Densedepth:
 % - Office: 18, 21
 % - Bathroom: 25, 194, 285
