@@ -8,6 +8,8 @@ experiments*
 *.tar
 *.npy
 
+librealsense
+
 # Tensorboard
 runs/*
 oldruns/*

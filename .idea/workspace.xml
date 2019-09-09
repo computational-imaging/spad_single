@@ -1,109 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="ebb10411-0152-4c74-83b8-0064780d50e4" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/depth_rel2depth_abs.m" beforeDir="false" afterPath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/depth_rel2depth_abs.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/fill_depth_colorization.m" beforeDir="false" afterPath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/fill_depth_colorization.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_accel_data.m" beforeDir="false" afterPath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_accel_data.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_projection_mask.m" beforeDir="false" afterPath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_projection_mask.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_synched_frames.m" beforeDir="false" afterPath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_synched_frames.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_timestamp_from_filename.m" beforeDir="false" afterPath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_timestamp_from_filename.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/MiDaS/input/.placeholder" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/MiDaS/output/.placeholder" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/8_29_kitchen_scene/README.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/register_depth.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/README" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/apply_distortion.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/camera_params.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/cbf.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/cbf.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/cbf_windows.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/cbf_windows.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/compile.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/crop_image.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/demo_fill_depth_cross_bf_test.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/demo_project_depth_map.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/demo_synched_projected_frames.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/depth_plane2depth_world.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/depth_rel2depth_abs.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/depth_world2rgb_world.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/fill_depth_colorization.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/fill_depth_cross_bf.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/get_accel_data.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/get_accel_data.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/get_instance_masks.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/get_projection_mask.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/get_rgb_depth_overlay.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/get_scene_type_from_scene.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/get_synched_frames.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/get_timestamp_from_filename.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/kinectv2_camera_params.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/mex_cbf.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/mex_cbf_windows.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/project_depth_map.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/rgb_plane2rgb_world.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/rgb_world2rgb_plane.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/undistort.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/captured/data/toolbox_nyu_depth_v2/undistort_depth.m" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/ordnet/OrdNet.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/ordnet/evaluate.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/ordnet/loss.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/ordnet/nyuv2_labeled_dataset.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/ordnet/train.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/PyTorch/data.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/PyTorch/loss.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/PyTorch/model.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/PyTorch/train.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/PyTorch/utils.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/augment.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/callbacks.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/data.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/demo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/evaluate.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/layers.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/loss.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/model.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/train.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/utils.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/DenseDepthModel.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/depth_rel2depth_abs.m" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/depth_rel2depth_abs.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/fill_depth_colorization.m" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/fill_depth_colorization.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_accel_data.m" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_accel_data.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_projection_mask.m" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_projection_mask.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_synched_frames.m" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_synched_frames.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_timestamp_from_filename.m" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_timestamp_from_filename.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/evaluate_densedepth.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/png_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/realsense/png_dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/remove_dc_from_spad.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/run_densedepth.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/simulate_spad.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/spad_utils.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/weighted_histogram_matching.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/MiDaSModel.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/auto/bibliography.el" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/auto/egpaper_final.el" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/auto/egpaper_final.el" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/auto/supplement.el" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/bib.bib" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/bibliography.bib" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egbib.bib" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egbib.bib" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.aux" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.aux" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.bbl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.blg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.tex" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/supplement.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/supplement.tex" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/sections/introduction.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/sections/introduction.tex" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/sections/method.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/sections/method.tex" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/sections/related.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/sections/related.tex" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/sections/simulation.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/sections/simulation.tex" afterDir="false" />
-    </list>
+    <list default="true" id="ebb10411-0152-4c74-83b8-0064780d50e4" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -115,8 +13,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/nyuv2/gt_hist_matching/histogram_matching.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="660">
-              <caret line="44" column="48" selection-start-line="44" selection-start-column="48" selection-end-line="44" selection-end-column="48" />
+            <state relative-caret-position="585">
+              <caret line="39" lean-forward="true" selection-start-line="39" selection-end-line="39" />
             </state>
           </provider>
         </entry>
@@ -182,6 +80,7 @@
     </dirStrings>
   </component>
   <component name="Git.Settings">
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="IdeDocumentHistory">
@@ -457,16 +356,15 @@
       <workItem from="1564723768129" duration="2760000" />
       <workItem from="1565041240343" duration="49627000" />
       <workItem from="1565894731702" duration="17122000" />
-      <workItem from="1568059454958" duration="331000" />
+      <workItem from="1568059454958" duration="882000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="893388000" />
+    <option name="totallyTimeSpent" value="893939000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1920" height="1057" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.19029851" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -945,8 +843,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/nyuv2/gt_hist_matching/histogram_matching.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="660">
-          <caret line="44" column="48" selection-start-line="44" selection-start-column="48" selection-end-line="44" selection-end-column="48" />
+        <state relative-caret-position="585">
+          <caret line="39" lean-forward="true" selection-start-line="39" selection-end-line="39" />
         </state>
       </provider>
     </entry>
