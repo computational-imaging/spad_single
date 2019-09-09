@@ -2,48 +2,64 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ebb10411-0152-4c74-83b8-0064780d50e4" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/nyuv2/ordnet/OrdNet.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/ordnet/evaluate.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/ordnet/loss.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/ordnet/nyuv2_labeled_dataset.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/ordnet/train.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/LICENSE" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/PyTorch/data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/PyTorch/loss.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/PyTorch/model.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/PyTorch/train.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/PyTorch/utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/augment.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/callbacks.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/demo.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/evaluate.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/layers.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/loss.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/model.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/test.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/train.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepthModel.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/evaluate_densedepth.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/remove_dc_from_spad.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/run_densedepth.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/simulate_spad.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/spad_utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/weighted_histogram_matching.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/PyTorch/data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/PyTorch/loss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/PyTorch/model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/PyTorch/train.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/PyTorch/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/augment.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/callbacks.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/demo.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/evaluate.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/layers.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/loss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/train.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepth/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/DenseDepthModel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/MiDaS/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/MiDaS/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/MiDaS/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/MiDaS/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/MiDaS/monodepth_net.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/MiDaS/run.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/MiDaS/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/MiDaSModel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/capture_utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/evaluate_densedepth.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/mat_to_npy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/png_dataset.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/remove_dc_from_spad.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/run_densedepth.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/spad_utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/captured/weighted_histogram_matching.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/png_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/realsense/png_dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/auto/egpaper_final.el" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/auto/egpaper_final.el" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egbib.bib" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egbib.bib" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/depth_rel2depth_abs.m" beforeDir="false" afterPath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/depth_rel2depth_abs.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/fill_depth_colorization.m" beforeDir="false" afterPath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/fill_depth_colorization.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_accel_data.m" beforeDir="false" afterPath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_accel_data.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_projection_mask.m" beforeDir="false" afterPath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_projection_mask.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_synched_frames.m" beforeDir="false" afterPath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_synched_frames.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_timestamp_from_filename.m" beforeDir="false" afterPath="$PROJECT_DIR$/data/code_nyu/simulated_data/nyu_utils/get_timestamp_from_filename.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/ordnet/loss.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/ordnet/loss.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/ordnet/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/ordnet/train.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/depth_rel2depth_abs.m" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/depth_rel2depth_abs.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/fill_depth_colorization.m" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/fill_depth_colorization.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_accel_data.m" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_accel_data.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_projection_mask.m" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_projection_mask.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_synched_frames.m" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_synched_frames.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_timestamp_from_filename.m" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/realsense/data/matlab/nyu_utils/get_timestamp_from_filename.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/simulate_spad/data/nyu_depth_v2_labeled_numpy/test_scenes.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/simulate_spad/data/nyu_depth_v2_labeled_numpy/train_scenes.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.aux" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.aux" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.tex" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/sections/introduction.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/sections/introduction.tex" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paper/spad_single/sections/method.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/sections/method.tex" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/paper/spad_single/sections/related.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/sections/related.tex" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/paper/spad_single/sections/simulation.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/sections/simulation.tex" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -51,6 +67,96 @@
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/gt_hist_matching/histogram_matching.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="660">
+              <caret line="44" column="21" selection-start-line="44" selection-start-column="21" selection-end-line="44" selection-end-column="53" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/captured/MiDaSModel.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="600">
+              <caret line="43" column="23" selection-start-line="43" selection-start-column="23" selection-end-line="43" selection-end-column="23" />
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/captured/MiDaS/monodepth_net.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/captured/MiDaS/run.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/captured/MiDaS/utils.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="2580">
+              <caret line="176" selection-start-line="176" selection-end-line="176" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/ordnet/loss.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="30">
+              <caret line="2" selection-start-line="2" selection-end-line="2" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/ordnet/nyuv2_labeled_dataset.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state>
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/captured/capture_utils.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1185">
+              <caret line="80" selection-start-line="80" selection-end-line="80" />
+              <folding>
+                <element signature="e#0#11#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/nyuv2/captured/weighted_histogram_matching.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="553">
+              <caret line="89" column="60" selection-start-line="89" selection-start-column="60" selection-end-line="89" selection-end-column="60" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/MiDaSModel.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -63,11 +169,77 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/nyuv2/ordnet/loss.py" />
+        <option value="$PROJECT_DIR$/nyuv2/ordnet/train.py" />
+        <option value="$PROJECT_DIR$/nyuv2/captured/MiDaS.py" />
+        <option value="$PROJECT_DIR$/nyuv2/captured/MiDaS/__init__.py" />
+        <option value="$PROJECT_DIR$/nyuv2/captured/captured_utils.py" />
+        <option value="$PROJECT_DIR$/nyuv2/captured/MiDaSModel.py" />
+        <option value="$PROJECT_DIR$/nyuv2/captured/capture_utils.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="y" value="23" />
+    <option name="width" value="1440" />
+    <option name="height" value="877" />
+  </component>
   <component name="ProjectId" id="1PzkxvzWaFKhy3B0v0Daabu8wqm" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+              <item name="nyuv2" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+              <item name="nyuv2" type="462c0819:PsiDirectoryNode" />
+              <item name="captured" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+              <item name="nyuv2" type="462c0819:PsiDirectoryNode" />
+              <item name="gt_hist_matching" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+              <item name="nyuv2" type="462c0819:PsiDirectoryNode" />
+              <item name="ordnet" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="spad_single" type="b2602c69:ProjectViewProjectNode" />
+              <item name="spad_single" type="462c0819:PsiDirectoryNode" />
+              <item name="nyuv2" type="462c0819:PsiDirectoryNode" />
+              <item name="weighted_histogram_matching" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/nyuv2/ordnet" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/nyuv2/captured" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
@@ -75,11 +247,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/nyuv2/captured" />
       <recent name="$PROJECT_DIR$/nyuv2/ordnet" />
       <recent name="$PROJECT_DIR$/nyuv2/realsense" />
       <recent name="$PROJECT_DIR$/kitti" />
       <recent name="$PROJECT_DIR$/nyuv2/gt_hist_matching" />
-      <recent name="$PROJECT_DIR$/nyuv2/median_matching" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/nyuv2/realsense" />
@@ -173,9 +345,44 @@
       <workItem from="1566587873464" duration="4094000" />
       <workItem from="1566884092411" duration="246000" />
       <workItem from="1566884572015" duration="2361000" />
-      <workItem from="1566888120144" duration="7421000" />
+      <workItem from="1566888120144" duration="17969000" />
+      <workItem from="1567130915197" duration="13550000" />
+      <workItem from="1567844683933" duration="628000" />
     </task>
     <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="14178000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="23" width="1920" height="1057" extended-state="6" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18849841" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="LuaCheck" order="7" />
+      <window_info anchor="bottom" id="Docker" order="8" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Version Control" order="9" />
+      <window_info anchor="bottom" id="File Transfer" order="10" visible="true" weight="0.26839378" />
+      <window_info anchor="bottom" id="Database Changes" order="11" />
+      <window_info anchor="bottom" id="Terminal" order="12" />
+      <window_info anchor="bottom" id="Event Log" order="13" side_tool="true" />
+      <window_info anchor="bottom" id="Python Console" order="14" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="JuliaSciView" order="3" />
+      <window_info anchor="right" id="Remote Host" order="4" />
+      <window_info anchor="right" id="SciView" order="5" />
+      <window_info anchor="right" id="Database" order="6" />
+    </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
@@ -186,8 +393,28 @@
         <entry key="MAIN">
           <value>
             <State>
+              <option name="RECENTLY_FILTERED_USER_GROUPS">
+                <collection />
+              </option>
+              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+                <collection />
+              </option>
               <option name="COLUMN_ORDER" />
             </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list />
+          </value>
+        </entry>
+        <entry key="User">
+          <value>
+            <list />
           </value>
         </entry>
       </map>
@@ -213,5 +440,95 @@
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/nyuv2/captured/MiDaS/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/captured/MiDaS/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor />
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/captured/captured_utils.py" />
+    <entry file="file://$PROJECT_DIR$/nyuv2/ordnet/train.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1035">
+          <caret line="80" column="26" selection-start-line="80" selection-start-column="26" selection-end-line="80" selection-end-column="26" />
+          <folding>
+            <element signature="e#25#34#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/gt_hist_matching/histogram_matching.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="660">
+          <caret line="44" column="21" selection-start-line="44" selection-start-column="21" selection-end-line="44" selection-end-column="53" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/captured/MiDaSModel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="600">
+          <caret line="43" column="23" selection-start-line="43" selection-start-column="23" selection-end-line="43" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/captured/MiDaS/monodepth_net.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/captured/MiDaS/run.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/captured/MiDaS/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2580">
+          <caret line="176" selection-start-line="176" selection-end-line="176" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/ordnet/loss.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/ordnet/nyuv2_labeled_dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/captured/capture_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1185">
+          <caret line="80" selection-start-line="80" selection-end-line="80" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/captured/weighted_histogram_matching.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="553">
+          <caret line="89" column="60" selection-start-line="89" selection-start-column="60" selection-end-line="89" selection-end-column="60" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/nyuv2/weighted_histogram_matching/MiDaSModel.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
   </component>
 </project>

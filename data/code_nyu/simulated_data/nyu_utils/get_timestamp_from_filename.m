@@ -8,7 +8,7 @@
 %
 %
 % Args:
-%   filename - the path to the raw kinect output file.
+%   filename - the path to the raw captured output file.
 %
 % Returns:
 %   matlabTime - the matlab time which can be passed to datestr

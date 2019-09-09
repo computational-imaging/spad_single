@@ -1,0 +1,1 @@
+Acquisition time: 15 min. (1 minute per timestamp file)

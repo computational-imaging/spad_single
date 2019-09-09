@@ -1,5 +1,5 @@
 % Gets a mask for the projected images that is most conservative with
-% respect to the regions that maintain the kinect depth signal following
+% respect to the regions that maintain the captured depth signal following
 % projection.
 %
 % Returns: 
