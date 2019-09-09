@@ -1,13 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
+<<<<<<< HEAD
     <list default="true" id="ebb10411-0152-4c74-83b8-0064780d50e4" name="Default Changelist" comment="" />
+=======
+    <list default="true" id="ebb10411-0152-4c74-83b8-0064780d50e4" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/nyuv2/ordnet/OrdNet.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/ordnet/evaluate.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/ordnet/loss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/ordnet/nyuv2_labeled_dataset.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/ordnet/train.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/PyTorch/data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/PyTorch/loss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/PyTorch/model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/PyTorch/train.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/PyTorch/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/augment.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/callbacks.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/data.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/demo.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/evaluate.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/layers.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/loss.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/train.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepth/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/DenseDepthModel.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/evaluate_densedepth.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/remove_dc_from_spad.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/run_densedepth.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/simulate_spad.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/spad_utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nyuv2/realsense/weighted_histogram_matching.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nyuv2/realsense/png_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/nyuv2/realsense/png_dataset.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/auto/egpaper_final.el" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/auto/egpaper_final.el" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egbib.bib" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egbib.bib" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.aux" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.aux" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/cvpr2019/egpaper_final.tex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper/spad_single/sections/introduction.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/sections/introduction.tex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper/spad_single/sections/method.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/sections/method.tex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper/spad_single/sections/related.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/sections/related.tex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/paper/spad_single/sections/simulation.tex" beforeDir="false" afterPath="$PROJECT_DIR$/paper/spad_single/sections/simulation.tex" afterDir="false" />
+    </list>
+>>>>>>> ac23c73116b7fdd108ca4951a414a00ea9b25df3
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+<<<<<<< HEAD
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
@@ -21,6 +70,8 @@
       </file>
     </leaf>
   </component>
+=======
+>>>>>>> ac23c73116b7fdd108ca4951a414a00ea9b25df3
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -29,6 +80,7 @@
       </list>
     </option>
   </component>
+<<<<<<< HEAD
   <component name="FindInProjectRecents">
     <findStrings>
       <find>albedo</find>
@@ -261,10 +313,36 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+=======
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1PzkxvzWaFKhy3B0v0Daabu8wqm" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/nyuv2/ordnet" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
+    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/nyuv2/ordnet" />
+      <recent name="$PROJECT_DIR$/nyuv2/realsense" />
+      <recent name="$PROJECT_DIR$/kitti" />
+      <recent name="$PROJECT_DIR$/nyuv2/gt_hist_matching" />
+      <recent name="$PROJECT_DIR$/nyuv2/median_matching" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/nyuv2/realsense" />
+>>>>>>> ac23c73116b7fdd108ca4951a414a00ea9b25df3
       <recent name="$PROJECT_DIR$/nyuv2/realsense/data" />
       <recent name="$PROJECT_DIR$/nyuv2/weighted_histogram_matching/figures" />
       <recent name="$PROJECT_DIR$/nyuv2/wass_shifted_gt" />
       <recent name="$PROJECT_DIR$/nyuv2" />
+<<<<<<< HEAD
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
@@ -273,6 +351,8 @@
       <recent name="$PROJECT_DIR$/nyuv2/median_matching" />
       <recent name="$PROJECT_DIR$/nyuv2/weighted_histogram_matching" />
       <recent name="$PROJECT_DIR$/nyuv2/wasserstein_matching_test" />
+=======
+>>>>>>> ac23c73116b7fdd108ca4951a414a00ea9b25df3
     </key>
   </component>
   <component name="RunDashboard">
@@ -355,6 +435,7 @@
       <workItem from="1564360644581" duration="3355000" />
       <workItem from="1564723768129" duration="2760000" />
       <workItem from="1565041240343" duration="49627000" />
+<<<<<<< HEAD
       <workItem from="1565894731702" duration="17122000" />
       <workItem from="1568059454958" duration="882000" />
     </task>
@@ -422,10 +503,21 @@
       <window_info anchor="right" id="JuliaSciView" order="7" />
     </layout-to-restore>
   </component>
+=======
+      <workItem from="1565894731702" duration="17624000" />
+      <workItem from="1566587873464" duration="4094000" />
+      <workItem from="1566884092411" duration="246000" />
+      <workItem from="1566884572015" duration="2361000" />
+      <workItem from="1566888120144" duration="7421000" />
+    </task>
+    <servers />
+  </component>
+>>>>>>> ac23c73116b7fdd108ca4951a414a00ea9b25df3
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
+<<<<<<< HEAD
     <option name="RECENT_FILTERS">
       <map>
         <entry key="Branch">
@@ -436,6 +528,15 @@
         <entry key="User">
           <value>
             <list />
+=======
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+>>>>>>> ac23c73116b7fdd108ca4951a414a00ea9b25df3
           </value>
         </entry>
       </map>
@@ -462,6 +563,7 @@
       </breakpoints>
     </breakpoint-manager>
   </component>
+<<<<<<< HEAD
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/models/data/data_utils/spad_utils.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -849,4 +951,6 @@
       </provider>
     </entry>
   </component>
+=======
+>>>>>>> ac23c73116b7fdd108ca4951a414a00ea9b25df3
 </project>

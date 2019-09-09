@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 \paragraph{Depth Imaging}
 
 \begin{itemize}
@@ -6,10 +7,23 @@
 	\item time of flight (continuous wave and pulsed)
 	\item what we do: like pulsed but much simpler setup; no scanning, no spad array, ...
 \end{itemize}
+=======
+% \paragraph{Depth Imaging}
+% Include in intro, don't necessarily need it here.
+% Conventional approaches to estimating depth from images include stereo-based
+% approaches 
+% \begin{itemize}
+% 	\item stereo and multiview
+% 	\item structured illumination and random patterns (kinect, etc.), active stereo
+% 	\item time of flight (continuous wave and pulsed)
+% 	\item what we do: like pulsed but much simpler setup; no scanning, no spad array, ...
+% \end{itemize}
+>>>>>>> ac23c73116b7fdd108ca4951a414a00ea9b25df3
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{Monocular Depth Estimation}
+<<<<<<< HEAD
 
 \begin{itemize}
 	\item summary of architectures and cost functions: u-net type architecture with reverse huber loss
@@ -37,4 +51,100 @@ Histogram matching as an image processing technique
   \item Wasserstein-based optimization techniques for
     histogram-based regularization
 \end{itemize}
+=======
+Previous non-deep approaches used Markov Random Fields \cite{Saxena2006},
+geometric approaches \cite{Hoiem2005}, and non-parametric, SIFT-based methods
+\cite{Karsch2014}.
+More recently, deep neural networks have been applied to the problem of estimating depth from a
+single image. Eigen et. al. \cite{Eigen2014} use a multi-scale neural network to
+predict depth at multiple scales. Godard et. al. \cite{Godard2017} use an
+unsupervised approach (i.e. that does not require ground truth depth) that
+trains a network using stereo pairs to produce disparity maps from
+single images, which can then be used to recover the depth. Fu et. al.
+\cite{Fu2018} combined a logarithmic depth discretization scheme with a novel
+ordinal regression approach. Various experiments using different types of
+encoder networks (e.g. ResNet, DenseNet) \cite{Laina2016} \cite{Alhashim2018}
+have also been employed with some success, as have approaches mixing deep
+learning with conditional random fields \cite{Xu2017}, and attention-based
+approaches \cite{Xu2018} \cite{Hao2018}.
+
+Despite achieving remarkable success on the monocular depth estimation task, none of these methods are able to
+resolve inherent scale ambiguity in a principled manner (being monocular in nature). By combining a monocular
+depth estimator with a depth histogram, our method is able to do so.
+
+% \begin{itemize}
+% 	\item summary of architectures and cost functions: u-net type architecture with reverse huber loss
+% 	\item what we do: same thing, but augment with global hints (inspired by these approaches, we do ...)
+% \end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{Depth Imaging and Sensor Fusion with SPADs}
+Previous work (see \cite{Horaud2016} for a survey) has been able to use
+single-pixel SPADs \cite{Lamb2010} and also 1D LinoSPADs in
+tandem with various scanning or DMD devices to capture 3D volumes of photon arrivals
+that can be used to reconstruct depth. Lindell et. al. \cite{Lindell2018} use a
+LinoSPAD and epipolar scanline and fuse the SPAD data with an RGB image to
+produce high-quality depth.  Our approach uses a single pixel SPAD but
+does not require any scanning or DMD mechanism.
+
+A parallel approach called 3D flash LiDAR uses a laser with an optical diffuser
+as the illumination source and a 2D array of SPADs to capture the 3D volume
+\cite{Stoppa2007, Niclass2005}. Such arrays are capable of reconstructing high
+quality depth but remain relatively low resolution. Other arrays are able to
+achieve higher resolution, but suffer from low fill factor \cite{Veerappan2011} or
+sacrifice per-pixel TDC \cite{Zhang2018}.
+
+Our approach uses flash LiDAR but requires only a single pixel 
+sensor.
+(Still need to flesh out this section more with some higher resolution SPAD arrays)
+% \begin{itemize}
+%   \item Scanned single-pixel and 1D arrays, but scanning is hard
+%   \item high resolution arrays -> challenging to do TDC
+%   \item Individual (non-scanning) SPADs already exist in e.g. iPhoneX, but use
+%     is limited to proximity sensors.
+%   \item What we do: No array (easier), no scanning (easier), much cheaper,
+%     combined with RGB camera to do high-resolution depth imaging, a more complex
+%     task.
+% \end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \paragraph{Deep Sensor Fusion}
+% Maybe mention in previous section? 
+% global hints for super-resolution, colorization, depth estimation 
+%
+% \begin{itemize}
+	% \item colorization
+	% \item david's 2018 paper for depth estimation and denoising (see david's 2019 sig paper for related work)
+	% \item what we do: slightly different application
+% \end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{Histogram Matching and Global Hints}
+Histogram matching or histogram specification is a well-known image processing
+technique \cite{Gonzalez2008} for adjusting an image so that it's histogram
+matches some pre-specified histogram (often derived from another image).
+Nikolova et. al. \cite{Nikolova2013} use optimization to recover a strict
+ordering of the image pixels that allows an exact histogram match to be
+obtained. Morovic et. al \cite{Morovic2002} provide a simple and concise method
+that also achieves an exact histogram match while being very fast.
+In the image reconstruction space, Swoboda and Schnörr \cite{Swoboda2013} use a
+histogram to form an image prior based on the Wasserstein distance for image
+denoising and inpainting. Rother et. al. \cite{Rother2006} use a histogram prior
+to create an energy function that penalizes foreground segmentations with
+dissimilar histograms. In a slightly different vein, Zhang et. al.
+\cite{Zhang2017} train a neural network to produce realistically colorized
+images given only a black-and-white image and a histogram of global color information.
+
+Our method is essentially a modified form of the algorithm in
+\cite{Morovic2002}, modified for our particular use case. Also worth noting is
+the fact that most algorithms compute histograms from existing images, whereas
+our method mesaures the depth histogram indirectly using photon arrivals.
+%
+% \begin{itemize}
+%   \item Exact histogram matching paper used in this work
+%   \item Wasserstein-based optimization techniques for
+%     histogram-based regularization
+% \end{itemize}
+
+>>>>>>> ac23c73116b7fdd108ca4951a414a00ea9b25df3
 

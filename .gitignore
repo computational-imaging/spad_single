@@ -8,8 +8,11 @@ experiments*
 *.tar
 *.npy
 
+<<<<<<< HEAD
 librealsense
 
+=======
+>>>>>>> ac23c73116b7fdd108ca4951a414a00ea9b25df3
 # Tensorboard
 runs/*
 oldruns/*
