@@ -1,4 +1,4 @@
-% Preprocesses the captured depth image using a gray scale version of the
+% Preprocesses the kinect depth image using a gray scale version of the
 % RGB image as a weighting for the smoothing. This code is a slight
 % adaptation of Anat Levin's colorization code:
 %

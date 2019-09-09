@@ -4,7 +4,7 @@
 % nearest RGB frame.
 %
 % Args:
-%   sceneDir - the directory containing the raw captured dump for a
+%   sceneDir - the directory containing the raw kinect dump for a
 %   particular scene.
 %
 % Returns:

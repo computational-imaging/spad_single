@@ -9,7 +9,7 @@
 %
 % Returns:
 %   imgDepthAbs - 480x640 depth image whose values are in meters, rather
-%                 than the internal depth values used by the captured.
+%                 than the internal depth values used by the kinect.
 function imgDepthAbs = depth_rel2depth_abs(imgDepthOrig)
   assert(isa(imgDepthOrig, 'double'));
 

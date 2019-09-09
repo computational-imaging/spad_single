@@ -1,4 +1,4 @@
-% Returns the accelerometer data coming from the captured.
+% Returns the accelerometer data coming from the kinect.
 %
 % Args:
 %   filename - the filename of the .dump file.
