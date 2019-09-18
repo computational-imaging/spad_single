@@ -218,6 +218,7 @@ def remove_dc_from_spad_edge(spad, ambient, grad_th=1e3, n_std=1.):
     spad[last+1:] = 0.
     return np.clip(spad - ambient, a_min=0., a_max=None)
 
+
 import sklearn.mixture as skmix
 def remove_dc_from_spad_gmm(h, n_components=4, weight_concentration_prior=1e0, depth_values=None, axs=None):
     assert len(h.shape) == 1

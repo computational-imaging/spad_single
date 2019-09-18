@@ -8,7 +8,118 @@
   \item{Description of hardware used}
   \item{Images of scenes used}
 \end{itemize}
-\begin{figure}
-  \includegraphics[width=\textwidth/2]{sections/figures/hardware_results.jpeg}
-  \caption{\textbf{Hardware results}}
-\end{figure}
+% \begin{figure}
+%  \includegraphics[width=\textwidth/2]{sections/figures/hardware_results.jpeg}
+%  \caption{\textbf{Hardware results}}
+% \end{figure}
+%       "8_29_kitchen_scene",
+%       "8_29_conference_room_scene",
+%       "8_30_conference_room2_scene",
+%       "8_30_Hallway",
+%       "8_30_poster_scene",
+%       "8_30_small_lab_scene",
+\begin{figure*}[t!]
+    \centering
+    \begin{tabular}{p{5mm}ccccc}
+      \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Kitchen Scene}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
+      &
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_kitchen_scene/gt_z_proj_crop.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_kitchen_scene/z_init_depth_fig.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_kitchen_scene/z_med_scaled_depth_fig.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_kitchen_scene/z_pred_depth_fig.png}&
+      \includegraphics[height=1.25in]{sections/figures/captured/midas/8_29_kitchen_scene/depth_colorbar.pdf}\\
+      & RGB &  &  &  & \\
+      &
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_kitchen_scene/rgb_cropped.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_kitchen_scene/z_init_diff_fig.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_kitchen_scene/z_med_scaled_diff_fig.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_kitchen_scene/z_pred_diff_fig.png}&
+      \includegraphics[height=1.25in]{sections/figures/captured/midas/8_29_kitchen_scene/diff_colorbar.pdf}\\
+      & & \input{sections/figures/captured/midas/8_29_kitchen_scene/rmses.tex}& \\ 
+
+      \multirow[t]{3}{=}{\rotatebox[origin=c]{90}{Conference Room 1}}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_conference_room_scene/gt_z_proj_crop.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_conference_room_scene/z_init_depth_fig.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_conference_room_scene/z_med_scaled_depth_fig.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_conference_room_scene/z_pred_depth_fig.png}&
+      \includegraphics[height=1.25in]{sections/figures/captured/midas/8_29_conference_room_scene/depth_colorbar.pdf}\\
+
+      &
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_conference_room_scene/rgb_cropped.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_conference_room_scene/z_init_diff_fig.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_conference_room_scene/z_med_scaled_diff_fig.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_29_conference_room_scene/z_pred_diff_fig.png}&
+      \includegraphics[height=1.25in]{sections/figures/captured/midas/8_29_conference_room_scene/diff_colorbar.pdf}\\
+      & & \input{sections/figures/captured/midas/8_29_conference_room_scene/rmses.tex}& \\ 
+
+      \multirow[t]{3}{=}{\rotatebox[origin=c]{90}{Conference Room 2}}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_30_conference_room2_scene/gt_z_proj_crop.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_30_conference_room2_scene/z_init_depth_fig.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_30_conference_room2_scene/z_med_scaled_depth_fig.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_30_conference_room2_scene/z_pred_depth_fig.png}&
+      \includegraphics[height=1.25in]{sections/figures/captured/midas/8_30_conference_room2_scene/depth_colorbar.pdf}\\
+
+      &
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_30_conference_room2_scene/rgb_cropped.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_30_conference_room2_scene/z_init_diff_fig.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_30_conference_room2_scene/z_med_scaled_diff_fig.png}&
+      \includegraphics[height=1.25in, width=1.25in]{sections/figures/captured/midas/8_30_conference_room2_scene/z_pred_diff_fig.png}&
+      \includegraphics[height=1.25in]{sections/figures/captured/midas/8_30_conference_room2_scene/diff_colorbar.pdf}\\
+      & & \input{sections/figures/captured/midas/8_30_conference_room2_scene/rmses.tex}& \\ 
+    \end{tabular}
+    \caption{Captured results initialized using the MiDaS CNN.
+      Second row shows absolute difference between above estimates and ground truth.}
+    \label{fig:midas_captured}
+%    \vspace{-1.5em}
+\end{figure*}
+\begin{figure*}[t!]
+    \centering
+    \begin{tabular}{ccccc}
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_Hallway/gt_z_proj_crop_depth_fig.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_Hallway/z_init_depth_fig.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_Hallway/z_med_scaled_depth_fig.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_Hallway/z_pred_depth_fig.png}&
+      \includegraphics[width=0.5in]{sections/figures/captured/midas/8_30_Hallway/depth_colorbar.pdf}\\
+
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_Hallway/rgb_cropped.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_Hallway/z_init_diff_fig.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_Hallway/z_med_scaled_diff_fig.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_Hallway/z_pred_diff_fig.png}&
+      \includegraphics[width=0.5in]{sections/figures/captured/midas/8_30_Hallway/diff_colorbar.pdf}\\
+      & \input{sections/figures/captured/midas/8_30_Hallway/rmses.tex}& \\ 
+
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_poster_scene/gt_z_proj_crop_depth_fig.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_poster_scene/z_init_depth_fig.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_poster_scene/z_med_scaled_depth_fig.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_poster_scene/z_pred_depth_fig.png}&
+      \includegraphics[width=0.5in]{sections/figures/captured/midas/8_30_poster_scene/depth_colorbar.pdf}\\
+
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_poster_scene/rgb_cropped.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_poster_scene/z_init_diff_fig.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_poster_scene/z_med_scaled_diff_fig.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_poster_scene/z_pred_diff_fig.png}&
+      \includegraphics[width=0.5in]{sections/figures/captured/midas/8_30_poster_scene/diff_colorbar.pdf}\\
+      & \input{sections/figures/captured/midas/8_30_poster_scene/rmses.tex}& \\ 
+
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_small_lab_scene/gt_z_proj_crop_depth_fig.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_small_lab_scene/z_init_depth_fig.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_small_lab_scene/z_med_scaled_depth_fig.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_small_lab_scene/z_pred_depth_fig.png}&
+      \includegraphics[width=0.5in]{sections/figures/captured/midas/8_30_small_lab_scene/depth_colorbar.pdf}\\
+
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_small_lab_scene/rgb_cropped.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_small_lab_scene/z_init_diff_fig.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_small_lab_scene/z_med_scaled_diff_fig.png}&
+      \includegraphics[width=1.25in]{sections/figures/captured/midas/8_30_small_lab_scene/z_pred_diff_fig.png}&
+      \includegraphics[width=0.5in]{sections/figures/captured/midas/8_30_small_lab_scene/diff_colorbar.pdf}\\
+      & \input{sections/figures/captured/midas/8_30_small_lab_scene/rmses.tex}\\ 
+                                     
+%      (a)&(b)&(c)&(d)&(e)\\
+    \end{tabular}
+    \caption{Captured results initialized using the MiDaS CNN. (a) RGB image.
+      (b) Ground Truth Depth. (c) Initial Depth Estimate. (d) SPAD-median
+      Rescaled Estimate. (e) SPAD Histogram Matched Estimate.}
+    \label{fig:midas_captured}
+%    \vspace{-1.5em}
+\end{figure*}
+

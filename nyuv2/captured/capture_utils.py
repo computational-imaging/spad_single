@@ -1,5 +1,9 @@
+import os
 import h5py
+import cv2
 import numpy as np
+from remove_dc_from_spad import remove_dc_from_spad_edge
+import matplotlib.pyplot as plt
 
 def loadmat_h5py(file):
     output = {}
@@ -8,9 +12,11 @@ def loadmat_h5py(file):
             output[k] = np.array(v)
     return output
 
+fc_kinect = [1053.622, 1047.508]
+fc_spad = [758.2466, 791.2153]
 
-def z_to_r_kinect(z):
-    fc = [1053.622, 1047.508]  # Focal length in pixels
+
+def z_to_r(z, fc):
     yy, xx = np.meshgrid(range(z.shape[0]), range(z.shape[1]), indexing="ij")
     x = (xx * z) / fc[0]
     y = (yy * z) / fc[1]
@@ -18,8 +24,7 @@ def z_to_r_kinect(z):
     return r
 
 
-def r_to_z_kinect(r):
-    fc = [1053.622, 1047.508]  # Focal length in pixels
+def r_to_z(r, fc):
     yy, xx = np.meshgrid(range(r.shape[0]), range(r.shape[1]), indexing="ij")
     z = r / np.sqrt((xx/fc[0])**2 + (yy/fc[1])**2 + 1)
     return z
@@ -46,7 +51,7 @@ def rescale_bins(spad_counts, min_depth, max_depth, sid_obj):
     sid_bin_edges_bin[-1] = np.floor(sid_bin_edges_bin[-1])
     # print(sid_bin_edges_bin[-1])
     # Map spad_counts onto sid_bin indices
-    print(sid_bin_edges_bin)
+    # print(sid_bin_edges_bin)
     sid_counts = np.zeros(sid_obj.sid_bins)
     for i in range(sid_obj.sid_bins):
 #         print(i)
@@ -79,4 +84,99 @@ def normals_from_depth(z):
     return n
 
 
+def get_closer_to_mod(lower, upper, mod):
+    """
+    Adjusts lower and upper so that their difference is 0 (mod mod)
+    :param lower: smaller number
+    :param upper: larger number
+    :param mod: the modulus
+    :return: pair (lower_modified, upper_modified) such that upper_modified - lower_modified = 0 (mod mod)
+    """
+    assert lower <= upper
+    diff = (upper - lower) % mod
+    if diff > mod//2:
+        diff = diff - mod # Negative
+    lower_correction = diff//2
+    upper_correction = diff - diff//2
+    return lower + lower_correction, upper - upper_correction
 
+def get_hist_med(histogram):
+    """Returns the mean bin value"""
+    idx = np.array(range(len(histogram)))
+    pdf = histogram/np.sum(histogram)
+    return np.floor(idx.dot(pdf))
+
+
+def savefig_no_whitespace(filepath):
+    plt.gca().set_axis_off()
+    plt.subplots_adjust(top=1, bottom=0, right=1, left=0,
+                        hspace=0, wspace=0)
+    plt.margins(0, 0)
+    plt.gca().xaxis.set_major_locator(plt.NullLocator())
+    plt.gca().yaxis.set_major_locator(plt.NullLocator())
+    plt.savefig(filepath, bbox_inches='tight',
+                pad_inches=0)
+
+
+def save_depth_image(img, vmin, vmax, filepath):
+    plt.figure()
+    plt.imshow(img, vmin=vmin, vmax=vmax)
+    plt.axis('off')
+    savefig_no_whitespace(filepath)
+
+
+def depth_imwrite(img, vmin, vmax, filepath):
+    # Scale depth to be in [0, 1]
+    img_scaled = ((img * 255)/(vmax - vmin)).astype('int')
+    cv2.imwrite(filepath + ".png", img_scaled)
+
+
+def load_spad(spad_file):
+    print("Loading SPAD data...")
+    spad_data = loadmat_h5py(spad_file)
+    return spad_data["mat"]
+
+
+def preprocess_spad(spad_single, ambient_estimate, min_depth, max_depth, sid_obj):
+    print("Processing SPAD data...")
+    # Remove DC
+    spad_denoised = remove_dc_from_spad_edge(spad_single, ambient_estimate)
+
+    # Correct Falloff
+    bin_edges = np.linspace(min_depth, max_depth, len(spad_denoised) + 1)
+    bin_values = (bin_edges[1:] + bin_edges[:-1]) / 2
+    spad_corrected = spad_denoised * bin_values ** 2
+
+    # Convert to SID
+    spad_sid = rescale_bins(spad_corrected, min_depth, max_depth, sid_obj)
+    return spad_sid
+
+
+def load_and_crop_kinect(rootdir):
+    # Calibration data
+    print("Loading calibration data...")
+    calib = loadmat_h5py(os.path.join(rootdir, "calibration.mat"))
+
+    print("Loading kinect data...")
+    kinect = loadmat_h5py(os.path.join(rootdir, "kinect.mat"))
+    # Transpose
+    kinect_rgb = np.fliplr(kinect["rgb_im"].transpose(2, 1, 0))
+
+    # Extract crop
+    top = (calib["pos_01"][0] + calib["pos_11"][0]) // 2
+    bot = (calib["pos_10"][0] + calib["pos_00"][0]) // 2
+    left = (calib["pos_11"][1] + calib["pos_10"][1]) // 2
+    right = (calib["pos_01"][1] + calib["pos_00"][1]) // 2
+
+    # Scene-specific crop
+    crop = (int(top[0]), int(bot[0]), int(left[0]), int(right[0]))
+    top_mod, bot_mod = get_closer_to_mod(crop[0], crop[1], 32)
+    left_mod, right_mod = get_closer_to_mod(crop[2], crop[3], 32)
+    crop = (top_mod, bot_mod, left_mod, right_mod)
+
+    # Crop
+    rgb_cropped = kinect_rgb[crop[0]:crop[1], crop[2]:crop[3], :]
+
+    # Intensity
+    intensity = rgb_cropped[:, :, 0] / 225.
+    return kinect_rgb, rgb_cropped, intensity, crop
