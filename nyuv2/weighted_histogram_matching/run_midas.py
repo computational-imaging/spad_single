@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 
 # Model
-from MiDaSModel import get_midas, midas_gt_predict
+from MiDaSModel import get_midas, midas_gt_predict, midas_gt_predict_masked
 # Dataset
 from nyuv2_labeled_dataset import nyuv2_labeled_ingredient, load_data
 
@@ -81,11 +81,13 @@ def main(model_path,
                 entry_list.append(entry)
                 print("Evaluating {}".format(data["entry"][0]))
                 # pred, pred_metrics = model.evaluate(data, device)
-                pred = midas_gt_predict(model, data["rgb"].cpu().numpy().squeeze(),
-                                        data["depth_cropped"].cpu().numpy().squeeze(), crop, device)
+                pred = midas_gt_predict_masked(model, data["rgb"].cpu().numpy().squeeze(),
+                                               data["rawdepth_cropped"].cpu().numpy().squeeze(),
+                                               data["mask_cropped"].cpu().numpy().squeeze(),
+                                               crop, device)
 
                 pred = torch.from_numpy(pred).unsqueeze(0).unsqueeze(0).float()
-                pred_metrics = get_depth_metrics(pred, data["depth_cropped"], torch.ones_like(pred))
+                pred_metrics = get_depth_metrics(pred, data["rawdepth_cropped"], data["mask_cropped"])
                 print(pred_metrics)
                 for j, metric_name in enumerate(metric_list[:-1]):
                     metrics[i, j] = pred_metrics[metric_name]

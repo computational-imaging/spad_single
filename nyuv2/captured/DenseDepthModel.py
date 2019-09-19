@@ -33,6 +33,7 @@ class DenseDepth:
     def forward(self, rgb):
         """
         Works in numpy.
+        Channels should be last.
         """
         pred = scale_up(2, predict(self.model, rgb/255,
                                    minDepth=10, maxDepth=1000, batch_size=1)[:,:,:,0]) * 10.0

@@ -36,13 +36,25 @@ def cfg():
     calibration_file = os.path.join(data_dir, "calibration", "camera_params.mat")
     scenes = [
         # "8_29_lab_scene",
-        # "8_29_kitchen_scene",
+        "8_29_kitchen_scene",
         "8_29_conference_room_scene",
         "8_30_conference_room2_scene",
-        # "8_30_Hallway",
-        # "8_30_poster_scene",
-        # "8_30_small_lab_scene",
+        "8_30_Hallway",
+        "8_30_poster_scene",
+        "8_30_small_lab_scene",
     ]
+    # Relative shift of projected depth to rgb (found empirically)
+    offsets = [
+        # (0, 0),
+        (-10, -8),
+        (-16, -12),
+        (-16, -12),
+        (0, 0),
+        (0, 0),
+        (0, 0)
+    ]
+
+
     output_dir = os.path.join("figures", "midas")
 
     bin_width_ps = 16
@@ -54,9 +66,6 @@ def cfg():
     sid_obj = SID(sid_bins=140, alpha=min_depth, beta=max_depth, offset=0)
     ambient_max_depth_bin = 100
 
-    # t_correction = [45, , 0]
-
-
     cuda_device = "0"                       # The gpu index to run on. Should be a string
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -65,7 +74,7 @@ def cfg():
 
 
 @ex.automain
-def analyze(data_dir, calibration_file, scenes, output_dir,
+def analyze(data_dir, calibration_file, scenes, offsets, output_dir,
             bin_width_ps, bin_width_m,
             min_depth_bin, max_depth_bin,
             min_depth, max_depth,
@@ -80,7 +89,7 @@ def analyze(data_dir, calibration_file, scenes, output_dir,
     RotationOfKinect = RotationOfSpad.T
     TranslationOfKinect = -TranslationOfSpad.dot(RotationOfSpad.T)
 
-    for scene in scenes:
+    for scene, offset in zip(scenes, offsets):
         print("Running {}...".format(scene))
         rootdir = os.path.join(data_dir, scene)
         scenedir = os.path.join(output_dir, scene)
@@ -109,14 +118,23 @@ def analyze(data_dir, calibration_file, scenes, output_dir,
 
         # Get RGB and intensity
         rgb, rgb_cropped, intensity, crop = load_and_crop_kinect(rootdir)
-        print(crop)
+        # print(crop)
+        # Undistort rgb
+        # rgb = undistort_img(rgb, fc_kinect, pc_kinect, rdc_kinect, tdc_kinect)
+        # # Crop
+        # rgb_cropped = rgb[crop[0]:crop[1], crop[2]:crop[3], :]
+        # Intensity
+        # intensity = rgb_cropped[:, :, 0] / 225.
+
 
         # Project GT depth and mask to RGB image coordinates and crop it.
         gt_z_proj, mask_proj = project_depth(gt_z_up, mask_up, (rgb.shape[0], rgb.shape[1]),
                                              fc_spad*scale_factor, fc_kinect, pc_spad*scale_factor, pc_kinect,
                                              RotationOfKinect, TranslationOfKinect/1e3)
-        gt_z_proj_crop = gt_z_proj[crop[0]:crop[1], crop[2]:crop[3]]
-        mask_proj_crop = mask_proj[crop[0]:crop[1], crop[2]:crop[3]]
+        gt_z_proj_crop = gt_z_proj[crop[0]+offset[0]:crop[1]+offset[0],
+                                   crop[2]+offset[1]:crop[3]+offset[1]]
+        mask_proj_crop = mask_proj[crop[0]+offset[0]:crop[1]+offset[0],
+                                   crop[2]+offset[1]:crop[3]+offset[1]]
 
         # Process SPAD
         spad_sid = preprocess_spad(spad_single_relevant, ambient_estimate, min_depth, max_depth, sid_obj)

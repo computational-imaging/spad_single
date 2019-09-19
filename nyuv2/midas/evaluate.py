@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 import os
 import torch
-from torch.utils.data import DataLoader
-from utils.train_utils import init_randomness
-from utils.eval_utils import evaluate_model_on_dataset
-from models.core.checkpoint import load_checkpoint, safe_makedir
-from models.loss import get_depth_metrics
-from models import make_model
+# from torch.utils.data import DataLoader
+# from utils.train_utils import init_randomness
+# from utils.eval_utils import evaluate_model_on_dataset
+# from models.core.checkpoint import load_checkpoint, safe_makedir
+from loss import get_depth_metrics
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
@@ -14,14 +13,14 @@ import numpy as np
 import pandas as pd
 
 # Model
-from MiDaSModel import get_midas, midas_gt_predict
+from MiDaSModel import get_midas, midas_gt_predict_masked
 # Dataset
-from nyuv2_labeled_dataset import nyuv2_labeled_ingredient, load_data
+# from nyuv2_labeled_dataset import nyuv2_labeled_ingredient, load_data
 
-ex = Experiment('eval_midas_nyuv2_labeled', ingredients=[nyuv2_labeled_ingredient])
+ex = Experiment('eval_midas_nyuv2_labeled')
 
 @ex.config
-def cfg(data_config):
+def cfg():
     dataset_type = "test"
     entry = None
     save_outputs = True
@@ -32,7 +31,6 @@ def cfg(data_config):
     crop = (20, 460, 24, 616)
 
     output_dir = "results"
-    safe_makedir(output_dir)
     cuda_device = "0"                       # The gpu index to run on. Should be a string
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -52,65 +50,54 @@ def main(model_path,
          device):
 
     # Load the data
-    dataset = load_data(channels_first=False, dataset_type=dataset_type)
+    # dataset = load_data(channels_first=False, dataset_type=dataset_type)
 
+    rgb_data = np.load("data/nyu_depth_v2_labeled_numpy/test_images.npy")
+    print("rgb", rgb_data.shape)
+    rawDepth_data = np.load("data/nyu_depth_v2_labeled_numpy/test_rawDepths.npy")
+    print("rawDepth", rawDepth_data.shape)
+    data_len = rgb_data.shape[3]
     # Load the model
     model = get_midas(model_path, device)
 
-    init_randomness(seed)
+    metric_list = ["delta1", "delta2", "delta3", "rel_abs_diff", "rmse", "mse", "log10", "weight"]
+    metrics = np.zeros((data_len, len(metric_list)))
+    entry_list = []
+    outputs = []
+    for i in range(data_len):
+        rgb = rgb_data[..., i]
+        rawDepth = rawDepth_data[crop[0]:crop[1], crop[2]:crop[3], i]
+        mask = ((rawDepth > 0.) & (rawDepth < 10.)).astype('float')
+        print("Evaluating {}".format(i))
+        # pred, pred_metrics = model.evaluate(data, device)
+        pred = midas_gt_predict_masked(model, rgb, rawDepth, mask, crop, device)
 
-    if entry is None:
-        dataloader = DataLoader(dataset,
-                                batch_size=1,
-                                shuffle=False,
-                                num_workers=0,  # needs to be 0 to not crash autograd profiler.
-                                pin_memory=True)
-        # if eval_config["save_outputs"]:
+        pred_metrics = get_depth_metrics(pred, rawDepth, mask)
+        print(pred_metrics)
+        for j, metric_name in enumerate(metric_list[:-1]):
+            metrics[i, j] = pred_metrics[metric_name]
 
-        with torch.no_grad():
-            metric_list = ["delta1", "delta2", "delta3", "rel_abs_diff", "rmse", "mse", "log10", "weight"]
-            metrics = np.zeros((len(dataset) if not small_run else small_run, len(metric_list)))
-            entry_list = []
-            outputs = []
-            for i, data in enumerate(dataloader):
-                # TESTING
-                if small_run and i == small_run:
-                    break
-                entry = data["entry"][0]
-                entry = entry if isinstance(entry, str) else entry.item()
-                entry_list.append(entry)
-                print("Evaluating {}".format(data["entry"][0]))
-                # pred, pred_metrics = model.evaluate(data, device)
-                pred = midas_gt_predict(model, data["rgb"].cpu().numpy().squeeze(),
-                                        data["depth_cropped"].cpu().numpy().squeeze(), crop, device)
+        metrics[i, -1] = np.sum(mask)
+        # Option to save outputs:
+        if save_outputs:
+            outputs.append(pred)
 
-                pred = torch.from_numpy(pred).unsqueeze(0).unsqueeze(0).float()
-                pred_metrics = get_depth_metrics(pred, data["depth_cropped"], torch.ones_like(pred))
-                print(pred_metrics)
-                for j, metric_name in enumerate(metric_list[:-1]):
-                    metrics[i, j] = pred_metrics[metric_name]
+    if save_outputs:
+        np.save(os.path.join(output_dir, "midas_{}_outputs.npy".format(dataset_type)), np.concatenate(outputs, axis=0))
 
-                metrics[i, -1] = torch.numel(pred)
-                # Option to save outputs:
-                if save_outputs:
-                    outputs.append(pred.cpu().numpy())
-
-            if save_outputs:
-                np.save(os.path.join(output_dir, "midas_{}_outputs.npy".format(dataset_type)), np.concatenate(outputs, axis=0))
-
-            # Save metrics using pandas
-            metrics_df = pd.DataFrame(data=metrics, index=entry_list, columns=metric_list)
-            metrics_df.to_pickle(path=os.path.join(output_dir, "midas_{}_metrics.pkl".format(dataset_type)))
-            # Compute weighted averages:
-            average_metrics = np.average(metrics_df.ix[:, :-1], weights=metrics_df.weight, axis=0)
-            average_df = pd.Series(data=average_metrics, index=metric_list[:-1])
-            average_df.to_csv(os.path.join(output_dir, "midas_{}_avg_metrics.csv".format(dataset_type)), header=True)
-            print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rms', 'log_10'))
-            print(
-                "{:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}".format(average_metrics[0],
-                                                                                    average_metrics[1],
-                                                                                    average_metrics[2],
-                                                                                    average_metrics[3],
-                                                                                    average_metrics[4],
-                                                                                    average_metrics[6]))
-        print("wrote results to {}".format(output_dir))
+    # Save metrics using pandas
+    metrics_df = pd.DataFrame(data=metrics, index=entry_list, columns=metric_list)
+    metrics_df.to_pickle(path=os.path.join(output_dir, "midas_{}_metrics.pkl".format(dataset_type)))
+    # Compute weighted averages:
+    average_metrics = np.average(metrics_df.ix[:, :-1], weights=metrics_df.weight, axis=0)
+    average_df = pd.Series(data=average_metrics, index=metric_list[:-1])
+    average_df.to_csv(os.path.join(output_dir, "midas_{}_avg_metrics.csv".format(dataset_type)), header=True)
+    print("{:>10}, {:>10}, {:>10}, {:>10}, {:>10}, {:>10}".format('d1', 'd2', 'd3', 'rel', 'rms', 'log_10'))
+    print(
+        "{:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}, {:10.4f}".format(average_metrics[0],
+                                                                            average_metrics[1],
+                                                                            average_metrics[2],
+                                                                            average_metrics[3],
+                                                                            average_metrics[4],
+                                                                            average_metrics[6]))
+    print("wrote results to {}".format(output_dir))
