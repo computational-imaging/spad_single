@@ -1,0 +1,14 @@
+name: eval-midas
+channels:
+  - pytorch
+dependencies:
+  - python=3.6
+  - pytorch
+  - torchvision
+  - cudatoolkit=10.0
+  - numpy
+  - pandas
+  - pip
+  - pip:
+    - opencv-python
+

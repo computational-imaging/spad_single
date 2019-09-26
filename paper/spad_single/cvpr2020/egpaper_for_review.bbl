@@ -1,0 +1,142 @@
+\begin{thebibliography}{10}\itemsep=-1pt
+
+\bibitem{Rother2006}
+{\em Cosegmentation of image pairs by histogram matching-incorporating a global
+  constraint into mrfs}, volume 2006 IEEE Computer Society Conference on
+  Computer Vision and Pattern Recognition (CVPR’06) 1. IEEE, 2006.
+
+\bibitem{Eigen2014}
+{\em Depth map prediction from a single image using a multi-scale deep
+  network}, volume Advances in neural information processing systems, 2014.
+
+\bibitem{Laina2016}
+{\em Deeper depth prediction with fully convolutional residual networks},
+  volume 2016 Fourth international conference on 3D vision (3DV). IEEE, 2016.
+
+\bibitem{Xu2017}
+{\em Multi-scale continuous crfs as sequential deep networks for monocular
+  depth estimation}, volume Proceedings of the IEEE Conference on Computer
+  Vision and Pattern Recognition, 2017.
+
+\bibitem{Godard2017}
+{\em Unsupervised monocular depth estimation with left-right consistency},
+  volume Proceedings of the IEEE Conference on Computer Vision and Pattern
+  Recognition, 2017.
+
+\bibitem{Fu2018}
+{\em Deep ordinal regression network for monocular depth estimation}, volume
+  Proceedings of the IEEE Conference on Computer Vision and Pattern
+  Recognition, 2018.
+
+\bibitem{Hao2018}
+{\em Detail Preserving Depth Estimation from a Single Image Using Attention
+  Guided Networks}, volume 2018 International Conference on 3D Vision (3DV).
+  IEEE, 2018.
+
+\bibitem{Xu2018}
+{\em Structured attention guided convolutional neural fields for monocular
+  depth estimation}, volume Proceedings of the IEEE Conference on Computer
+  Vision and Pattern Recognition, 2018.
+
+\bibitem{Alhashim2018}
+Ibraheem Alhashim and Peter Wonka.
+\newblock High quality monocular depth estimation via transfer learning.
+\newblock {\em arXiv}, page 1812.11941v2, 2018.
+
+\bibitem{Gonzalez2008}
+Rafael~C Gonzalez and Richard~E Woods.
+\newblock {\em Digital Image Processing}.
+\newblock 2008.
+
+\bibitem{Hoiem2005}
+Derek Hoiem, Alexei~A Efros, and Martial Hebert.
+\newblock Automatic photo pop-up.
+\newblock ACM transactions on graphics(TOG):577–584, 2005.
+
+\bibitem{Horaud2016}
+Radu Horaud, Miles Hansard, Georgios Evangelidis, and Clément Ménier.
+\newblock An overview of depth cameras and range scanners based on
+  time-of-flight technologies.
+\newblock {\em Machine vision and applications}, 27(7):1005–1020, 2016.
+
+\bibitem{Karsch2014}
+K Karsch, C Liu, and SB Kang.
+\newblock Depth transfer: Depth extraction from video using non-parametric
+  sampling.
+\newblock {\em IEEE Trans Pattern Anal Mach Intell}, 36(11):2144–2158, 2014.
+
+\bibitem{Lamb2010}
+Robert Lamb and Gerald Buller.
+\newblock Single-pixel imaging using 3d scanning time-of-flight photon
+  counting.
+\newblock {\em SPIE Newsroom}, 2010.
+
+\bibitem{Lindell2018}
+David~B. Lindell, Matthew O’Toole, and Gordon Wetzstein.
+\newblock Single-photon 3d imaging with deep sensor fusion.
+\newblock {\em ACM Trans. Graph.}, page 1812.11941v2, 2018.
+
+\bibitem{Morovic2002}
+Jan Morovic, Julian Shaw, and Pei-Li Sun.
+\newblock A fast, non-iterative and exact histogram matching algorithm.
+\newblock {\em Pattern Recognition Letters}, 23(1-3):127–135, 2002.
+
+\bibitem{Niclass2005}
+C. Niclass, A. Rochas, P.-A. Besse, and E. Charbon.
+\newblock Design and characterization of a cmos 3-d image sensor based on
+  single photon avalanche diodes.
+\newblock {\em IEEE Journal of Solid-State Circuits}, 40(9):1847–1854, 2005.
+
+\bibitem{Nikolova2013}
+Mila Nikolova, You-Wei Wen, and Raymond Chan.
+\newblock Exact histogram specification for digital images using a variational
+  approach.
+\newblock {\em Journal of Mathematical Imaging and Vision J Math Imaging Vis},
+  46(3):309–325, 2013.
+
+\bibitem{Stoppa2007}
+David Stoppa, Lucio Pancheri, Mauro Scandiuzzo, Lorenzo Gonzo, Gian-Franco
+  Dalla~Betta, and Andrea Simoni.
+\newblock A cmos 3-d imager based on single photon avalanche diode.
+\newblock {\em IEEE Transactions on Circuits and Systems I: Regular Papers},
+  54(1):4–12, 2007.
+
+\bibitem{Swoboda2013}
+Paul Swoboda and Christoph Schnörr.
+\newblock Convex variational image restoration with histogram priors.
+\newblock {\em SIAM Journal of Imaging Sciences}, 6(3):1719–1735, 2013.
+
+\bibitem{Veerappan2011}
+Chockalingam Veerappan, Justin Richardson, Richard Walker, Day-Uey Li,
+  Matthew~W Fishburn, Yuki Maruyama, David Stoppa, Fausto Borghetti, Marek
+  Gersbach, and Robert~K Henderson.
+\newblock A 160×128 single-photon image sensor with on-pixel 55ps 10b
+  time-to-digital converter.
+\newblock 2011 IEEE International Solid-State Circuits Conference:312–314,
+  2011.
+
+\bibitem{Saxena2006}
+Y. Weiss, B. Schölkopf, and J.~C. Platt, editors.
+\newblock {\em Learning depth from single monocular images}, volume Advances in
+  neural information processing systems. MIT Press, 2006.
+
+\bibitem{Xin2019}
+Shumian Xin, Sotiris Nousias, Kiriakos~N Kutulakos, Aswin~C Sankaranarayanan,
+  Srinivasa~G Narasimhan, and Ioannis Gkioulekas.
+\newblock A theory of fermat paths for non-line-of-sight shape reconstruction.
+\newblock Proceedings of the IEEE Conference on Computer Vision and Pattern
+  Recognition:6800–6809, 2019.
+
+\bibitem{Zhang2018}
+C Zhang, S Lindner, IM Antolovic, M Wolf, and E Charbon.
+\newblock A cmos spad imager with collision detection and 128 dynamically
+  reallocating tdcs for single-photon counting and 3d time-of-flight imaging.
+\newblock {\em Sensors (Basel)}, 18(11), 2018.
+
+\bibitem{Zhang2017}
+Richard Zhang, Jun-Yan Zhu, Phillip Isola, Xinyang Geng, Angela~S Lin, Tianhe
+  Yu, and Alexei~A Efros.
+\newblock Real-time user-guided image colorization with learned deep priors.
+\newblock {\em ACM Transactions on Graphics (TOG)}, 9(4), 2017.
+
+\end{thebibliography}

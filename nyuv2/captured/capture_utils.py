@@ -152,13 +152,13 @@ def preprocess_spad(spad_single, ambient_estimate, min_depth, max_depth, sid_obj
     return spad_sid
 
 
-def load_and_crop_kinect(rootdir):
+def load_and_crop_kinect(rootdir, calibration_file="calibration.mat", kinect_file="kinect.mat"):
     # Calibration data
     print("Loading calibration data...")
-    calib = loadmat_h5py(os.path.join(rootdir, "calibration.mat"))
+    calib = loadmat_h5py(os.path.join(rootdir, calibration_file))
 
     print("Loading kinect data...")
-    kinect = loadmat_h5py(os.path.join(rootdir, "kinect.mat"))
+    kinect = loadmat_h5py(os.path.join(rootdir, kinect_file))
     # Transpose
     kinect_rgb = np.fliplr(kinect["rgb_im"].transpose(2, 1, 0))
 

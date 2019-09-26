@@ -72,6 +72,19 @@ def cfg():
                                                                 os.environ["CUDA_VISIBLE_DEVICES"]))
 
 
+def dorn_predict(model, rgb):
+    """
+    :param rgb: RGB image in [0, 255]
+    :return:
+    """
+    rgb_torch = torch.from_numpy(rgb.transpose(2, 0, 1).copy()).float().unsqueeze(0)
+    # print(rgb_torch.shape)
+    bgr = model.preprocess(rgb_torch)
+    # print(bgr.shape)
+    z_init_torch = model.predict(bgr, resize_output=(rgb_torch.shape[2], rgb_torch.shape[3]))
+    z_init = z_init_torch.cpu().numpy().squeeze()
+    return z_init
+
 @ex.automain
 def analyze(data_dir, calibration_file, scenes, offsets, output_dir,
             bin_width_ps, bin_width_m,
@@ -81,6 +94,7 @@ def analyze(data_dir, calibration_file, scenes, offsets, output_dir,
             ambient_max_depth_bin,
             device):
     model = DORN()
+    model.eval()
     fc_kinect, fc_spad, pc_kinect, pc_spad, rdc_kinect, rdc_spad, tdc_kinect, tdc_spad, \
         RotationOfSpad, TranslationOfSpad = extract_camera_params(calibration_file)
     # print(fc_kinect)
@@ -132,20 +146,16 @@ def analyze(data_dir, calibration_file, scenes, offsets, output_dir,
                                              RotationOfKinect, TranslationOfKinect/1e3)
         gt_z_proj_crop = gt_z_proj[crop[0]+offset[0]:crop[1]+offset[0],
                                    crop[2]+offset[1]:crop[3]+offset[1]]
-        mask_proj_crop = mask_proj[crop[0]+offset[0]:crop[1]+offset[0],
-                                   crop[2]+offset[1]:crop[3]+offset[1]]
+        gt_z_proj_crop = signal.medfilt(gt_z_proj_crop, kernel_size=5)
+        # mask_proj_crop = mask_proj[crop[0]+offset[0]:crop[1]+offset[0],
+        #                            crop[2]+offset[1]:crop[3]+offset[1]]
+        mask_proj_crop = (gt_z_proj_crop >= min_depth).astype('float').squeeze()
 
         # Process SPAD
         spad_sid = preprocess_spad(spad_single_relevant, ambient_estimate, min_depth, max_depth, sid_obj)
 
         # Initialize with CNN
-        rgb_torch = torch.from_numpy(rgb_cropped.transpose(2, 0, 1).copy()).float().unsqueeze(0)
-        print(rgb_torch.shape)
-        bgr = model.preprocess(rgb_torch)
-        print(bgr.shape)
-        z_init_torch = model.predict(bgr, resize_output=(rgb_torch.shape[2], rgb_torch.shape[3]))
-        z_init = z_init_torch.cpu().numpy().squeeze()
-        print(z_init.shape)
+        z_init = dorn_predict(model, rgb_cropped)
         r_init = z_to_r(z_init, fc_kinect)
 
         # Histogram Match

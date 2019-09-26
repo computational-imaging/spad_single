@@ -8,12 +8,7 @@
    (TeX-run-style-hooks
     "latex2e"
     "mark_defs"
-    "sections/figures/captured/densedepth/8_29_kitchen_scene/rmses"
-    "sections/figures/captured/densedepth/8_29_conference_room_scene/rmses"
-    "sections/figures/captured/midas/8_30_conference_room2_scene/rmses"
-    "sections/figures/captured/densedepth/8_30_Hallway/rmses"
-    "sections/figures/captured/densedepth/8_30_poster_scene/rmses"
-    "sections/figures/captured/densedepth/8_30_small_lab_scene/rmses"
+    "sections/supplement/hardware_comparison"
     "article"
     "art10"
     "cvpr"
@@ -32,8 +27,6 @@
     "hyperref")
    (TeX-add-symbols
     "cvprPaperID"
-    "httilde")
-   (LaTeX-add-labels
-    "fig:midas_captured"))
+    "httilde"))
  :latex)
 

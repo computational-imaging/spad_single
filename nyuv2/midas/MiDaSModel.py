@@ -13,7 +13,7 @@ def get_midas(model_path, device="cpu"):
 
 def midas_idepth_predict(model, img, device):
     """
-    Predict depth from RGB
+    Predict inverse depth from RGB
     :param model: a midas model
     :param img: RGB image in 0-1 (numpy)
     :param device: torch.device object to run on
@@ -79,19 +79,19 @@ def midas_gt_predict(model, img, gt, crop, device):
 def midas_gt_predict_masked(model, img, gt, mask, crop, device):
     """
     Original MiDaS method for scaling the raw prediction using least squares.
-    :param model:
-    :param img:
-    :param gt:
-    :param mask:
-    :param crop:
-    :param device:
-    :return:
+    :param model: a MiDaS model
+    :param img: numpy RGB image in [0, 1]
+    :param gt: Ground truth depth map
+    :param mask: {0, 1} mask for valid depth pixels.
+    :param crop: Center crop to evaluate on
+    :param device: torch.device
+    :return: depth estimate, scaled and shifted
     """
     idepth = midas_idepth_predict(model, img, device)
     # print(idepth.shape)
     idepth = idepth[crop[0]:crop[1], crop[2]:crop[3]]
-    # Use Least Squares to align the prediction to ground truth
-
+    # Use Least Squares to align the prediction to ground truth in inverse depth space
+    # Only use the masked pixels to do the least squares fit.
     idepth_vec = np.hstack((idepth[mask > 0].reshape(-1, 1), np.ones((np.size(idepth[mask > 0]), 1))))
     igt_vec = (1./gt[mask > 0]).reshape(-1, 1)
     scaleshift, _, _, _ = np.linalg.lstsq(idepth_vec.T.dot(idepth_vec), idepth_vec.T.dot(igt_vec), rcond=None)
@@ -100,4 +100,3 @@ def midas_gt_predict_masked(model, img, gt, mask, crop, device):
     depth_opt = np.clip(1./idepth_opt, a_min=np.min(gt[mask > 0]), a_max=10.)
 
     return depth_opt
-

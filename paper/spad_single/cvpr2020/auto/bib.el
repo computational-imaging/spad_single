@@ -1,0 +1,36 @@
+(TeX-add-style-hook
+ "bib"
+ (lambda ()
+   (LaTeX-add-bibitems
+    "Alhashim2018"
+    "Eigen2014"
+    "Fu2018"
+    "Godard2017"
+    "Gonzalez2008"
+    "Ha2016"
+    "Hao2018"
+    "Horaud2016"
+    "Karsch2014"
+    "Laina2016"
+    "Lamb2010"
+    "Lindell2018"
+    "Morovic2002"
+    "Niclass2005"
+    "Nikolova2013"
+    "OToole2017"
+    "Rother2006"
+    "Saxena2006"
+    "Shin2015"
+    "Stoppa2007"
+    "Sun2016"
+    "Swoboda2013"
+    "Xin2019"
+    "Xu2017"
+    "Xu2018"
+    "Zoran2015"
+    "Zhang2017"
+    "Zhang2018"
+    "Veerappan2011"
+    "Hoiem2005"))
+ :bibtex)
+

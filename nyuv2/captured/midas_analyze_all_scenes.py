@@ -133,8 +133,10 @@ def analyze(data_dir, calibration_file, scenes, offsets, output_dir,
                                              RotationOfKinect, TranslationOfKinect/1e3)
         gt_z_proj_crop = gt_z_proj[crop[0]+offset[0]:crop[1]+offset[0],
                                    crop[2]+offset[1]:crop[3]+offset[1]]
-        mask_proj_crop = mask_proj[crop[0]+offset[0]:crop[1]+offset[0],
-                                   crop[2]+offset[1]:crop[3]+offset[1]]
+        gt_z_proj_crop = signal.medfilt(gt_z_proj_crop, kernel_size=5)
+        # mask_proj_crop = mask_proj[crop[0]+offset[0]:crop[1]+offset[0],
+        #                            crop[2]+offset[1]:crop[3]+offset[1]]
+        mask_proj_crop = (gt_z_proj_crop >= min_depth).astype('float').squeeze()
 
         # Process SPAD
         spad_sid = preprocess_spad(spad_single_relevant, ambient_estimate, min_depth, max_depth, sid_obj)
