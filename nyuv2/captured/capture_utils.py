@@ -5,6 +5,9 @@ import numpy as np
 from remove_dc_from_spad import remove_dc_from_spad_edge
 import matplotlib.pyplot as plt
 
+from models.data.data_utils.sid_utils import SID
+
+
 def loadmat_h5py(file):
     output = {}
     with h5py.File(file, 'r') as f:
@@ -125,9 +128,14 @@ def save_depth_image(img, vmin, vmax, filepath):
     savefig_no_whitespace(filepath)
 
 
-def depth_imwrite(img, vmin, vmax, filepath):
-    # Scale depth to be in [0, 1]
-    img_scaled = ((img * 255)/(vmax - vmin)).astype('int')
+def depth_imwrite(img, filepath):
+    """
+    Save the image, scaling it to be in [0,255] first.
+    :param img:
+    :param filepath:
+    :return:
+    """
+    img_scaled = ((img - np.min(img)) * 255./(np.max(img) - np.min(img))).astype('int')
     cv2.imwrite(filepath + ".png", img_scaled)
 
 
@@ -147,9 +155,20 @@ def preprocess_spad(spad_single, ambient_estimate, min_depth, max_depth, sid_obj
     bin_values = (bin_edges[1:] + bin_edges[:-1]) / 2
     spad_corrected = spad_denoised * bin_values ** 2
 
+    # Scale SID object to maximize bin utilization
+    min_depth_bin = np.min(np.nonzero(spad_corrected))
+    max_depth_bin = np.max(np.nonzero(spad_corrected))
+    min_depth_pred = bin_values[min_depth_bin]
+    max_depth_pred = bin_values[max_depth_bin]
+    sid_obj_pred = SID(sid_bins=sid_obj.sid_bins,
+                       alpha=min_depth_pred,
+                       beta=max_depth_pred,
+                       offset=0.)
+
     # Convert to SID
-    spad_sid = rescale_bins(spad_corrected, min_depth, max_depth, sid_obj)
-    return spad_sid
+    spad_sid = rescale_bins(spad_corrected[min_depth_bin:max_depth_bin+1],
+                            min_depth_pred, max_depth_pred, sid_obj_pred)
+    return spad_sid, sid_obj_pred
 
 
 def load_and_crop_kinect(rootdir, calibration_file="calibration.mat", kinect_file="kinect.mat"):

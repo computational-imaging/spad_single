@@ -3,6 +3,8 @@ import numpy as np
 from MiDaS.monodepth_net import MonoDepthNet
 import MiDaS.utils as utils
 
+from midas_loss import compute_scale_and_shift
+
 
 def get_midas(model_path, device="cpu"):
     model = MonoDepthNet(model_path)
@@ -92,11 +94,24 @@ def midas_gt_predict_masked(model, img, gt, mask, crop, device):
     idepth = idepth[crop[0]:crop[1], crop[2]:crop[3]]
     # Use Least Squares to align the prediction to ground truth in inverse depth space
     # Only use the masked pixels to do the least squares fit.
-    idepth_vec = np.hstack((idepth[mask > 0].reshape(-1, 1), np.ones((np.size(idepth[mask > 0]), 1))))
-    igt_vec = (1./gt[mask > 0]).reshape(-1, 1)
-    scaleshift, _, _, _ = np.linalg.lstsq(idepth_vec.T.dot(idepth_vec), idepth_vec.T.dot(igt_vec), rcond=None)
-    idepth_opt = scaleshift[0]*idepth + scaleshift[1]
+    igt = 1. / (gt + 1e-4)
+    # scaleshift = lsq_scale_shift(idepth, igt, mask)
+    # idepth_opt = scaleshift[0]*idepth + scaleshift[1]
+
+    scale, shift = compute_scale_and_shift(torch.from_numpy(idepth).unsqueeze(0).float(),
+                                           torch.from_numpy(igt).unsqueeze(0).float(),
+                                           torch.from_numpy(mask).unsqueeze(0).float())
+    # print(scale.item())
+    # print(shift.item())
+    idepth_opt = scale.item() * idepth + shift.item()
 
     depth_opt = np.clip(1./idepth_opt, a_min=np.min(gt[mask > 0]), a_max=10.)
 
     return depth_opt
+
+def lsq_scale_shift(pred, target, mask):
+    pred_vec= np.hstack((pred[mask > 0].reshape(-1, 1), np.ones((np.size(pred[mask > 0]), 1))))
+    target_vec = target[mask > 0].reshape(-1, 1)
+    scaleshift, _, _, _ = np.linalg.lstsq(pred_vec.T.dot(pred_vec), pred_vec.T.dot(target_vec), rcond=None)
+    return scaleshift
+

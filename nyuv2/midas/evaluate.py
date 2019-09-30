@@ -68,10 +68,11 @@ def main(model_path,
 
 if __name__ == '__main__':
     model_path = os.path.join("MiDaS", "model.pt")
-    crop = (20, 460, 24, 616)   # Standard crop
+    # crop = (20, 460, 24, 616)   # Standard crop
+    crop = (0, 480, 0, 640)       # No crop
 
     output_dir = "results"
-    cuda_device = "0"  # The gpu index to run on. Should be a string
+    cuda_device = "3"  # The gpu index to run on. Should be a string
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("using device: {} (CUDA_VISIBLE_DEVICES = {})".format(device,

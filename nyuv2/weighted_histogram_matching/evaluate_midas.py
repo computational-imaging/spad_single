@@ -36,8 +36,10 @@ def cfg(data_config):
 
     # SID params
     sid_bins = 140
-    alpha = 0.6569154266167957
-    beta = 9.972175646365525
+    # alpha = 0.6569154266167957
+    # beta = 9.972175646365525
+    alpha = 0.1
+    beta = 10.
     offset = 0
 
     # SPAD Denoising params

@@ -140,7 +140,7 @@ def load_data(channels_first, dataset_type, root_dir, train_files, test_files, c
     transform_list = [
         AddDepthMask(min_depth, max_depth, "rawdepth_cropped", "mask_cropped"),
         AddDepthMask(min_depth, max_depth, "rawdepth", "mask"),
-        ToTensorAll(keys=["rgb", "rgb_cropped", "depth_cropped"],
+        ToTensorAll(keys=["rgb", "rgb_cropped", "depth_cropped", "rawdepth_cropped", "mask_cropped"],
                     channels_first=channels_first)
     ]
     dataset.transform = transforms.Compose(transform_list)

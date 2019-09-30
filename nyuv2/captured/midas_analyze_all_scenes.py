@@ -16,7 +16,7 @@ from capture_utils import loadmat_h5py, z_to_r, r_to_z, rescale_bins, normals_fr
 from models.data.data_utils.sid_utils import SID
 from models.loss import get_depth_metrics
 from remove_dc_from_spad import remove_dc_from_spad_edge
-from weighted_histogram_matching import image_histogram_match
+from weighted_histogram_matching import image_histogram_match, image_histogram_match_variable_bin
 # from spad_utils import rescale_bins
 
 from camera_utils import extract_camera_params, project_depth, undistort_img
@@ -36,21 +36,21 @@ def cfg():
     calibration_file = os.path.join(data_dir, "calibration", "camera_params.mat")
     scenes = [
         # "8_29_lab_scene",
-        "8_29_kitchen_scene",
-        "8_29_conference_room_scene",
-        "8_30_conference_room2_scene",
-        "8_30_Hallway",
-        "8_30_poster_scene",
+        # "8_29_kitchen_scene",
+        # "8_29_conference_room_scene",
+        # "8_30_conference_room2_scene",
+        # "8_30_Hallway",
+        # "8_30_poster_scene",
         "8_30_small_lab_scene",
     ]
     # Relative shift of projected depth to rgb (found empirically)
     offsets = [
         # (0, 0),
-        (-10, -8),
-        (-16, -12),
-        (-16, -12),
-        (0, 0),
-        (0, 0),
+        # (-10, -8),
+        # (-16, -12),
+        # (-16, -12),
+        # (0, 0),
+        # (0, 0),
         (0, 0)
     ]
 
@@ -63,7 +63,7 @@ def cfg():
     max_depth_bin = np.floor(9./bin_width_m).astype('int')
     min_depth = min_depth_bin * bin_width_m
     max_depth = (max_depth_bin + 1) * bin_width_m
-    sid_obj = SID(sid_bins=140, alpha=min_depth, beta=max_depth, offset=0)
+    sid_obj_init = SID(sid_bins=140, alpha=min_depth, beta=max_depth, offset=0)
     ambient_max_depth_bin = 100
 
     cuda_device = "0"                       # The gpu index to run on. Should be a string
@@ -78,7 +78,7 @@ def analyze(data_dir, calibration_file, scenes, offsets, output_dir,
             bin_width_ps, bin_width_m,
             min_depth_bin, max_depth_bin,
             min_depth, max_depth,
-            sid_obj,
+            sid_obj_init,
             ambient_max_depth_bin,
             device):
     midas_model = get_midas(model_path="MiDaS/model.pt", device=device)
@@ -139,7 +139,8 @@ def analyze(data_dir, calibration_file, scenes, offsets, output_dir,
         mask_proj_crop = (gt_z_proj_crop >= min_depth).astype('float').squeeze()
 
         # Process SPAD
-        spad_sid = preprocess_spad(spad_single_relevant, ambient_estimate, min_depth, max_depth, sid_obj)
+        spad_sid, sid_obj_pred = preprocess_spad(spad_single_relevant, ambient_estimate, min_depth, max_depth,
+                                                 sid_obj_init)
 
         # Initialize with CNN
         z_init = midas_predict(midas_model, rgb_cropped/255., depth_range=(min_depth, max_depth), device=device)
@@ -147,27 +148,47 @@ def analyze(data_dir, calibration_file, scenes, offsets, output_dir,
 
         # Histogram Match
         weights = intensity
-        r_pred, t = image_histogram_match(r_init, spad_sid, weights, sid_obj)
+        # r_pred, t = image_histogram_match(r_init, spad_sid, weights, sid_obj)
+        r_pred, t = image_histogram_match_variable_bin(r_init, spad_sid, weights,
+                                                       sid_obj_init, sid_obj_pred)
         z_pred = r_to_z(r_pred, fc_kinect)
+
+        # Save histograms for later inspection
+        intermediates = {
+            "init_index": t[0],
+            "init_hist": t[1],
+            "pred_index": t[2],
+            "pred_hist": t[3],
+            "T_count": t[4]
+        }
+        np.save(os.path.join(scenedir, "intermediates.npy"), intermediates)
+
 
         # Mean Match
         med_bin = get_hist_med(spad_sid)
-        hist_med = sid_obj.sid_bin_values[med_bin.astype('int')]
+        hist_med = sid_obj_init.sid_bin_values[med_bin.astype('int')]
         r_med_scaled = np.clip(r_init * hist_med/np.median(r_init), a_min=min_depth, a_max=max_depth)
         z_med_scaled = r_to_z(r_med_scaled, fc_kinect)
 
         # Find min and max depth across r and z separately
-        min_r = min(np.min(a) for a in [gt_r, r_init, r_pred, r_med_scaled])
-        max_r = max(np.max(a) for a in [gt_r, r_init, r_pred, r_med_scaled])
-        min_z = min(np.min(a) for a in [gt_z, z_init, z_pred, z_med_scaled, gt_z_proj, gt_z_proj_crop])
-        max_z = max(np.max(a) for a in [gt_z, z_init, z_pred, z_med_scaled, gt_z_proj, gt_z_proj_crop])
-        mins_and_maxes = {
-            "min_r": min_r,
-            "max_r": max_r,
-            "min_z": min_z,
-            "max_z": max_z
-        }
-        np.save(os.path.join(scenedir, "mins_and_maxes.npy"), mins_and_maxes)
+        # min_r = min(np.min(a) for a in [gt_r, r_init, r_pred, r_med_scaled])
+        # max_r = max(np.max(a) for a in [gt_r, r_init, r_pred, r_med_scaled])
+        # min_z = min(np.min(a) for a in [gt_z, z_init, z_pred, z_med_scaled, gt_z_proj, gt_z_proj_crop])
+        # max_z = max(np.max(a) for a in [gt_z, z_init, z_pred, z_med_scaled, gt_z_proj, gt_z_proj_crop])
+        # mins_and_maxes = {
+        #     "min_r": min_r,
+        #     "max_r": max_r,
+        #     "min_z": min_z,
+        #     "max_z": max_z
+        # }
+        min_max = {}
+        for k, img in zip(["gt_r", "r_init", "r_pred", "r_med_scaled"], [gt_r, r_init, r_pred, r_med_scaled]):
+            min_max[k] = (np.min(img), np.max(img))
+        for k, img in zip(["gt_z", "z_init", "z_pred", "z_med_scaled", "gt_z_proj", "gt_z_proj_crop"],
+                          [gt_z, z_init, z_pred, z_med_scaled, gt_z_proj, gt_z_proj_crop]):
+            min_max[k] = (np.min(img), np.max(img))
+        np.save(os.path.join(scenedir, "mins_and_maxes.npy"), min_max)
+
 
         # Save to figures
         print("Saving figures...")
@@ -179,14 +200,14 @@ def analyze(data_dir, calibration_file, scenes, offsets, output_dir,
         plt.tight_layout()
         plt.savefig(os.path.join(scenedir, "spad_single_relevant.pdf"))
         # gt_r and gt_z and gt_z_proj and gt_z_proj_crop and masks
-        depth_imwrite(gt_r, min_r, max_r, os.path.join(scenedir, "gt_r"))
-        depth_imwrite(gt_z, min_z, max_z, os.path.join(scenedir, "gt_z"))
-        depth_imwrite(gt_z_proj, min_z, max_z, os.path.join(scenedir, "gt_z_proj"))
-        depth_imwrite(gt_z_proj_crop, min_z, max_z, os.path.join(scenedir, "gt_z_proj_crop"))
-        depth_imwrite(mask, 0., 1., os.path.join(scenedir, "mask"))
-        depth_imwrite(mask_proj, 0., 1., os.path.join(scenedir, "mask_proj"))
-        depth_imwrite(mask_proj_crop, 0., 1., os.path.join(scenedir, "mask_proj_crop"))
-        depth_imwrite(intensity, 0., 1., os.path.join(scenedir, "intensity"))
+        depth_imwrite(gt_r, os.path.join(scenedir, "gt_r"))
+        depth_imwrite(gt_z, os.path.join(scenedir, "gt_z"))
+        depth_imwrite(gt_z_proj, os.path.join(scenedir, "gt_z_proj"))
+        depth_imwrite(gt_z_proj_crop, os.path.join(scenedir, "gt_z_proj_crop"))
+        depth_imwrite(mask, os.path.join(scenedir, "mask"))
+        depth_imwrite(mask_proj, os.path.join(scenedir, "mask_proj"))
+        depth_imwrite(mask_proj_crop, os.path.join(scenedir, "mask_proj_crop"))
+        depth_imwrite(intensity, os.path.join(scenedir, "intensity"))
         np.save(os.path.join(scenedir, "crop.npy"), crop)
         # spad_sid after preprocessing
         plt.figure()
@@ -198,14 +219,14 @@ def analyze(data_dir, calibration_file, scenes, offsets, output_dir,
         cv2.imwrite(os.path.join(scenedir, "rgb.png"), cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
         cv2.imwrite(os.path.join(scenedir, "rgb_cropped.png"), cv2.cvtColor(rgb_cropped, cv2.COLOR_RGB2BGR))
         # r_init, z_init, diff_maps
-        depth_imwrite(r_init, min_r, max_r, os.path.join(scenedir, "r_init"))
-        depth_imwrite(z_init, min_z, max_z, os.path.join(scenedir, "z_init"))
+        depth_imwrite(r_init, os.path.join(scenedir, "r_init"))
+        depth_imwrite(z_init, os.path.join(scenedir, "z_init"))
         # r_pred, z_pred, diff_maps
-        depth_imwrite(r_pred, min_r, max_r, os.path.join(scenedir, "r_pred"))
-        depth_imwrite(z_pred, min_z, max_z, os.path.join(scenedir, "z_pred"))
+        depth_imwrite(r_pred, os.path.join(scenedir, "r_pred"))
+        depth_imwrite(z_pred, os.path.join(scenedir, "z_pred"))
         # r_med_scaled, z_med_scaled, diff_maps
-        depth_imwrite(r_med_scaled, min_r, max_r, os.path.join(scenedir, "r_med_scaled"))
-        depth_imwrite(z_med_scaled, min_z, max_z, os.path.join(scenedir, "z_med_scaled"))
+        depth_imwrite(r_med_scaled, os.path.join(scenedir, "r_med_scaled"))
+        depth_imwrite(z_med_scaled, os.path.join(scenedir, "z_med_scaled"))
         plt.close('all')
 
         # Compute metrics

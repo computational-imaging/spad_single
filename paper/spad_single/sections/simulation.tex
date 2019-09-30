@@ -31,15 +31,17 @@ pretrained according to \cite{Fu2018} as our CNN.
 % \caption{Results on the NYU Depth v2 test set \cite{nyudepth}.}
 % \end{table*}
 %%%
-\begin{table*}
+\begin{figure*}[!t]
 \begin{center}
 \input{sections/figures/sim_table.tex}
 \caption{Simulated Results on NYU Depth v2. Bold indicates best performance for
   that metric, while underline indicates second best. The proposed scheme
   outperforms DenseDepth and DORN on all metrics, and even outperforms the
-  median rescaling scheme, which has access to the true median depth value.}
+  median rescaling scheme, which has access to the true median depth value. Note
+that we do not report metrics for MiDaS or MiDaS with median rescaling, as MiDaS
+does not output metric depth.}
 \end{center}
-\end{table*}
+\end{figure*}
 
 
 \begin{figure*}
