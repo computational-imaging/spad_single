@@ -8,34 +8,36 @@
 \usepackage{amssymb}
 
 % Include other packages here, before hyperref.
-\usepackage{booktabs}
-\usepackage{caption}
-\usepackage{subcaption}
-\usepackage{array}
-\usepackage{tabularx}
-\usepackage{bm}
-\usepackage{multirow}
-\usepackage{float}
-\usepackage[utf8x]{inputenc}
-\input{mark_defs.tex}
+%\usepackage{booktabs}
+%\usepackage{caption}
+%\usepackage{subcaption}
+%\usepackage{array}
+%\usepackage{tabularx}
+%\usepackage{bm}
+%\usepackage{multirow}
+%\usepackage{float}
+%\usepackage[utf8x]{inputenc}
+
+%\input{mark_defs.tex}
+
 
 % If you comment hyperref and then uncomment it, you should delete
 % egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
 % run, let it finish, and you should be clear).
 \usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
-%\cvprfinalcopy % *** Uncomment this line for the final submission
+
+% \cvprfinalcopy % *** Uncomment this line for the final submission
 
 \def\cvprPaperID{****} % *** Enter the CVPR Paper ID here
 \def\httilde{\mbox{\tt\raisebox{-.5ex}{\symbol{126}}}}
 
-% Pages are numbered in submission mode, and unnumbered in camera-ready
-%\ifcvprfinal\pagestyle{empty}\fi
-\setcounter{page}{4321}
-\begin{document}
-
 \graphicspath{{"H:/Shared drives/Stanford Computational Imaging/Projects/single_spad_depth/figures/"}{}{}}
 
-%\title{Improving Monocular Depth Estimation with Global Depth Histogram Matching}
+% Pages are numbered in submission mode, and unnumbered in camera-ready
+\ifcvprfinal\pagestyle{empty}\fi
+\begin{document}
+
+%%%%%%%%% TITLE
 \title{Optimizing Monocular Depth Estimation with Global Depth Histogram Matching using a Single SPAD}
 
 \author{First Author\\
@@ -59,35 +61,40 @@ First line of institution2 address\\
 
 %%%%%%%%% ABSTRACT
 \begin{abstract}
-   The ABSTRACT is to be in fully-justified italicized text, at the top
-   of the left-hand column, below the author and affiliation
-   information. Use the word ``Abstract'' as the title, in 12-point
-   Times, boldface type, centered relative to the column, initially
-   capitalized. The abstract is to be in 10-point, single-spaced type.
-   Leave two blank lines after the Abstract, then begin the main text.
-   Look at previous CVPR abstracts to get a feel for style and length.
+abstract
 \end{abstract}
+
+%%%%%%%%% BODY TEXT
+
 \section{Introduction}
+\label{sec:intro}
 \input{sections/introduction}
 
 \section{Related Work}
+\label{sec:related}
 \input{sections/related}
 
 \section{Method}
+\label{sec:method}
 \input{sections/method}
 
-\section{Simulation}
+\section{Evaluation and Assessment}
+\label{sec:evaluation}
 \input{sections/simulation}
 
-\section{Hardware Prototype}
+\section{Experimental Demonstration}
+\label{sec:prototype}
 \input{sections/hardware}
 
 \section{Discussion}
+\label{sec:discussion}
 \input{sections/discussion}
+
+
 
 {\small
 \bibliographystyle{ieee_fullname}
-\bibliography{bib}
+\bibliography{references}
 }
 
 \end{document}
