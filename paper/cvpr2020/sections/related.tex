@@ -21,28 +21,19 @@ Despite achieving remarkable success on estimating ordinal depth from a single i
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{Depth Imaging and Sensor Fusion with SPADs}
 %
-Emerging single-photon LiDAR systems use single photon avalanche diodes (SPADs) to record the time of flight of individual photons. Whereas the SPAD detectors can be fabricated using standard CMOS processes, the required picosecond-accurate time-stamping electronics are challenging to miniaturize and fabricate in a cost effective way. For this reason, many single-photon 3D imaging approaches use a single SPAD combined with a raster scanning mechanism~\cite{Lamb2010,Kirmani:2014,pawlikowska2017single,Li:2019}. Unfortunately, scanning a scene at high resolution and high framerates is challenging and scanners are expensive, difficult to calibrate, and prone to mechanical failure. To reduce the scanning complexity to one dimension, 1D SPAD arrays have been developed~\cite{burri2016linospad,burri2017linospad,OToole2017}.
+Emerging single-photon LiDAR systems use single photon avalanche diodes (SPADs) to record the time of flight of individual photons. Whereas SPAD detectors can be fabricated using standard CMOS processes, the required picosecond-accurate time-stamping electronics are challenging to miniaturize and fabricate at low cost. For this reason, many single-photon 3D imaging approaches use a single SPAD combined with a raster scanning mechanism~\cite{Lamb2010,Kirmani:2014,pawlikowska2017single,Li:2019}. Unfortunately, this makes it challenging to scan dynamic scenes at high resolution and scanners can also be expensive, difficult to calibrate, and prone to mechanical failure. To reduce the scanning complexity to one dimension, 1D SPAD arrays have been developed~\cite{burri2016linospad,burri2017linospad,OToole2017}, and 2D SPAD arrays are also an active area of research~\cite{Niclass2005,Stoppa2007,Veerappan2011,Zhang2018}. Yet, single-pixel SPADs remain the only viable option for low cost consumer devices today.
 
-WORK IN PROGRESS
+The proposed method uses a single-pixel SPAD, but rather than aiming it at one point in the scene as proximity sensors do, we propose to diffuse it along with the pulsed light source. This is a unique configuration that allows us capture a transient that closely resembles the shape of the depth histogram of the scene. We develop a sensor fusion algorithm to combine the output of a monocular depth estimator and this depth histogram to achieve more reliable absolute depth estimation. While other recent work also explored RGB-SPAD sensor fusion~\cite{Lindell2018}, in that work an intensity image was primarily used to guide a denoising and upsampling step of recorded 2D SPAD array.
  
-Previous work (see \cite{Horaud2016} for a survey) has been able to use
-single-pixel SPADs \cite{Lamb2010} and also 1D LinoSPADs in
-tandem with various scanning or DMD devices to capture 3D volumes of photon arrivals
-that can be used to reconstruct depth. Lindell et. al. \cite{Lindell2018} use a
-LinoSPAD and epipolar scanline and fuse the SPAD data with an RGB image to
-produce high-quality depth.  Our approach uses a single pixel SPAD but
-does not require any scanning or DMD mechanism.
+%Previous work (see \cite{Horaud2016} for a survey) has been able to use single-pixel SPADs \cite{Lamb2010} and also 1D LinoSPADs in tandem with various scanning or DMD devices to capture 3D volumes of photon arrivals that can be used to reconstruct depth. Lindell et. al. \cite{Lindell2018} use a LinoSPAD and epipolar scanline and fuse the SPAD data with an RGB image to produce high-quality depth.  Our approach uses a single pixel SPAD but does not require any scanning or DMD mechanism.
 
-A parallel approach called 3D flash LiDAR uses a laser with an optical diffuser
-as the illumination source and a 2D array of SPADs to capture the 3D volume
-\cite{Stoppa2007, Niclass2005}. Such arrays are capable of reconstructing high
-quality depth but remain relatively low resolution. Other arrays are able to
-achieve higher resolution, but suffer from low fill factor \cite{Veerappan2011} or
-sacrifice per-pixel TDC \cite{Zhang2018}.
+%A parallel approach called 3D flash LiDAR uses a laser with an optical diffuser
+%as the illumination source and a 2D array of SPADs to capture the 3D volume
+%\cite{Stoppa2007, Niclass2005}. Such arrays are capable of reconstructing high
+%quality depth but remain relatively low resolution. Other arrays are able to
+%achieve higher resolution, but suffer from low fill factor \cite{Veerappan2011} or
+%sacrifice per-pixel TDC \cite{Zhang2018}.
 
-Our approach uses flash LiDAR but requires only a single pixel 
-sensor.
-(Still need to flesh out this section more with some higher resolution SPAD arrays)
 % \begin{itemize}
 %   \item Scanned single-pixel and 1D arrays, but scanning is hard
 %   \item high resolution arrays -> challenging to do TDC
