@@ -1,51 +1,71 @@
-In this section, we describe the measurement model for a single-pixel
-time-of-flight lidar sensor under diffuse, pulsed laser illumination. 
-\subsection{Measurement Model}
-Consider a laser which emits a pulse at time $t = 0$ with time-varying intensity
-$g(t)$ uniformly illuminating some 3D scene. We parameterize the geometry of the
-scene as a height map $z(x, y)$.
-Neglecting albedo and falloff effects, an ideal detector counting photon events
-from a location $(x,y)$ in the time interval $(n\Delta t, (n+1) \Delta t)$ would record
+Monocular depth estimation is a well-explored, yet active area of research (see Sec.~\ref{sec:related}). Any network trained for the MDE task takes as input an RGB image and estimates the depth map of the scene. Our approach augments existing MDE networks but is agnostic to the specific type of depth estimator. Indeed we show in Section~\ref{sec:evaluation} that our histogram matching technique equally improves a variety of different pre-trained estimators. In the remainder of this section, we therefore focus on modeling the image formation of a diffused single-photon avalanche diode (SPAD) and develop an approach to correcting an estimated depth map to match the global scene information captured by the SPAD.
 
+%In this section, we describe the measurement model for a single-pixel time-of-flight lidar sensor under diffuse, pulsed laser illumination. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Image Formation Model of a Diffused SPAD}
+
+Consider a diffused laser that emits a pulse at time $t = 0$ with time-varying intensity $g(t)$ illuminating some 3D scene. We parameterize the geometry of the scene as a height map $z(x, y)$, where each of the 3D points has also some unknown reflectivity $\alpha$ at the wavelength of the laser. Ignoring interreflections of the emitted light within the scene, a single-pixel diffused SPAD then integrates all the light scattered back from the scene towards the detector as
+%
 \begin{equation}
-  \lambda_{x,y}[n] = \int_{n\Delta t}^{(n+1) \Delta t} (f * g)\paren*{t - 2z(x,y)/c} dt \label{single_loc_spad} 
+	s \left( t \right)= \int_{\Omega_x} \int_{\Omega_y} \alpha \left( x,y \right) g \left( t - \frac{2z(x,y)}{c} \right) dx dy ,
+	\label{eq:pulse_integral} 
 \end{equation}  
-
-where $c$ is the speed of light, and $f$ is a function that models the temporal uncertainty in the
-detector. Single-photon avalanche diodes (SPADs) are highly sensitive
-photodetectors which are able to record single photon events with high temporal
-precision \cite{Stuff}. Since the event corresponding to the detection of a
-photon can be described with a Bernoulli random variable,
-the total number of accumulated photons in this time interval follows a Poisson
-distribution according to
-
+%
+where $c$ is the speed of light and $\Omega_{x,y}$ is the angular range of the diffuser. In this formulation, $\alpha$ also absorbs the square distance falloff of light and we assume that the diffuser spreads light uniformly over all angles. Each time such a light pulse is emitted into the scene and scattered back to the detector, the single-pixel SPAD time-stamps up to one of the returning photons with some probability. This is not necessarily the first returning photon. The process is repeated millions of times per second with the specific number of emitted pulsed being controlled by the repetition rate of the laser, which is typically adjusted to match the deadtime of the SPAD~\cite{Heide:2018}. Each detected photon arrival event is discretized into a histogram $h$ of the form
+%
 \begin{equation}
-  h[n] \sim \mathcal{P}\paren*{\sum_{x,y}\alpha_{x,y}\eta \lambda_{x,y}[n] + b} \label{global_hints}
+  h[n] \sim \mathcal{P} \left( \eta \int_{n\Delta t}^{(n+1)\Delta t} \left(f * s \right) \left( t \right)  dt + b \right),	
+	\label{eq:spad_measurements}
 \end{equation}
+%
+where $(n\Delta t, (n+1) \Delta t)$ models the $n^{th}$ time interval of the temporal histogram, $\eta$ is the photon detection probability of the SPAD, $f$ is a function that models the temporal uncertainty in the detector, and $b$ represents ambient background light and falsely detected photons known as dark count. As derived in previous work, the combination of signal, background, and noise can be modeled as an inhomogeneous Poisson process $\mathcal{P}$~\cite{Kirmani:2014,Shin2015}.
 
-where $\alpha_{x,y} = r_{x,y}/z(x,y)^2$ captures the attenuation of the
-photon counts due to the reflectance $r(x,y)$ of the scene and due to the
-inverse square falloff $1/z(x,y)^2$.
-In addition, $\eta$ is the detection probability of a photon
-triggering a SPAD event, and $b = \eta a + d$ is the average number of background detections resulting
-from ambient photons $a$
-and erroneous ``dark count'' events $d$ resulting from noise within the SPAD.
-% \newpage
-% \begin{table*}[htbp]
-%   \begin{center}
-  %   \begin{tabularx}{\linewidth}{*{2}{X}}
-  %     \includegraphics[width=\textwidth/2-5pt]{sections/figures/spad_example/rgb.png} &
-  %     \includegraphics[width=\textwidth/2-5pt]{sections/figures/spad_example/rawdepth.png} \\
-  %     \includegraphics[width=\textwidth/2-5pt]{sections/figures/spad_example/depth_hist.png} &
-  %     \includegraphics[width=\textwidth/2-5pt]{sections/figures/spad_example/spad_hist.png} \\
-  %   \end{tabularx}
-  % \end{center}
-  % \caption{Sample Image. Top Left is the RGB image. Top Right is ground truth
-  %   depth. Bottom Left is Raw ground truth depth histogram. Bottom Right is
-  %   simulated SPAD measurements. Notice how closer depths are magnified and far
-  %   depths are attenuated.}
-% \end{table*}
 
+
+%Neglecting albedo and falloff effects, an ideal detector counting photon events
+%from a location $(x,y)$ in the time interval $(n\Delta t, (n+1) \Delta t)$ would record
+%
+%\begin{equation}
+  %\lambda_{x,y}[n] = \int_{n\Delta t}^{(n+1) \Delta t} (f * g)\paren*{t - 2z(x,y)/c} dt \label{single_loc_spad} 
+%\end{equation}  
+%
+%where $c$ is the speed of light, and $f$ is a function that models the temporal uncertainty in the
+%detector. Single-photon avalanche diodes (SPADs) are highly sensitive
+%photodetectors which are able to record single photon events with high temporal
+%precision \cite{Stuff}. Since the event corresponding to the detection of a
+%photon can be described with a Bernoulli random variable,
+%the total number of accumulated photons in this time interval follows a Poisson
+%distribution according to
+%
+%\begin{equation}
+  %h[n] \sim \mathcal{P}\paren*{\sum_{x,y}\alpha_{x,y}\eta \lambda_{x,y}[n] + b} \label{global_hints}
+%\end{equation}
+%
+%where $\alpha_{x,y} = r_{x,y}/z(x,y)^2$ captures the attenuation of the
+%photon counts due to the reflectance $r(x,y)$ of the scene and due to the
+%inverse square falloff $1/z(x,y)^2$.
+%In addition, $\eta$ is the detection probability of a photon
+%triggering a SPAD event, and $b = \eta a + d$ is the average number of background detections resulting
+%from ambient photons $a$
+%and erroneous ``dark count'' events $d$ resulting from noise within the SPAD.
+%% \newpage
+%% \begin{table*}[htbp]
+%%   \begin{center}
+  %%   \begin{tabularx}{\linewidth}{*{2}{X}}
+  %%     \includegraphics[width=\textwidth/2-5pt]{sections/figures/spad_example/rgb.png} &
+  %%     \includegraphics[width=\textwidth/2-5pt]{sections/figures/spad_example/rawdepth.png} \\
+  %%     \includegraphics[width=\textwidth/2-5pt]{sections/figures/spad_example/depth_hist.png} &
+  %%     \includegraphics[width=\textwidth/2-5pt]{sections/figures/spad_example/spad_hist.png} \\
+  %%   \end{tabularx}
+  %% \end{center}
+  %% \caption{Sample Image. Top Left is the RGB image. Top Right is ground truth
+  %%   depth. Bottom Left is Raw ground truth depth histogram. Bottom Right is
+  %%   simulated SPAD measurements. Notice how closer depths are magnified and far
+  %%   depths are attenuated.}
+%% \end{table*}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Monocular depth estimation with global depth hints}
 Given a single RGB image $I(x,y)$ and a vector of photon arrivals $h[n]$
 described by equation \ref{global_hints}, we seek to
