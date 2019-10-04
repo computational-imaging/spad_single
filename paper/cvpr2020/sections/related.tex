@@ -12,33 +12,19 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{Monocular Depth Estimation}
-Previous non-deep approaches used Markov Random Fields \cite{Saxena2006},
-geometric approaches \cite{Hoiem2005}, and non-parametric, SIFT-based methods
-\cite{Karsch2014}.
-More recently, deep neural networks have been applied to the problem of estimating depth from a
-single image. Eigen et. al. \cite{Eigen2014} use a multi-scale neural network to
-predict depth at multiple scales. Godard et. al. \cite{Godard2017} use an
-unsupervised approach (i.e. that does not require ground truth depth) that
-trains a network using stereo pairs to produce disparity maps from
-single images, which can then be used to recover the depth. Fu et. al.
-\cite{Fu2018} combined a logarithmic depth discretization scheme with a novel
-ordinal regression approach. Various experiments using different types of
-encoder networks (e.g. ResNet, DenseNet) \cite{Laina2016} \cite{Alhashim2018}
-have also been employed with some success, as have approaches mixing deep
-learning with conditional random fields \cite{Xu2017}, and attention-based
-approaches \cite{Xu2018} \cite{Hao2018}.
+%
+Estimating a depth map from a single RGB image has been approached using Markov Random Fields~\cite{Saxena2006}, geometric approaches~\cite{Hoiem2005}, and non-parametric, SIFT-based methods~\cite{Karsch2014}. More recently, deep neural networks have been applied to this problem. For example, Eigen et al.~\cite{Eigen2014} use a multi-scale neural network to
+predict depth maps, Godard et al.~\cite{Godard2017} use an unsupervised approach that trains a network using stereo pairs, and Fu et al.~\cite{Fu2018} combined a logarithmic depth discretization scheme with an ordinal regression loss function. Various experiments using different types of encoder networks (e.g. ResNet, DenseNet)~\cite{Laina2016,Alhashim2018} have also been employed with some success, as have approaches mixing deep learning with conditional random fields~\cite{Xu2017}, and attention-based approaches~\cite{Xu2018,Hao2018}. Recently, Lasinger et al.~\cite{Lasinger:2019} improved the robustness of monocular depth estimation using cross-dataset transfer.
 
-Despite achieving remarkable success on the monocular depth estimation task, none of these methods are able to
-resolve inherent scale ambiguity in a principled manner (being monocular in nature). By combining a monocular
-depth estimator with a depth histogram, our method is able to do so.
-
-% \begin{itemize}
-% 	\item summary of architectures and cost functions: u-net type architecture with reverse huber loss
-% 	\item what we do: same thing, but augment with global hints (inspired by these approaches, we do ...)
-% \end{itemize}
+Despite achieving remarkable success on estimating ordinal depth from a single image, none of these methods are able to resolve inherent scale ambiguity in a principled manner. We introduce a new approach that leverages existing monocular depth estimation networks but disambiguates their output with depth histogram-like measurements obtained from a single, diffused SPAD. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{Depth Imaging and Sensor Fusion with SPADs}
+%
+Emerging single-photon LiDAR systems use single photon avalanche diodes (SPADs) to record the time of flight of individual photons. Whereas the SPAD detectors can be fabricated using standard CMOS processes, the required picosecond-accurate time-stamping electronics are challenging to miniaturize and fabricate in a cost effective way. For this reason, many single-photon 3D imaging approaches use a single SPAD combined with a raster scanning mechanism~\cite{Lamb2010,Kirmani:2014,pawlikowska2017single,Li:2019}. Unfortunately, scanning a scene at high resolution and high framerates is challenging and scanners are expensive, difficult to calibrate, and prone to mechanical failure. To reduce the scanning complexity to one dimension, 1D SPAD arrays have been developed~\cite{burri2016linospad,burri2017linospad,OToole2017}.
+
+WORK IN PROGRESS
+ 
 Previous work (see \cite{Horaud2016} for a survey) has been able to use
 single-pixel SPADs \cite{Lamb2010} and also 1D LinoSPADs in
 tandem with various scanning or DMD devices to capture 3D volumes of photon arrivals
