@@ -57,25 +57,10 @@ The proposed method uses a single-pixel SPAD, but rather than aiming it at one p
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{Histogram Matching and Global Hints}
-Histogram matching or histogram specification is a well-known image processing
-technique \cite{Gonzalez2008} for adjusting an image so that it's histogram
-matches some pre-specified histogram (often derived from another image).
-Nikolova et. al. \cite{Nikolova2013} use optimization to recover a strict
-ordering of the image pixels that allows an exact histogram match to be
-obtained. Morovic et. al \cite{Morovic2002} provide a simple and concise method
-that also achieves an exact histogram match while being very fast.
-In the image reconstruction space, Swoboda and Schnörr \cite{Swoboda2013} use a
-histogram to form an image prior based on the Wasserstein distance for image
-denoising and inpainting. Rother et. al. \cite{Rother2006} use a histogram prior
-to create an energy function that penalizes foreground segmentations with
-dissimilar histograms. In a slightly different vein, Zhang et. al.
-\cite{Zhang2017} train a neural network to produce realistically colorized
-images given only a black-and-white image and a histogram of global color information.
+%
+Histogram matching is a well-known image processing technique for adjusting an image so that its histogram matches some pre-specified histogram (often derived from another image)~\cite{gonzales1977gray,Gonzalez2008}. Nikolova et al.~\cite{Nikolova2013} use optimization to recover a strict ordering of the image pixels that allows an exact histogram match to be obtained. Morovic et al.~\cite{Morovic2002} provide a simple and concise method that also achieves an exact histogram match while being very fast. In the image reconstruction space, Swoboda and Schn\"orr~\cite{Swoboda2013} use a histogram to form an image prior based on the Wasserstein distance for image denoising and inpainting. Rother et al.~\cite{Rother2006} use a histogram prior to create an energy function that penalizes foreground segmentations with dissimilar histograms. In a slightly different vein, Zhang et al.~\cite{Zhang2017} train a neural network to produce realistically colorized images given only a black-and-white image and a histogram of global color information.
 
-Our method is essentially a modified form of the algorithm in
-\cite{Morovic2002}, modified for our particular use case. Also worth noting is
-the fact that most algorithms compute histograms from existing images, whereas
-our method mesaures the depth histogram indirectly using photon arrivals.
+\textcolor{red}{Our method is essentially a modified form of the algorithm in \cite{Morovic2002}, modified for our particular use case. Also worth noting is the fact that most algorithms compute histograms from existing images, whereas our method mesaures the depth histogram indirectly using photon arrivals.} Note: this paragraph needs more work. We can say something like ``Inspired by Morovic et al., we do something'' but then we also need to highlight how our method is different. Perhaps concisely summarize how you adapt it for our SPAD model.
 %
 % \begin{itemize}
 %   \item Exact histogram matching paper used in this work
