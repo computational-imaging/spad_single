@@ -22,24 +22,47 @@ where $c$ is the speed of light and $\Omega_{x,y}$ is the angular range of the d
 where $(n\Delta t, (n+1) \Delta t)$ models the $n^{th}$ time interval of the temporal histogram, $\eta$ is the photon detection probability of the SPAD, $f$ is a function that models the temporal uncertainty in the detector, and $b$ represents ambient background light and falsely detected photons known as dark count. As derived in previous work, the combination of signal, background, and noise can be modeled as an inhomogeneous Poisson process $\mathcal{P}$~\cite{Kirmani:2014,Shin2015}.
 
 \paragraph{SPAD Denoising}
-\begin{itemize}
-  \item Talk about histogram matching in the ideal case, jump straight to intensity 
-  \item Talk about histogram matching in our case, and how it approaches the
-    ideal case. Discuss the following corrections 
-    \begin{itemize}
-      \item Ambient/DC - Use \cite{Xin2019} to justify looking for large edges,
-        then the ambient estimate to get rid of the noise floor.
-      \item Falloff
-    \end{itemize}
-  \item Talk about how the histogram matching works with intensity
-    considerations applied, briefly.
-  \item We don't address jitter or poisson noise.
-\end{itemize}
-\begin{equation}
-  h[n] \sim \mathcal{P}\paren*{\sum_{x,y}\alpha_{x,y}\eta \lambda_{x,y}[n] + b} \label{global_hints}
-\end{equation}
-Given a SPAD with histogram $h$ according to the above equation, we first
-process the SPAD to remove the effects of some of the terms. First, we 
+To remove the ambient and dark count photons from the histogram, we apply a
+preprocessing step. First, we compute an estimate of the combined ambient
+and dark count rate $\hat b$ by averaging $N$ of the first bins together. We then
+note that that shining a laser through a 2D diffuser and
+measuring a single pixel is very physically similar to recording a single 
+non-line-of-sight measurement. We
+compute the first difference of the histogram and find the first and last edges 
+$i_{first}$ and $i_{last}$ where $\abs{h_i - h_{i+1}}$ is
+significantly larger than what would be expected given the rate $b$. From
+\cite{Xin2019}, these edges
+correspond to the discontinuties in the depth map 
+at the closest and furthest image depths, and therefore all of the signal
+photons must be in the bins between these two edges. We refine these estimates by
+computing $i'_{first} = \max_{i}\mset{i}{h_i > \hat b, i < i_{first}}$ and
+$i'_{last} = \min_{i} \mset{i}{h_i > \hat b, i > i_{last}}$
+Finally, we reject all photons outside of the valid range by clamping those bins
+to 0, and we subtract our ambient estimate from the photons within the valid
+range, giving a denoised histogram
+\[(h_{denoised})_i = \begin{cases}
+    0 & i < i'_{first} \\
+    max(h_i - \hat b, 0) & i'_{first} \leq i \leq i'_{last} \\
+    0 & i > i'_{last} \\
+  \end{cases}.\]
+% \begin{itemize}
+%   \item Talk about histogram matching in the ideal case, jump straight to intensity 
+%   \item Talk about histogram matching in our case, and how it approaches the
+%     ideal case. Discuss the following corrections 
+%     \begin{itemize}
+%       \item Ambient/DC - Use \cite{Xin2019} to justify looking for large edges,
+%         then the ambient estimate to get rid of the noise floor.
+%       \item Falloff
+%     \end{itemize}
+%   \item Talk about how the histogram matching works with intensity
+%     considerations applied, briefly.
+%   \item We don't address jitter or poisson noise.
+% \end{itemize}
+% \begin{equation}
+%   h[n] \sim \mathcal{P}\paren*{\sum_{x,y}\alpha_{x,y}\eta \lambda_{x,y}[n] + b} \label{global_hints}
+% \end{equation}
+% Given a SPAD with histogram $h$ according to the above equation, we first
+% process the SPAD to remove the effects of some of the terms. First, we 
 
 
 %Neglecting albedo and falloff effects, an ideal detector counting photon events
