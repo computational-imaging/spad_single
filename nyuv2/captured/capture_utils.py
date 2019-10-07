@@ -135,7 +135,7 @@ def depth_imwrite(img, filepath):
     :param filepath:
     :return:
     """
-    img_scaled = ((img - np.min(img)) * 255./(np.max(img) - np.min(img))).astype('int')
+    img_scaled = ((img - np.min(img)) * 65535./(np.max(img) - np.min(img))).astype(np.uint16)
     cv2.imwrite(filepath + ".png", img_scaled)
 
 
@@ -153,7 +153,8 @@ def preprocess_spad(spad_single, ambient_estimate, min_depth, max_depth, sid_obj
     # Correct Falloff
     bin_edges = np.linspace(min_depth, max_depth, len(spad_denoised) + 1)
     bin_values = (bin_edges[1:] + bin_edges[:-1]) / 2
-    spad_corrected = spad_denoised * bin_values ** 2
+    # spad_corrected = spad_denoised * bin_values ** 2
+    spad_corrected = spad_denoised * bin_values ** 4
 
     # Scale SID object to maximize bin utilization
     min_depth_bin = np.min(np.nonzero(spad_corrected))
@@ -197,5 +198,5 @@ def load_and_crop_kinect(rootdir, calibration_file="calibration.mat", kinect_fil
     rgb_cropped = kinect_rgb[crop[0]:crop[1], crop[2]:crop[3], :]
 
     # Intensity
-    intensity = rgb_cropped[:, :, 0] / 225.
+    intensity = rgb_cropped[:, :, 0] / 255.
     return kinect_rgb, rgb_cropped, intensity, crop

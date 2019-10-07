@@ -44,17 +44,17 @@ def cfg():
         "8_30_Hallway": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
         "8_30_poster_scene": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
         "8_30_small_lab_scene": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        "8_31_outdoor3": {"offset": (0, 0), "bin_width_ps": 32, "min_r": 0.4, "max_r": 14.8},
+        "8_31_outdoor3": {"offset": (0, 0), "bin_width_ps": 32, "min_r": 0.4, "max_r": 11.},
     }
     # Relative shift of projected depth to rgb (found empirically)
     # rgb in [0, 255]
     models = {
         "midas": {"load": lambda model_path, device: get_midas("MiDaS/model.pt", device),
                   "run": lambda model, rgb, depth_range, device: midas_predict(model, rgb/255., depth_range, device)},
-        # "dorn": {"load": lambda model_path, device: DORN(),
-        #          "run": lambda model, rgb, depth_range, device: dorn_predict(model, rgb)},
-        # "densedepth": {"load": lambda model_path, device: DenseDepth().to(device),
-        #                "run": lambda model, rgb, depth_range, device: model.predict(rgb).squeeze()}
+        "dorn": {"load": lambda model_path, device: DORN(),
+                 "run": lambda model, rgb, depth_range, device: dorn_predict(model, rgb)},
+        "densedepth": {"load": lambda model_path, device: load_densedepth(model_path, device),
+                       "run": lambda model, rgb, depth_range, device: model.predict(rgb).squeeze()}
     }
     use_intensity = True
     figures_dir = "figures" if use_intensity else "figures_no_intensity"
@@ -64,6 +64,11 @@ def cfg():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("using device: {} (CUDA_VISIBLE_DEVICES = {})".format(device,
                                                                 os.environ["CUDA_VISIBLE_DEVICES"]))
+
+def load_densedepth(model_path, device):
+    model = DenseDepth()
+    model.model.to(device)
+    return model
 
 def dorn_predict(model, rgb):
     """
@@ -100,8 +105,9 @@ def analyze(figures_dir, data_dir, calibration_file, models, scenes, use_intensi
             bin_width_m = bin_width_ps * 3e8 / (2 * 1e12)
             min_depth_bin = np.floor(min_r / bin_width_m).astype('int')
             max_depth_bin = np.floor(max_r / bin_width_m).astype('int')
-            min_depth = min_depth_bin * bin_width_m
-            max_depth = (max_depth_bin + 1) * bin_width_m
+            # Compensate for z translation only
+            min_depth = min_depth_bin * bin_width_m + TranslationOfSpad[2]
+            max_depth = (max_depth_bin + 1) * bin_width_m + TranslationOfSpad[2]
             sid_obj_init = SID(sid_bins=600, alpha=min_depth, beta=max_depth, offset=0)
             ambient_max_depth_bin = 100
 

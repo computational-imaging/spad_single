@@ -2,10 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-<<<<<<< HEAD
     <mapping directory="$PROJECT_DIR$/libfreenect2" vcs="Git" />
-=======
->>>>>>> ac23c73116b7fdd108ca4951a414a00ea9b25df3
     <mapping directory="$PROJECT_DIR$/librealsense" vcs="Git" />
   </component>
 </project>

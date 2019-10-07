@@ -2,7 +2,11 @@ import scipy.io as sio
 import numpy as np
 import cv2
 
-def undistort_img(img, fc, pc, rdc, tdc):
+def undistort_img(img, FocalLength, PrincipalPoint, RadialDistortion, TangentialDistortion):
+    fc = FocalLength
+    pc = PrincipalPoint
+    rdc = RadialDistortion
+    tdc = TangentialDistortion
     if len(rdc) == 2:
         rdc = np.append(rdc, 0.)
     distortionCoefficients = np.concatenate((rdc[:2], tdc, rdc[2:]))
@@ -17,11 +21,10 @@ def extract_camera_intrinsics(CameraParameters):
     """
     Get intrinsics from param struct
     """
-    focalLength = CameraParameters["FocalLength"][0]
-    principalPoint = CameraParameters["PrincipalPoint"][0]
-    radialDistortion = CameraParameters["RadialDistortion"][0]
-    tangentialDistortion = CameraParameters["TangentialDistortion"][0]
-    return focalLength, principalPoint, radialDistortion, tangentialDistortion
+    out = {}
+    for k in ["FocalLength", "PrincipalPoint", "RadialDistortion", "TangentialDistortion"]:
+        out[k] = CameraParameters[k][0]
+    return out
 
 
 def extract_camera_params(filepath):
@@ -32,9 +35,10 @@ def extract_camera_params(filepath):
     cp1 = param_struct["CameraParameters1"][0][0][0][0]
     cp2 = param_struct["CameraParameters2"][0][0][0][0]
 
-    fc1, pc1, rdc1, tdc1 = extract_camera_intrinsics(cp1)
-    fc2, pc2, rdc2, tdc2 = extract_camera_intrinsics(cp2)
-    return fc1, fc2, pc1, pc2, rdc1, rdc2, tdc1, tdc2, RotationOfCamera2, TranslationOfCamera2
+    camera_params1 = extract_camera_intrinsics(cp1)
+    camera_params2 = extract_camera_intrinsics(cp2)
+
+    return camera_params1, camera_params2, RotationOfCamera2, TranslationOfCamera2
 
 
 def project_depth(z, z_mask, imagesize2, fc1, fc2, pc1, pc2, RotationOfCamera2, TranslationOfCamera2):
