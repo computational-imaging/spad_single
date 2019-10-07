@@ -38,6 +38,9 @@
     "multirow"
     "float"
     "inputenc"
+    "algorithm"
+    "algpseudocode"
+    "algorithmicx"
     "hyperref")
    (TeX-add-symbols
     "cvprPaperID"
