@@ -1,55 +1,32 @@
-\subsection{Implementation Details}
-\begin{itemize}
-  \item Number of bins used, depth range, laser parameters, use of intensity
-    image.
-  \item Using
-\end{itemize}
-\paragraph{NYU Depth v2}
-The NYU Depth v2 Dataset consists of 249 training and 215 testing scenes of
-RGB-D data captured using a Microsoft Kinect. We used a version of DORN
-pretrained according to \cite{Fu2018} as our CNN.
-\newpage
-% \begin{table*}
-% \begin{center}
-% \begin{tabular}{lccc|ccc}
-%   \toprule
-%     & $\delta^1 \uparrow$ & $\delta^2\uparrow$ & $\delta^3 \uparrow$ & RMSE $\downarrow$ & rel $\downarrow$ & $log_{10} \downarrow$ \\
-%   \midrule
-% Eigen et. al. & 0.769 & 0.950 & 0.988 & 0.641 & 0.158 & - \\ 
-% Laina et. al.&0.811&0.953&0.988&0.573&0.127&0.055 \\
-% DORN&0.818&0.950&0.982&0.620&0.137&0.063 \\
-%   DORN (rescaled) & 0.872 & 0.967 & 0.989 & 0.548 & 0.111 & 0.048 \\
-% Alhashim, Wonka (2019)&0.847&0.973&0.994&0.548(0.461)&0.123&0.053 \\
-% Alhashim, Wonka (2019) rescaled using GT depth"&0.888&\textbf{0.978}&\textbf{0.995}&\textbf{0.499}(0.409)&\textbf{0.106}&\textbf{0.045} \\
-%   \midrule
-%   Ours (raw depth counts) & \textbf{0.899} & 0.970 & 0.990 & 0.529 & 0.199 & 0.055 \\
-%   Ours (DORN) (intensity/falloff) & 0.835 & 0.953 & 0.984 & 0.521 & 0.129 & 0.060 \\
-%   Ours (DenseDepth) (intensity/falloff) & 0.867 & 0.974 & 0.994 & 0.445 & 0.114 & 0.050 \\
-%   \bottomrule
-% \end{tabular} 
-% \end{center}
-% \caption{Results on the NYU Depth v2 test set \cite{nyudepth}.}
-% \end{table*}
-%%%
 \begin{figure*}[!t]
 \begin{center}
 \input{sections/figures/sim_table.tex}
-\caption{Simulated Results on NYU Depth v2. Bold indicates best performance for
-  that metric, while underline indicates second best. The proposed scheme
-  outperforms DenseDepth and DORN on all metrics, and even outperforms the
-  median rescaling scheme, which has access to the true median depth value. Note
-that we do not report metrics for MiDaS or MiDaS with median rescaling, as MiDaS
-does not output metric depth.}
+\caption{Quantitative evaluation using NYU Depth v2. Bold indicates best performance for that metric, while underline indicates second best. The proposed scheme outperforms DenseDepth and DORN on all metrics, and it closely matches or even outperforms the median rescaling scheme and histogram matching with the exact depth map histogram, even though these methods have access to ground truth. }
 \end{center}
 \end{figure*}
 
-
-\begin{figure*}
+\begin{figure*}[!t]
   \includegraphics[width=\textwidth]{comparison/densedepth_468_comparison.png}
   \includegraphics[width=\textwidth]{comparison/densedepth_194_comparison.png}
-  \includegraphics[width=\textwidth]{comparison/densedepth_258_comparison.png}
-  \caption{Selected Results on DenseDepth. First two examples demonstrate
-    capability of proposed method to correct initial scaling/translation errors.
-    Last example shows potential pitfall when ordinal depth is predicted incorrectly.}
+  %\includegraphics[width=\textwidth]{comparison/densedepth_258_comparison.png}
+  \caption{Simulated results from NYU v2 computed with the DenseDepth CNN. The depth maps estimated by the CNN are reasonable, but contain systematic error. Oracle access to the ground truth depth maps, either through the median depth or the depth histogram, can remove this error and correct the depth maps. The proposed method uses a single diffused SPAD and does not rely on ground truth depth, but it achieves a quality that closely matches the best-performing oracle.}
+	\label{fig:results_simulated}
 \end{figure*}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Implementation Details}
+
+We use the NYU Depth v2 dataset to evaluate our method. This dataset consists of 249~training and 215~testing scenes of RGB-D data captured using a Microsoft Kinect. \textcolor{red}{Need more details: how did you simulate the SPAD measurements from this: discuss albedo, square distance falloff, Poisson noise, background, number of SPAD bins, define what SBR is etc.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Simulated Results}
+
+We show an extensive quantitative evaluation in Table~1. Here, we evaluate three recent monocular depth estimation techniques: DORN~\cite{Fu2018}, DenseDepth~\cite{Alhashim2018}, and MiDaS~\cite{Lasinger:2019}. To evaluate the quality of DORN and DenseDepth, we report various standard error metrics. Moreover, we show a simple post-processing step that rescales their outputs by the median ground truth depth~\cite{Alhashim2018}. We also show the results of histogram matching the output of the CNNs with the ground truth depth map histogram. Note that we do not report the quality of the direct output of MiDaS as this algorithm does not output metric depth. However, we do show its output histogram matched with the ground truth depth map histogram. In all cases, post-processing the estimated depth maps either with the median depth or depth histogram significantly improves the absolute depth estimation, often by a large margin compared to the raw output of the CNNs. Unfortunately, ground truth depth is typically not accessible so neither of these two post-processing methods are viable in practical application scenarios. 
+
+We simulate the measurements of a single diffused SPAD as discussed in Section~\ref{sec:method} and also add Poisson noise and background signal. In table~1, results are shown for several different signal-to-background ratios (SBRs). We see that the proposed method achieves high-quality results for correcting the raw depth map estimated by the respective CNNs for all cases. The quality of the resulting depth maps is almost as good as that achieved with the oracle ground truth histogram, which can be interpreted as an approximate upper bound on the performance, despite a relatively high amount of noise and background signal. These results demonstrate that the proposed method is agnostic to the specific depth estimation CNN applied to get the initial depth map and that it generally achieves significant improvements in the estimated depth maps, clearly surpassing the variation of performance between depth estimation CNNs.
+
+
+In Figure~\ref{fig:results_simulated}, we also show qualitative results of our simulations. For each of these scenes, we show the RGB reference image, the ground truth depth map, the raw output of the DenseDepth CNN, the result of rescaling the CNN output by the median ground truth depth, the result of histogram-matching the CNN output by the ground truth depth map histogram, and the result achieved by the proposed method for an SBR of 100. Error maps for all the depth estimation methods are shown. As expected, the CNN outputs depth maps that look reasonable but that have an average root mean squared error (RMSE) of about 50--60~cm. Re-scaling this depth map by the median ground truth depth value slightly improves the quality and histogram-matching it with the ground truth depth histogram improves the depth map a lot. The quality of the proposed method is close to that using the oracle histogram, despite relying on noisy SPAD measurements. Additional simulations using DenseDepth and other depth estimation CNNs for a variety of scenes are shown in the supplement.
+
 

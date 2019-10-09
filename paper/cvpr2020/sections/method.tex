@@ -1,3 +1,11 @@
+\begin{figure}
+  \centering
+  \includegraphics[width=\columnwidth]{full_pipeline.jpeg}
+  \caption{\textbf{Overview of the full pipeline} We use a CNN to get an initial
+  per-pixel depth estimate. Then we perform exact histogram matching using
+  intensity-weighted pixel values on the corrected SPAD data.}
+\end{figure}
+
 Monocular depth estimation is a well-explored, yet active area of research (see Sec.~\ref{sec:related}). Any network trained for the MDE task takes as input an RGB image and estimates the depth map of the scene. Our approach augments existing MDE networks but is agnostic to the specific type of depth estimator. Indeed we show in Section~\ref{sec:evaluation} that our histogram matching technique equally improves a variety of different pre-trained estimators. In the remainder of this section, we therefore focus on modeling the image formation of a diffused single-photon avalanche diode (SPAD) and develop an approach to correcting an estimated depth map to match the global scene information captured by the SPAD.
 
 %In this section, we describe the measurement model for a single-pixel time-of-flight lidar sensor under diffuse, pulsed laser illumination. 
@@ -128,13 +136,9 @@ relationships between pixels - that is, to predict the correct relative ordering
 of pixels $a$ and $b$, rather than to get all pixels exactly correct.
 
 \paragraph{Exact Histogram Matching}
-\begin{figure*}
-  \centering
-  \includegraphics[height=2.5in]{full_pipeline.jpeg}
-  \caption{\textbf{Overview of the full pipeline} We use a CNN to get an initial
-  per-pixel depth estimate. Then we perform exact histogram matching using
-  intensity-weighted pixel values on the corrected SPAD data.}
-\end{figure*}
+
+
+
 An image's \textit{histogram} is a pair of vectors $(h, b)$ where $h_i$ is the number of
 pixels of the image whose value lies in the range $[b_i, b_i+1)$.
 Then, given a source image $S$ with histogram $(h_s, b)$ and a target histogram
@@ -153,9 +157,9 @@ The full details of the exact histogram matching algorithm can be found in
 However, for our purposes, we need to modify our algorithm to accommodate
 differing per-pixel weights. We can account for squared depth falloff
 
-\subsection{Implementation Details}
-For the Monocular Depth Estimator, we use pretrained versions of the
-the Deep Ordinal Regression Network (DORN) \cite{} and the DenseDepth Network.
-The exact histogram matching method is as described in \cite{}.
+%\subsection{Implementation Details}
+%For the Monocular Depth Estimator, we use pretrained versions of the
+%the Deep Ordinal Regression Network (DORN) \cite{} and the DenseDepth Network.
+%The exact histogram matching method is as described in \cite{}.
 
 
