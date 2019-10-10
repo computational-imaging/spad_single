@@ -27,32 +27,69 @@ where $c$ is the speed of light and $\Omega_{x,y}$ is the angular range of the d
 	\label{eq:spad_measurements}
 \end{equation}
 %
-where $(n\Delta t, (n+1) \Delta t)$ models the $n^{th}$ time interval of the temporal histogram, $\eta$ is the photon detection probability of the SPAD, $f$ is a function that models the temporal uncertainty in the detector, and $b$ represents ambient background light and falsely detected photons known as dark count. As derived in previous work, the combination of signal, background, and noise can be modeled as an inhomogeneous Poisson process $\mathcal{P}$~\cite{Kirmani:2014,Shin2015}.
+where $(n\Delta t, (n+1) \Delta t)$ models the $n^{th}$ time interval of the
+temporal histogram, $\eta$ is the photon detection probability of the SPAD, $f$
+is a function that models the temporal uncertainty in the detector, and $b$
+represents ambient background light and falsely detected photons known as dark
+count. As derived in previous work, the combination of signal, background, and
+noise can be modeled as an inhomogeneous Poisson process
+$\mathcal{P}$~\cite{Kirmani:2014,Shin2015}. Finally, as in \cite{Xin2019} we adopt the term
+\textit{transient} for our histogram $h[n]$.
 
-\paragraph{SPAD Denoising}
+\subsection{Ambient Rejection and Falloff Correction}
 To remove the ambient and dark count photons from the histogram, we apply a
-preprocessing step. First, we compute an estimate of the combined ambient
-and dark count rate $\hat b$ by averaging $N$ of the first bins together. We then
+preprocessing step. Assuming that the first $N$ bins of the SPAD histogram
+contain only ambient and dark count photons (this is equivalent to assuming the
+minimum image depth is larger than $N \cdot c\Delta T/2$), we estimate 
+and dark count rate $b$ as $\hat b = \frac{1}{N}\sum_{n=0}^N h[n]$ We then
 note that that shining a laser through a 2D diffuser and
 measuring a single pixel is very physically similar to recording a single 
 non-line-of-sight measurement. We
-compute the first difference of the histogram and find the first and last edges 
-$i_{first}$ and $i_{last}$ where $\abs{h_i - h_{i+1}}$ is
-significantly larger than what would be expected given the rate $b$. From
-\cite{Xin2019}, these edges
+compute the absolute first difference $d[n] = \abs{h[n] - h[n+1]}$ and find 
+the set of edges. Intuitively, given a sufficiently large value of $b$, the Poisson sample
+$h[n] \sim \mathcal{P}(b)$ should behave roughly like a Gaussian with variance $b$, and the difference
+$h[n] - h[n+1]$ should behave like a Gaussian with variance $2b$. Therefore, we
+can detect edges that occur between bins that contain actual signal photons and
+bins that do not by computing the set 
+\begin{equation}
+  \mathcal{E} = \mset{n}{d[n] > \alpha\sqrt{2\hat b}}.
+  \label{eq:edge_set}
+\end{equation}
+In this work, we use $\alpha = 2$.
+We identify the closest and furthest edges $n_{first} = \min \mathcal{E}$ and
+$n_{last} = \max \mathcal{E}$.
+From \cite{Xin2019} Proposition 3, these edges
 correspond to the discontinuties in the depth map 
 at the closest and furthest image depths, and therefore all of the signal
-photons must be in the bins between these two edges. We refine these estimates by
-computing $i'_{first} = \max_{i}\mset{i}{h_i > \hat b, i < i_{first}}$ and
-$i'_{last} = \min_{i} \mset{i}{h_i > \hat b, i > i_{last}}$
+photons must be in the bins between these two edges.
+We refine these estimates by
+computing $n'_{first} = \max\set{n_{first}}\cup\mset{n}{h[n] > \hat b, n \leq n_{first}}$ and
+$n'_{last} = \min\set{n_{last}}\cup\mset{n}{h[n] > \hat b, n \geq n_{last}}$
 Finally, we reject all photons outside of the valid range by clamping those bins
 to 0, and we subtract our ambient estimate from the photons within the valid
-range, giving a denoised histogram
-\[(h_{denoised})_i = \begin{cases}
-    0 & i < i'_{first} \\
-    max(h_i - \hat b, 0) & i'_{first} \leq i \leq i'_{last} \\
-    0 & i > i'_{last} \\
-  \end{cases}.\]
+range, giving an ambient-free transient
+\begin{equation}
+  h'_{clean}[n] = \begin{cases}
+    0 & n < n'_{first} \\
+    \max(h[n] - \hat b, 0) & n'_{first} \leq n \leq n'_{last} \\
+    0 & n > n'_{last} \\
+  \end{cases}.
+  \label{eq:h_clean}
+\end{equation}
+To compensate for the radiometric falloff, we scale each bin by its squared depth,
+which is consistent with our hardware prototype's radiometric falloff model.
+This gives
+\begin{equation}
+  h_{clean}[n] = h'_{clean}[n] \cdot r_n^2
+  \label{eq:h_scaled}
+\end{equation}
+where $r_n= \paren*{n + \frac12}\paren*{\frac{c\Delta t}{2}}$ is the depth
+corresponding to bin $n$
+As a final preprocessing step, we re-bin the transient, applying the Spacing-Increasing Discretization
+(SID) of \cite{Fu2018} to produce $h_{target}$. This reduces the number of bins in the histogram
+matching procedure, giving speedups while maintaining performance. In this work,
+we use 140 bins for the simulated results and 600 bins for the captured results.
+
 % \begin{itemize}
 %   \item Talk about histogram matching in the ideal case, jump straight to intensity 
 %   \item Talk about histogram matching in our case, and how it approaches the
@@ -116,47 +153,74 @@ range, giving a denoised histogram
 %% \end{table*}
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Monocular depth estimation with global depth hints}
-Given a single RGB image $I(x,y)$ and a vector of photon arrivals $h[n]$
-described by equation \ref{global_hints}, we seek to
-reconstruct the ground truth depth map $z(x,y)$.
-Our method has two parts. First, we \textbf{initialize} our estimate of the depth map from the single RGB
-image via a monocular depth estimator described below. Second, we \textbf{refine} this depth map using
-the captured measurements $h[n]$ via exact histogram matching. 
+% \subsection{Monocular depth estimation with global depth hints}
+% Given a single RGB image $I(x,y)$ and a vector of photon arrivals $h[n]$
+% described by equation \ref{global_hints}, we seek to
+% reconstruct the ground truth depth map $z(x,y)$.
+% Our method has two parts. First, we \textbf{initialize} our estimate of the depth map from the single RGB
+% image via a monocular depth estimator described below. Second, we \textbf{refine} this depth map using
+% the captured measurements $h[n]$ via exact histogram matching. 
 
-\paragraph{Initialization}
-The first step in our method is to produce an initial estimate of ground truth
-depth. Convolutional Neural Networks have been shown to produce accurate, if poorly-scaled, estimates of depth
-from only a single image. We therefore choose to initialize our depth map
-estimate $\hat z^{(0)}(x,y)$ using
-a CNN. However, any depth estimator reliant on only a single
-view may be used for this step. Furthermore, in the larger context of our
-algorithm, it is more important that the network predict the correct ordinal
-relationships between pixels - that is, to predict the correct relative ordering
-of pixels $a$ and $b$, rather than to get all pixels exactly correct.
+% \paragraph{Initialization}
+% The first step in our method is to produce an initial estimate of ground truth
+% depth. Convolutional Neural Networks have been shown to produce accurate, if poorly-scaled, estimates of depth
+% from only a single image. We therefore choose to initialize our depth map
+% estimate $\hat z^{(0)}(x,y)$ using
+% a CNN. However, any depth estimator reliant on only a single
+% view may be used for this step. Furthermore, in the larger context of our
+% algorithm, it is more important that the network predict the correct ordinal
+% relationships between pixels - that is, to predict the correct relative ordering
+% of pixels $a$ and $b$, rather than to get all pixels exactly correct.
 
-\paragraph{Exact Histogram Matching}
+\subsection{Exact Histogram Matching}
+% \begin{algorithm}[H]
+%  \caption{Exact Histogram Matching} 
+%  \label{alg:ehm}
+%  \input{sections/figures/exact_hist_matching_pseudo.tex}
+% \end{algorithm}
+Exact histogram matching is a procedure that takes a source image and a target
+histogram and maps the pixel values of the source image so that the image's
+histogram matches the target histogram. Given a single RGB image, we pass it
+through an MDE to produce a depth map $\hat z_0 \in [\ell, u]^{M \times N}$
+where $\ell$ and $u$ are the lower and upper bounds of the depth range of
+interest, respectively. In a parallel processing step,
+we compute an estimate of the scene albedo using an intrinsic imaging method and
+take the color channel of the resulting albedo image that corresponds to the
+wavelength of the laser illumination. This gives a reflectance estimate $W \in
+[0, 1]^{M \times N}$. We
+then compute a weighted histogram $h_{source}$of the depth map $\hat z_0$ where the
+per-pixel weights are given by $W$, and the bin edges are given by the SID
+discretization algorithm of \cite{Fu2018}.
 
-
-
-An image's \textit{histogram} is a pair of vectors $(h, b)$ where $h_i$ is the number of
-pixels of the image whose value lies in the range $[b_i, b_i+1)$.
-Then, given a source image $S$ with histogram $(h_s, b)$ and a target histogram
-$(h_t, b)$, histogram matching generates a new image $M$ such that $h_m \approx
-h_t$ and the pixel values in $M$ are in the same relative order as in $S$.
-The full details of the exact histogram matching algorithm can be found in
-\cite{Morovic2002}.
+We match the histogram $h_{source}$ to $h_{target}$ using the method of
+\cite{Morovic2002}. We compute a pixel movement
+matrix $T$ such that $T_{mn}$ is the amount of mass to move from $h_{source}[m]$
+to $h_{target}$. We do so using the procedure outlined in \ref{alg:pixel_movement}
 
 \begin{algorithm}[H]
- \caption{Exact Histogram Matching} 
+ \caption{Pixel Movement} 
  \label{alg:ehm}
- \input{sections/figures/exact_hist_matching_pseudo.tex}
+ \begin{algorithmic}
+  \Procedure{FindMovement}{$h_s$ of length $M$, $h_t$ of length $N$} 
+    \State Initialize $T$ as an $M \times N$ array.
+    \For{$m$ in $1,\ldots,M$}
+      \For{$n$ in $1,\ldots,N$}
+        \State $p_s \gets \sum_{\ell=1}^{n-1} T[m, \ell]$
+        \State $p_t \gets \sum_{\ell=1}^{m-1} T[\ell, n]$
+        \State $T[m, n] \gets \min(h_s[m] - p_s, h_t[n] - p_t)$
+      \EndFor
+    \EndFor
+    \State \textbf{return} $T$
+  \EndProcedure
+ \end{algorithmic}
 \end{algorithm}
 
-
-However, for our purposes, we need to modify our algorithm to accommodate
-differing per-pixel weights. We can account for squared depth falloff
-
+Finally, for a pixel $z_0[i, j]$ in depth bin $k$, we sample the new depth bin from the
+distribution $T[k, :]/\sum_{n=1}^NT[k,n]$ (which is a distribution over target
+depth bins $1,\ldots,N$) to get the bin of $\hat z[i,j]$. We can then apply the
+standard SID decoding procedure to get the depth corresponding to that bin
+\textcolor{red}{Does the above seem reasonable to include? Not sure if the
+  pseudocode is helpful/necessary or not.}
 %\subsection{Implementation Details}
 %For the Monocular Depth Estimator, we use pretrained versions of the
 %the Deep Ordinal Regression Network (DORN) \cite{} and the DenseDepth Network.
