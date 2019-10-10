@@ -13,14 +13,14 @@ Monocular depth estimation is a well-explored, yet active area of research (see 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Image Formation Model of a Diffused SPAD}
 
-Consider a diffused laser that emits a pulse at time $t = 0$ with time-varying intensity $g(t)$ illuminating some 3D scene. We parameterize the geometry of the scene as a height map $z(x, y)$, where each of the 3D points has also some unknown reflectivity $\alpha$ at the wavelength of the laser. Ignoring interreflections of the emitted light within the scene, a single-pixel diffused SPAD then integrates all the light scattered back from the scene towards the detector as
+Consider a diffused laser that emits a pulse at time $t = 0$ with time-varying intensity $g(t)$ illuminating some 3D scene. We parameterize the geometry of the scene as a depth map $z(x, y)$, where each of the 3D points has also some unknown reflectivity $\alpha$ at the wavelength of the laser. Ignoring interreflections of the emitted light within the scene, a single-pixel diffused SPAD then integrates all the light scattered back from the scene towards the detector as
 %
 \begin{equation}
-	s \left( t \right)= \int_{\Omega_x} \int_{\Omega_y} \alpha \left( x,y \right) g \left( t - \frac{2z(x,y)}{c} \right) dx dy ,
+	s \left( t \right)= \int_{\Omega_x} \int_{\Omega_y} \frac{\alpha \left( x,y \right)}{z(x,y)^2}  g \left( t - \frac{2z(x,y)}{c} \right) dx dy ,
 	\label{eq:pulse_integral} 
 \end{equation}  
 %
-where $c$ is the speed of light and $\Omega_{x,y}$ is the angular range of the diffuser. In this formulation, $\alpha$ also absorbs the square distance falloff of light and we assume that the diffuser spreads light uniformly over all angles. Each time such a light pulse is emitted into the scene and scattered back to the detector, the single-pixel SPAD time-stamps up to one of the returning photons with some probability. This is not necessarily the first returning photon. The process is repeated millions of times per second with the specific number of emitted pulsed being controlled by the repetition rate of the laser, which is typically adjusted to match the deadtime of the SPAD~\cite{Heide:2018}. Each detected photon arrival event is discretized into a histogram $h$ of the form
+where $c$ is the speed of light and $\Omega_{x,y}$ is the angular range of the diffuser. In this formulation, we assume that the diffuser spreads light uniformly over all angles. Each time such a light pulse is emitted into the scene and scattered back to the detector, the single-pixel SPAD time-stamps up to one of the returning photons with some probability. This is not necessarily the first returning photon. The process is repeated millions of times per second with the specific number of emitted pulsed being controlled by the repetition rate of the laser, which is typically adjusted to match the deadtime of the SPAD~\cite{Heide:2018}. Each detected photon arrival event is discretized into a histogram $h$ of the form
 %
 \begin{equation}
   h[n] \sim \mathcal{P} \left( \eta \int_{n\Delta t}^{(n+1)\Delta t} \left(f * s \right) \left( t \right)  dt + b \right),	
