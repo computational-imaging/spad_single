@@ -5,7 +5,7 @@ import cvxpy as cp
 
 def simulate_spad(depth_truth, intensity, mask, min_depth, max_depth,
                   spad_bins, photon_count, dc_count, fwhm_ps,
-                  use_poisson, use_intensity, use_squared_falloff,
+                  use_poisson, use_intensity, use_squared_falloff, lambertian,
                   use_jitter):
     """
     Works in numpy.
@@ -27,7 +27,10 @@ def simulate_spad(depth_truth, intensity, mask, min_depth, max_depth,
     if use_intensity:
         weights = weights * intensity
     if use_squared_falloff:
-        weights = weights / (depth_truth ** 2 + 1e-6)
+        if lambertian:
+            weights = weights / (depth_truth ** 4 + 1e-6)
+        else:
+            weights = weights / (depth_truth ** 2 + 1e-6)
     depth_hist, _ = np.histogram(depth_truth, bins=spad_bins, range=(min_depth, max_depth), weights=weights)
 
     # Scale by number of photons

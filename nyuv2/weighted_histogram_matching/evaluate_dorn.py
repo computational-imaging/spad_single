@@ -19,13 +19,15 @@ def cfg(data_config):
     dataset_type = "test"
     use_intensity = True
     use_squared_falloff = True
+    lambertian = True
     dc_count = 1e5
     use_jitter = True
     use_poisson = True
-    hyper_string = "{}_int_{}_fall_{}_dc_{}_jit_{}_poiss_{}".format(
+    hyper_string = "{}_int_{}_fall_{}_lamb_{}_dc_{}_jit_{}_poiss_{}".format(
         dataset_type,
         use_intensity,
         use_squared_falloff,
+        lambertian,
         dc_count,
         use_jitter,
         use_poisson)
@@ -77,6 +79,7 @@ def run(dataset_type,
     ambient = spad_config["dc_count"]/spad_config["spad_bins"]
     use_intensity = spad_config["use_intensity"]
     use_squared_falloff = spad_config["use_squared_falloff"]
+    lambertian = spad_config["lambertian"]
     min_depth = spad_config["min_depth"]
     max_depth = spad_config["max_depth"]
 
@@ -112,7 +115,10 @@ def run(dataset_type,
             if use_squared_falloff:
                 bin_edges = np.linspace(min_depth, max_depth, len(spad) + 1)
                 bin_values = (bin_edges[1:] + bin_edges[:-1])/2
-                spad = spad * bin_values ** 2
+                if lambertian:
+                    spad = spad * bin_values ** 4
+                else:
+                    spad = spad * bin_values ** 2
             spad_rescaled = rescale_bins(spad, min_depth, max_depth, sid_obj)
             pred, _ = image_histogram_match(depth_data[i, 0, ...], spad_rescaled, weights, sid_obj)
             # break

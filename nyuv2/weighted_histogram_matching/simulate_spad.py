@@ -21,6 +21,7 @@ def cfg(data_config):
     use_poisson = True
     use_intensity = True
     use_squared_falloff = True
+    lambertian = True
     use_jitter = True
 
     min_depth = data_config["min_depth"]
@@ -36,10 +37,10 @@ def cfg(data_config):
 def simulate_spad_passthrough(depth_truth, intensity, mask, min_depth, max_depth,
                               spad_bins, photon_count, dc_count, fwhm_ps,
                               use_poisson, use_intensity, use_squared_falloff,
-                              use_jitter):
+                              lambertian, use_jitter):
     return simulate_spad(depth_truth, intensity, mask, min_depth, max_depth,
                   spad_bins, photon_count, dc_count, fwhm_ps,
-                  use_poisson, use_intensity, use_squared_falloff,
+                  use_poisson, use_intensity, use_squared_falloff, lambertian,
                   use_jitter)
 
 def rgb2gray(img):
@@ -52,6 +53,7 @@ def run(dataset_type,
         use_squared_falloff,
         dc_count,
         use_jitter,
+        lambertian,
         use_poisson,
         _config):  # The entire config dict for this experiment
     print("dataset_type: {}".format(dataset_type))
@@ -77,12 +79,14 @@ def run(dataset_type,
         "intensity": np.concatenate(all_intensities),
     }
 
-    print("saving {}_int_{}_fall_{}_dc_{}_jit_{}_poiss_{}_spad.npy to {}".format(dataset_type,
-                                                                 use_intensity, use_squared_falloff, dc_count,
+    print("saving {}_int_{}_fall_{}_lamb_{}_dc_{}_jit_{}_poiss_{}_spad.npy to {}".format(dataset_type,
+                                                                 use_intensity,
+                                                                 use_squared_falloff, lambertian, dc_count,
                                                                  use_jitter, use_poisson,
                                                                  output_dir))
-    np.save(os.path.join(output_dir, "{}_int_{}_fall_{}_dc_{}_jit_{}_poiss_{}_spad.npy".format(dataset_type,
+    np.save(os.path.join(output_dir, "{}_int_{}_fall_{}_lamb_{}_dc_{}_jit_{}_poiss_{}_spad.npy".format(dataset_type,
                                                                                use_intensity,
                                                                                use_squared_falloff,
+                                                                               lambertian,
                                                                                dc_count, use_jitter,
                                                                                use_poisson)), output)

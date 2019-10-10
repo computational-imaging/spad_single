@@ -135,6 +135,9 @@ def depth_imwrite(img, filepath):
     :param filepath:
     :return:
     """
+    # print("depth_imwrite to {}".format(filepath))
+    # print(np.max(img))
+    # print(np.min(img))
     img_scaled = ((img - np.min(img)) * 65535./(np.max(img) - np.min(img))).astype(np.uint16)
     cv2.imwrite(filepath + ".png", img_scaled)
 
@@ -148,13 +151,14 @@ def load_spad(spad_file):
 def preprocess_spad(spad_single, ambient_estimate, min_depth, max_depth, sid_obj):
     print("Processing SPAD data...")
     # Remove DC
-    spad_denoised = remove_dc_from_spad_edge(spad_single, ambient_estimate)
+    spad_denoised = remove_dc_from_spad_edge(spad_single,
+                                             ambient=ambient_estimate,
+                                             grad_th=2*np.sqrt(2*ambient_estimate))
 
     # Correct Falloff
     bin_edges = np.linspace(min_depth, max_depth, len(spad_denoised) + 1)
     bin_values = (bin_edges[1:] + bin_edges[:-1]) / 2
-    # spad_corrected = spad_denoised * bin_values ** 2
-    spad_corrected = spad_denoised * bin_values ** 4
+    spad_corrected = spad_denoised * bin_values ** 2
 
     # Scale SID object to maximize bin utilization
     min_depth_bin = np.min(np.nonzero(spad_corrected))
@@ -169,7 +173,7 @@ def preprocess_spad(spad_single, ambient_estimate, min_depth, max_depth, sid_obj
     # Convert to SID
     spad_sid = rescale_bins(spad_corrected[min_depth_bin:max_depth_bin+1],
                             min_depth_pred, max_depth_pred, sid_obj_pred)
-    return spad_sid, sid_obj_pred
+    return spad_sid, sid_obj_pred, spad_denoised, spad_corrected
 
 
 def load_and_crop_kinect(rootdir, calibration_file="calibration.mat", kinect_file="kinect.mat"):

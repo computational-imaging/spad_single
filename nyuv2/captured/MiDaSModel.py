@@ -26,6 +26,7 @@ def midas_predict(model, img, depth_range, device):
     img_input = img_input.to(device)
 
     # compute
+
     with torch.no_grad():
         idepth = model.forward(img_input)
 

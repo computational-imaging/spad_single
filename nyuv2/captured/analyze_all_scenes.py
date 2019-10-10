@@ -38,23 +38,23 @@ def cfg():
     # bin_width_ps is the bin width in picoseconds of the SPAD for that particular scene
     # min_r and max_r are set to reject direct reflections off the beam splitter.
     scenes = {
-        "8_29_kitchen_scene": {"offset": (-10, -8), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        "8_29_conference_room_scene": {"offset": (-16, -12), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        "8_30_conference_room2_scene": {"offset": (-16, -12), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        "8_30_Hallway": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        "8_30_poster_scene": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        # "8_29_kitchen_scene": {"offset": (-10, -8), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        # "8_29_conference_room_scene": {"offset": (-16, -12), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        # "8_30_conference_room2_scene": {"offset": (-16, -12), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        # "8_30_Hallway": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        # "8_30_poster_scene": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
         "8_30_small_lab_scene": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        "8_31_outdoor3": {"offset": (0, 0), "bin_width_ps": 32, "min_r": 0.4, "max_r": 11.},
+        # "8_31_outdoor3": {"offset": (0, 0), "bin_width_ps": 32, "min_r": 0.4, "max_r": 11.},
     }
     # Relative shift of projected depth to rgb (found empirically)
     # rgb in [0, 255]
     models = {
         "midas": {"load": lambda model_path, device: get_midas("MiDaS/model.pt", device),
                   "run": lambda model, rgb, depth_range, device: midas_predict(model, rgb/255., depth_range, device)},
-        "dorn": {"load": lambda model_path, device: DORN(),
-                 "run": lambda model, rgb, depth_range, device: dorn_predict(model, rgb)},
-        "densedepth": {"load": lambda model_path, device: load_densedepth(model_path, device),
-                       "run": lambda model, rgb, depth_range, device: model.predict(rgb).squeeze()}
+        # "dorn": {"load": lambda model_path, device: DORN(),
+        #          "run": lambda model, rgb, depth_range, device: dorn_predict(model, rgb)},
+        # "densedepth": {"load": lambda model_path, device: load_densedepth(model_path, device),
+        #                "run": lambda model, rgb, depth_range, device: model.predict(rgb).squeeze()}
     }
     use_intensity = True
     figures_dir = "figures" if use_intensity else "figures_no_intensity"
@@ -106,8 +106,8 @@ def analyze(figures_dir, data_dir, calibration_file, models, scenes, use_intensi
             min_depth_bin = np.floor(min_r / bin_width_m).astype('int')
             max_depth_bin = np.floor(max_r / bin_width_m).astype('int')
             # Compensate for z translation only
-            min_depth = min_depth_bin * bin_width_m + TranslationOfSpad[2]
-            max_depth = (max_depth_bin + 1) * bin_width_m + TranslationOfSpad[2]
+            min_depth = min_depth_bin * bin_width_m + TranslationOfSpad[2]/1e3
+            max_depth = (max_depth_bin + 1) * bin_width_m + TranslationOfSpad[2]/1e3
             sid_obj_init = SID(sid_bins=600, alpha=min_depth, beta=max_depth, offset=0)
             ambient_max_depth_bin = 100
 
@@ -121,6 +121,8 @@ def analyze(figures_dir, data_dir, calibration_file, models, scenes, use_intensi
             spad_relevant = spad[..., min_depth_bin:max_depth_bin]
             spad_single_relevant = np.sum(spad_relevant, axis=(0,1))
             ambient_estimate = np.mean(spad_single_relevant[:ambient_max_depth_bin])
+            np.save(os.path.join(scenedir, "spad_single_relevant.npy"), spad_single_relevant)
+
 
             # Get ground truth depth
             gt_idx = np.argmax(spad_relevant, axis=2)
@@ -148,9 +150,16 @@ def analyze(figures_dir, data_dir, calibration_file, models, scenes, use_intensi
             gt_z_proj_crop = signal.medfilt(gt_z_proj_crop, kernel_size=5)
             mask_proj_crop = (gt_z_proj_crop >= min_depth).astype('float').squeeze()
 
+            # print("gt_z_proj_crop range:")
+            # print(np.min(gt_z_proj_crop))
+            # print(np.max(gt_z_proj_crop))
+
             # Process SPAD
-            spad_sid, sid_obj_pred = preprocess_spad(spad_single_relevant, ambient_estimate, min_depth, max_depth,
-                                                     sid_obj_init)
+            spad_sid, sid_obj_pred, spad_denoised, spad_corrected = \
+                preprocess_spad(spad_single_relevant, ambient_estimate, min_depth, max_depth, sid_obj_init)
+            np.save(os.path.join(scenedir, "spad_denoised.npy"), spad_denoised)
+            np.save(os.path.join(scenedir, "spad_corrected.npy"), spad_corrected)
+            np.save(os.path.join(scenedir, "spad_sid.npy"), spad_sid)
 
             # Initialize with CNN
             z_init = run_model(model, rgb_cropped, depth_range=(min_depth, max_depth), device=device)
@@ -163,6 +172,10 @@ def analyze(figures_dir, data_dir, calibration_file, models, scenes, use_intensi
                                                            sid_obj_init, sid_obj_pred)
             z_pred = r_to_z(r_pred, kinect_intrinsics["FocalLength"])
 
+            # print("z_pred range")
+            # print(np.min(z_pred))
+            # print(np.max(z_pred))
+
             # Save histograms for later inspection
             intermediates = {
                 "init_index": t[0],
@@ -173,11 +186,18 @@ def analyze(figures_dir, data_dir, calibration_file, models, scenes, use_intensi
             }
             np.save(os.path.join(scenedir, "intermediates.npy"), intermediates)
             # Save processed SPAD data
-            spad_processed = {
-                "spad_relevant": spad_relevant,
-                "spad_sid": spad_sid
+            bin_edges = np.linspace(min_depth, max_depth, len(spad_single_relevant) + 1)
+            bin_values = (bin_edges[1:] + bin_edges[:-1])/2
+            spad_metadata = {
+                "ambient_estimate": ambient_estimate,
+                "init_bin_edges": bin_edges,
+                "init_bin_values": bin_values,
+                "init_sid_bin_edges": sid_obj_init.sid_bin_edges,
+                "init_sid_bin_values": sid_obj_init.sid_bin_values,
+                "pred_sid_bin_edges": sid_obj_pred.sid_bin_edges,
+                "pred_sid_bin_values": sid_obj_pred.sid_bin_values
             }
-            np.save(os.path.join(scenedir, "spad_processed.npy"), spad_processed)
+            np.save(os.path.join(scenedir, "spad_metadata.npy"), spad_metadata)
 
 
             # Mean Match
