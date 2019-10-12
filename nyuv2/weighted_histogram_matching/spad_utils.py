@@ -1,6 +1,9 @@
 # %load spad_utils.py
 import numpy as np
 from scipy.signal import fftconvolve
+from remove_dc_from_spad import remove_dc_from_spad_edge
+from models.data.data_utils.sid_utils import SID
+
 import cvxpy as cp
 
 def simulate_spad(depth_truth, intensity, mask, min_depth, max_depth,
@@ -78,22 +81,34 @@ def rescale_bins(spad_counts, min_depth, max_depth, sid_obj):
     the sid bin range and the spad_count bin.
     """
 
-    sid_bin_edges_m = sid_obj.sid_bin_edges
-
+    sid_bin_edges_m = sid_obj.sid_bin_edges - sid_obj.offset
+#     print(sid_bin_edges_m)
     # Convert sid_bin_edges_m into units of spad bins
-    sid_bin_edges_bin = sid_bin_edges_m * len(spad_counts) / (max_depth - min_depth)
+    sid_bin_edges_bin = (sid_bin_edges_m - min_depth) * len(spad_counts) / (max_depth - min_depth)
+    # Fail if the SID bins lie outside the range
+    # if np.min(sid_bin_edges_bin) < 0 or np.max(sid_bin_edges_bin) > len(spad_counts):
+    #     print("spad range: [{}, {}]".format(0, len(spad_counts)))
+    #     print("SID range: [{}, {}]".format(np.min(sid_bin_edges_bin),
+    #                                        np.max(sid_bin_edges_bin)))
+    #     raise ValueError("SID range exceeds spad range.")
+
+
+    # sid_bin_edges_bin -= sid_bin_edges_bin[0]  # Start at 0
+    # sid_bin_edges_bin[-1] = np.floor(sid_bin_edges_bin[-1])
     # print(sid_bin_edges_bin[-1])
     # Map spad_counts onto sid_bin indices
+    # print(sid_bin_edges_bin)
     sid_counts = np.zeros(sid_obj.sid_bins)
-    for i in range(sid_obj.sid_bins):
-        left = sid_bin_edges_bin[i]
-        right = sid_bin_edges_bin[i + 1]
+    for i, (left, right) in enumerate(zip(sid_bin_edges_bin[:-1], sid_bin_edges_bin[1:])):
+        # print("left: ", left)
+        # print("right: ", right)
         curr = left
-        while curr != right:
+        while curr < right and int(np.floor(left)) < len(spad_counts)       :
             curr = np.min([right, np.floor(left + 1.)])  # Don't go across spad bins - stop at integers
             sid_counts[i] += (curr - left) * spad_counts[int(np.floor(left))]
             # Update window
             left = curr
+        # print(sid_counts[i])
     return sid_counts
 
 def remove_dc_from_spad(noisy_spad, bin_edges, bin_weight, lam=1e-2, eps_rel=1e-5):
@@ -123,12 +138,32 @@ def remove_dc_from_spad(noisy_spad, bin_edges, bin_weight, lam=1e-2, eps_rel=1e-
     return denoised_spad
 
 
-def preprocess_spad(spad_sid, sid_obj, correct_falloff, remove_dc, **dc_kwargs):
-    if remove_dc:
-        spad_sid = remove_dc_from_spad(spad_sid, sid_obj.sid_bin_edges, sid_obj.sid_bin_values[:-2]**2, **dc_kwargs)
-    if correct_falloff:
-        spad_sid = spad_sid * sid_obj.sid_bin_values[:-2]**2
-    return spad_sid
+def preprocess_spad(spad_single, ambient_estimate, min_depth, max_depth, sid_obj):
+    print("Processing SPAD data...")
+    # Remove DC
+    spad_denoised = remove_dc_from_spad_edge(spad_single,
+                                             ambient=ambient_estimate,
+                                             grad_th=3*np.sqrt(2*ambient_estimate))
+
+    # Correct Falloff
+    bin_edges = np.linspace(min_depth, max_depth, len(spad_denoised) + 1)
+    bin_values = (bin_edges[1:] + bin_edges[:-1]) / 2
+    spad_corrected = spad_denoised * bin_values ** 2
+
+    # Scale SID object to maximize bin utilization
+    min_depth_bin = np.min(np.nonzero(spad_corrected))
+    max_depth_bin = np.max(np.nonzero(spad_corrected))
+    min_depth_pred = bin_values[min_depth_bin]
+    max_depth_pred = bin_values[max_depth_bin]
+    sid_obj_pred = SID(sid_bins=sid_obj.sid_bins,
+                       alpha=min_depth_pred,
+                       beta=max_depth_pred,
+                       offset=0.)
+
+    # Convert to SID
+    spad_sid = rescale_bins(spad_corrected[min_depth_bin:max_depth_bin+1],
+                            min_depth_pred, max_depth_pred, sid_obj_pred)
+    return spad_sid, sid_obj_pred, spad_denoised, spad_corrected
 
 
 def simulate_spad_sid(depth, intensity, mask, min_depth, max_depth,
@@ -141,6 +176,8 @@ def simulate_spad_sid(depth, intensity, mask, min_depth, max_depth,
                                 use_jitter)
     spad_sid = rescale_bins(spad_counts, min_depth, max_depth, sid_obj)
     return spad_sid
+
+
 
 
 from collections import OrderedDict

@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import pandas as pd
 from sacred import Experiment
-from weighted_histogram_matching import image_histogram_match
+from weighted_histogram_matching import image_histogram_match, image_histogram_match_variable_bin
 from models.data.data_utils.sid_utils import SID
 from spad_utils import rescale_bins
 from remove_dc_from_spad import remove_dc_from_spad_edge
@@ -91,7 +91,7 @@ def run(dataset_type,
     print("depth_data.shape", depth_data.shape)
     print("intensity_data.shape", intensity_data.shape)
 
-    sid_obj = SID(sid_bins, alpha, beta, offset)
+    sid_obj_init = SID(sid_bins, alpha, beta, offset)
 
     if entry is None:
         metric_list = ["delta1", "delta2", "delta3", "rel_abs_diff", "rmse", "mse", "log10", "weight"]
@@ -111,16 +111,28 @@ def run(dataset_type,
             if dc_count > 0.:
                 spad = remove_dc_from_spad_edge(spad,
                                                 ambient=ambient,
-                                                grad_th=3 * ambient)
+                                                grad_th=5*np.sqrt(2*ambient))
+            bin_edges = np.linspace(min_depth, max_depth, len(spad) + 1)
+            bin_values = (bin_edges[1:] + bin_edges[:-1]) / 2
             if use_squared_falloff:
-                bin_edges = np.linspace(min_depth, max_depth, len(spad) + 1)
-                bin_values = (bin_edges[1:] + bin_edges[:-1])/2
                 if lambertian:
                     spad = spad * bin_values ** 4
                 else:
                     spad = spad * bin_values ** 2
-            spad_rescaled = rescale_bins(spad, min_depth, max_depth, sid_obj)
-            pred, _ = image_histogram_match(depth_data[i, 0, ...], spad_rescaled, weights, sid_obj)
+            # Scale SID object to maximize bin utilization
+            min_depth_bin = np.min(np.nonzero(spad))
+            max_depth_bin = np.max(np.nonzero(spad))
+            min_depth_pred = bin_edges[min_depth_bin]
+            max_depth_pred = bin_edges[max_depth_bin+1]
+            sid_obj_pred = SID(sid_bins=sid_obj_init.sid_bins,
+                               alpha=min_depth_pred,
+                               beta=max_depth_pred,
+                               offset=0.)
+            spad_rescaled = rescale_bins(spad[min_depth_bin:max_depth_bin+1],
+                                         min_depth_pred, max_depth_pred, sid_obj_pred)
+            pred, t = image_histogram_match_variable_bin(depth_data[i, 0, ...], spad_rescaled, weights,
+                                                         sid_obj_init, sid_obj_pred)
+            # break
             # break
             # Calculate metrics
             gt = dataset[i]["depth_cropped"].unsqueeze(0)
@@ -138,6 +150,7 @@ def run(dataset_type,
             # Option to save outputs:
             if save_outputs:
                 outputs.append(pred)
+            print("\tAvg RMSE = {}".format(np.mean(metrics[:i + 1, metric_list.index("rmse")])))
 
         if save_outputs:
             np.save(os.path.join(output_dir, "dorn_{}_outputs.npy".format(hyper_string)), np.array(outputs))
