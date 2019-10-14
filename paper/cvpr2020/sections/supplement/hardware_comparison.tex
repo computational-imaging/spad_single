@@ -1,4 +1,4 @@
-\begin{figure*}[t!]
+\begin{figure}
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Kitchen Scene}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -53,8 +53,8 @@
       Second row shows absolute difference between above estimates and ground truth.}
     \label{fig:midas_captured}
 %    \vspace{-1.5em}
-\end{figure*}
-\begin{figure*}[t!]
+\end{figure}
+\begin{figure}
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Hallway}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -112,10 +112,10 @@
       Second row shows absolute difference between above estimates and ground truth.}
     \label{fig:midas_captured}
 %    \vspace{-1.5em}
-\end{figure*}
+\end{figure}
  
-%% MiDaS outdoor scene
-\begin{figure*}[t!]
+% %% MiDaS outdoor scene
+\begin{figure}
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Outdoor Scene}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -138,10 +138,10 @@
       Second row shows absolute difference between above estimates and ground truth.}
     \label{fig:midas_outdoor_captured}
 %    \vspace{-1.5em}
-\end{figure*}
+\end{figure}
 
 
-\begin{figure*}[t!]
+\begin{figure}
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Kitchen Scene}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -196,8 +196,8 @@
       Second row shows absolute difference between above estimates and ground truth.}
     \label{fig:densedepth_captured}
 %    \vspace{-1.5em}
-\end{figure*}
-\begin{figure*}[t!]
+\end{figure}
+\begin{figure}
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Hallway}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -255,9 +255,9 @@
       Second row shows absolute difference between above estimates and ground truth.}
     \label{fig:densedepth_captured}
 %    \vspace{-1.5em}
-\end{figure*}
+\end{figure}
 %% DenseDepth outdoor scene
-\begin{figure*}[t!]
+\begin{figure}
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Outdoor Scene}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -280,12 +280,12 @@
       Second row shows absolute difference between above estimates and ground truth.}
     \label{fig:densedepth_outdoor_captured}
 %    \vspace{-1.5em}
-\end{figure*}
+\end{figure}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-\begin{figure*}[t!]
+\begin{figure}
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Kitchen Scene}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -338,11 +338,11 @@
     \end{tabular}
     \caption{Captured results initialized using the DORN CNN.
       Second row shows absolute difference between above estimates and ground truth.}
-    \label{fig:densdepth_captured}
+    \label{fig:dorn_captured_1}
 %    \vspace{-1.5em}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}[t!]
+\begin{figure}
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Hallway}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -398,11 +398,36 @@
     \end{tabular}
     \caption{Captured results initialized using the DORN CNN.
       Second row shows absolute difference between above estimates and ground truth.}
-    \label{fig:dorn_captured}
+    \label{fig:dorn_captured_2}
 %    \vspace{-1.5em}
-\end{figure*}
-%% DORN outdoor scene
-\begin{figure*}[t!]
+\end{figure}
+% %% DORN outdoor scene
+% \begin{figure}
+%     \centering
+%     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
+%       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Outdoor Scene}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
+%       &
+%       \includegraphics[height=1.15in, width=1.15in]{captured/dorn/8_31_outdoor3/gt_z_proj_crop_depth_fig.png}&
+%       \includegraphics[height=1.15in, width=1.15in]{captured/dorn/8_31_outdoor3/z_init_depth_fig.png}&
+%       \includegraphics[height=1.15in, width=1.15in]{captured/dorn/8_31_outdoor3/z_med_scaled_depth_fig.png}&
+%       \includegraphics[height=1.15in, width=1.15in]{captured/dorn/8_31_outdoor3/z_pred_depth_fig.png}&
+%       \includegraphics[height=1.15in]{captured/dorn/8_31_outdoor3/depth_colorbar.pdf}\\
+% %      & RGB &  &  &  & \\
+%       &
+%       \includegraphics[height=1.15in, width=1.15in]{captured/dorn/8_31_outdoor3/rgb_cropped_fig.png}&
+%       \includegraphics[height=1.15in, width=1.15in]{captured/dorn/8_31_outdoor3/z_init_diff_fig.png}&
+%       \includegraphics[height=1.15in, width=1.15in]{captured/dorn/8_31_outdoor3/z_med_scaled_diff_fig.png}&
+%       \includegraphics[height=1.15in, width=1.15in]{captured/dorn/8_31_outdoor3/z_pred_diff_fig.png}&
+%       \includegraphics[height=1.15in]{captured/dorn/8_31_outdoor3/diff_colorbar.pdf}\\
+%       & RGB & \input{sections/figures/captured/dorn/8_31_outdoor3/rmses.tex}& \\ 
+%     \end{tabular}
+%     \caption{Captured results initialized using the DORN CNN on an outdoor scene.
+%       Second row shows absolute difference between above estimates and ground truth.}
+%     \label{fig:dorn_outdoor_captured}
+% %    \vspace{-1.5em}
+% \end{figure}
+
+\begin{figure}
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Outdoor Scene}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -421,9 +446,9 @@
       \includegraphics[height=1.15in]{captured/dorn/8_31_outdoor3/diff_colorbar.pdf}\\
       & RGB & \input{sections/figures/captured/dorn/8_31_outdoor3/rmses.tex}& \\ 
     \end{tabular}
-    \caption{Captured results initialized using the DORN CNN on an outdoor scene.
+    \caption{Captured results initialized using the DenseDepth CNN on an outdoor scene.
       Second row shows absolute difference between above estimates and ground truth.}
     \label{fig:dorn_outdoor_captured}
 %    \vspace{-1.5em}
-\end{figure*}
+\end{figure}
 

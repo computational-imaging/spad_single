@@ -28,8 +28,8 @@
     "fig:midas_outdoor_captured"
     "fig:densedepth_captured"
     "fig:densedepth_outdoor_captured"
-    "fig:densdepth_captured"
-    "fig:dorn_captured"
+    "fig:dorn_captured_1"
+    "fig:dorn_captured_2"
     "fig:dorn_outdoor_captured"))
  :latex)
 

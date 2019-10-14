@@ -25,13 +25,14 @@ We compute the standard intensity image (i.e. the Y
 component of the YCbCr image, scaled to be in $[0,1]$) from the RGB input. We compute the weighted depth
 histogram of the ground truth depth image using these intensity weights, and sum
 over the spatial dimension to get a 1D histogram $h$. We multiply each bin by
-$1/d^2$, which accounts for the radiometric falloff, and convolve with the SPAD
+$1/z^2$, which accounts for the radiometric falloff, and convolve with the SPAD
 jitter kernel, which we model as a standard Gaussian with a full-width
 half-maximum of 70ps. We scale this histogram by a signal photon count (set at
 $s = 10^6$) and then add a fixed number of photons $b \in \set{10^5, 2\times 10^4, 10^4}$ evenly distributed across all
 bins to simulate the ambient and dark count photons, modeling
 signal-to-background ratios (SBR) of $10, 50$ and $100$ respectively. Finally,
-we Poisson sample each bin to get the final simulated SPAD transient.
+we Poisson sample each bin to get the final simulated SPAD transient (neglecting
+pile-up).
 % \textcolor{red}{Need more details: how did you simulate the SPAD measurements from this: discuss albedo, square distance falloff, Poisson noise, background, number of SPAD bins, define what SBR is etc.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

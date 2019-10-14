@@ -40,7 +40,7 @@ $\mathcal{P}$~\cite{Kirmani:2014,Shin2015}. Finally, as in \cite{Xin2019} we ado
 To remove the ambient and dark count photons from the histogram, we apply a
 preprocessing step. Assuming that the first $N$ bins of the SPAD histogram
 contain only ambient and dark count photons (this is equivalent to assuming the
-minimum image depth is larger than $N \cdot c\Delta T/2$), we estimate 
+minimum image depth is larger than $Nc\Delta T/2$), we estimate 
 and dark count rate $b$ as $\hat b = \frac{1}{N}\sum_{n=0}^N h[n]$ We then
 note that that shining a laser through a 2D diffuser and
 measuring a single pixel is very physically similar to recording a single 
@@ -52,10 +52,10 @@ $h[n] - h[n+1]$ should behave like a Gaussian with variance $2b$. Therefore, we
 can detect edges that occur between bins that contain actual signal photons and
 bins that do not by computing the set 
 \begin{equation}
-  \mathcal{E} = \mset{n}{d[n] > \alpha\sqrt{2\hat b}}.
+  \mathcal{E} = \mset{n}{d[n] > \beta\sqrt{2\hat b}}.
   \label{eq:edge_set}
 \end{equation}
-In this work, we use $\alpha = 2$.
+In this work, we use $\beta = 5$.
 We identify the closest and furthest edges $n_{first} = \min \mathcal{E}$ and
 $n_{last} = \max \mathcal{E}$.
 From \cite{Xin2019} Proposition 3, these edges
@@ -202,7 +202,7 @@ to $h_{target}$. We do so using the procedure outlined in \ref{alg:pixel_movemen
  \label{alg:ehm}
  \begin{algorithmic}
   \Procedure{FindMovement}{$h_s$ of length $M$, $h_t$ of length $N$} 
-    \State Initialize $T$ as an $M \times N$ array.
+    \State Initialize $T$ as an $M \times N$ array of zeros.
     \For{$m$ in $1,\ldots,M$}
       \For{$n$ in $1,\ldots,N$}
         \State $p_s \gets \sum_{\ell=1}^{n-1} T[m, \ell]$
@@ -215,7 +215,7 @@ to $h_{target}$. We do so using the procedure outlined in \ref{alg:pixel_movemen
  \end{algorithmic}
 \end{algorithm}
 
-Finally, for a pixel $z_0[i, j]$ in depth bin $k$, we sample the new depth bin from the
+Finally, once we have obtained $T$, for a pixel $z_0[i, j]$ in depth bin $k$, we sample the new depth bin from the
 distribution $T[k, :]/\sum_{n=1}^NT[k,n]$ (which is a distribution over target
 depth bins $1,\ldots,N$) to get the bin of $\hat z[i,j]$. We can then apply the
 standard SID decoding procedure to get the depth corresponding to that bin

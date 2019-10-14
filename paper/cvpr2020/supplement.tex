@@ -15,7 +15,16 @@
 \usepackage{tabularx}
 \usepackage{bm}
 \usepackage{multirow}
+\usepackage{float}
+\usepackage[utf8x]{inputenc}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{algorithmicx}
+
+\usepackage{dblfloatfix}
+
 \input{mark_defs.tex}
+
 % If you comment hyperref and then uncomment it, you should delete
 % egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
 % run, let it finish, and you should be clear).
@@ -42,6 +51,6 @@
   Global Depth Histogram Matching}
 
 \maketitle
-% \input{sections/supplement/simulation_comparison.tex}
+\input{sections/supplement/simulation_comparison.tex}
 \input{sections/supplement/hardware_comparison.tex}
 \end{document}
