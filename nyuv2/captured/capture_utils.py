@@ -153,7 +153,7 @@ def preprocess_spad(spad_single, ambient_estimate, min_depth, max_depth, sid_obj
     # Remove DC
     spad_denoised = remove_dc_from_spad_edge(spad_single,
                                              ambient=ambient_estimate,
-                                             grad_th=3*np.sqrt(2*ambient_estimate))
+                                             grad_th=5*np.sqrt(2*ambient_estimate))
 
     # Correct Falloff
     bin_edges = np.linspace(min_depth, max_depth, len(spad_denoised) + 1)
