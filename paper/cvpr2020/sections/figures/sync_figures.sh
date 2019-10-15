@@ -10,4 +10,4 @@ rsync prototype_single_col.pdf "$gdrive"
 rsync -R ././captured/**/**/?(gt_z_proj_crop_depth_fig|z_init_depth_fig|z_med_scaled_depth_fig|z_pred_depth_fig|rgb_cropped_fig|z_init_diff_fig|z_med_scaled_diff_fig|z_pred_diff_fig).png "$gdrive"
 rsync -R ././captured/**/**/?(diff_colorbar|depth_colorbar).pdf "$gdrive" 
 rsync method.pdf "$gdrive"
-
+rsync captured.pdf "$gdrive"

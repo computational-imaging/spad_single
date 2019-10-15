@@ -33,32 +33,32 @@ is a function that models the temporal uncertainty in the detector, and $b$
 represents ambient background light and falsely detected photons known as dark
 count. As derived in previous work, the combination of signal, background, and
 noise can be modeled as an inhomogeneous Poisson process
-$\mathcal{P}$~\cite{Kirmani:2014,Shin2015}. Finally, as in \cite{Xin2019} we adopt the term
+$\mathcal{P}$~\cite{Kirmani:2014,Shin2015}. Finally, as in \cite{Xin2019}, we adopt the term
 \textit{transient} for our histogram $h[n]$.
 
 \subsection{Ambient Rejection and Falloff Correction}
-To remove the ambient and dark count photons from the histogram, we apply a
-preprocessing step. Assuming that the first $N$ bins of the SPAD histogram
+To remove the ambient and dark count photons from the transient, we apply a
+preprocessing step. Assuming that the first $N$ bins of the SPAD transient
 contain only ambient and dark count photons (this is equivalent to assuming the
 minimum image depth is larger than $Nc\Delta T/2$), we estimate 
-and dark count rate $b$ as $\hat b = \frac{1}{N}\sum_{n=0}^N h[n]$ We then
-note that that shining a laser through a 2D diffuser and
-measuring a single pixel is very physically similar to recording a single 
-non-line-of-sight measurement. We
-compute the absolute first difference $d[n] = \abs{h[n] - h[n+1]}$ and find 
-the set of edges. Intuitively, given a sufficiently large value of $b$, the Poisson sample
-$h[n] \sim \mathcal{P}(b)$ should behave roughly like a Gaussian with variance $b$, and the difference
-$h[n] - h[n+1]$ should behave like a Gaussian with variance $2b$. Therefore, we
-can detect edges that occur between bins that contain actual signal photons and
-bins that do not by computing the set 
+and dark count rate $b$ as $\hat b = \frac{1}{N}\sum_{n=0}^N h[n]$. 
+We compute the absolute first difference $d[n] = \abs{h[n] - h[n+1]}$ and find 
+the set of edges. Intuitively, for adjacent non-signal-photon bins, $n_a$ and
+$n_a+1$, given a sufficiently large value of $b$, the Poisson random variable
+$h[n_a] \sim \mathcal{P}(b)$ should behave roughly like a Gaussian with variance $b$, and the difference
+$h[n_a] - h[n_a+1]$ should behave like a Gaussian with mean $0$ and variance $2b$. Therefore, we
+can locate candidates for discontinuities $d[n]$ that occur between signal bins and non-signal bins
+by computing the set 
 \begin{equation}
   \mathcal{E} = \mset{n}{d[n] > \beta\sqrt{2\hat b}}.
   \label{eq:edge_set}
 \end{equation}
 In this work, we use $\beta = 5$.
-We identify the closest and furthest edges $n_{first} = \min \mathcal{E}$ and
-$n_{last} = \max \mathcal{E}$.
-From \cite{Xin2019} Proposition 3, these edges
+We extract the closest and furthest edges $n_{first} = \min \mathcal{E}$ and
+$n_{last} = \max \mathcal{E}$ respectively.
+From \cite{Xin2019} Proposition 3 (noting that shining a laser through a 2D
+diffuser and accumulating the measurements into a single pixel is physically
+similar to recording a single non-line-of-sight measurement), these edges should
 correspond to the discontinuties in the depth map 
 at the closest and furthest image depths, and therefore all of the signal
 photons must be in the bins between these two edges.

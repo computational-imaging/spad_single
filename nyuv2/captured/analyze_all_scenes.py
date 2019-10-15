@@ -38,12 +38,12 @@ def cfg():
     # bin_width_ps is the bin width in picoseconds of the SPAD for that particular scene
     # min_r and max_r are set to reject direct reflections off the beam splitter.
     scenes = {
-        # "8_29_kitchen_scene": {"offset": (-10, -8), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        # "8_29_conference_room_scene": {"offset": (-16, -12), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        # "8_30_conference_room2_scene": {"offset": (-16, -12), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        # "8_30_Hallway": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        # "8_30_poster_scene": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        # "8_30_small_lab_scene": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        "8_29_kitchen_scene": {"offset": (-10, -8), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        "8_29_conference_room_scene": {"offset": (-16, -12), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        "8_30_conference_room2_scene": {"offset": (-16, -12), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        "8_30_Hallway": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        "8_30_poster_scene": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        "8_30_small_lab_scene": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
         "8_31_outdoor3": {"offset": (0, 0), "bin_width_ps": 32, "min_r": 0.4, "max_r": 11.},
     }
     # rgb in [0, 255]
@@ -104,8 +104,9 @@ def analyze(figures_dir, data_dir, calibration_file, models, scenes, use_intensi
             min_depth_bin = np.floor(min_r / bin_width_m).astype('int')
             max_depth_bin = np.floor(max_r / bin_width_m).astype('int')
             # Compensate for z translation only
-            min_depth = min_depth_bin * bin_width_m + TranslationOfSpad[2]/1e3
-            max_depth = (max_depth_bin + 1) * bin_width_m + TranslationOfSpad[2]/1e3
+            min_depth = min_depth_bin * bin_width_m - TranslationOfSpad[2]/1e3
+            # print(TranslationOfSpad)
+            max_depth = (max_depth_bin + 1) * bin_width_m - TranslationOfSpad[2]/1e3
             sid_obj_init = SID(sid_bins=600, alpha=min_depth, beta=max_depth, offset=0)
             ambient_max_depth_bin = 100
 
