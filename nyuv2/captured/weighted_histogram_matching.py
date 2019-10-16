@@ -95,7 +95,7 @@ def image_histogram_match(init, gt_hist, weights, sid_obj):
     return pred, (init_index, init_hist, pred_index, pred_hist, T_count)
 
 
-def image_histogram_match_variable_bin(init, gt_hist, weights, sid_obj_init, sid_obj_pred):
+def image_histogram_match_variable_bin(init, gt_hist, weights, sid_obj_init, sid_obj_pred, vectorized=True):
     weights = weights * (np.sum(gt_hist) / np.sum(weights))
     init_index = np.clip(sid_obj_init.get_sid_index_from_value(init),
                          a_min=0, a_max=sid_obj_init.sid_bins - 1)
@@ -104,7 +104,10 @@ def image_histogram_match_variable_bin(init, gt_hist, weights, sid_obj_init, sid
         print("Negative values in gt_hist")
         raise Exception()
     T_count = find_movement(init_hist, gt_hist)
-    pred_index = move_pixels_vectorized(T_count, init_index, weights)
+    if vectorized:
+        pred_index = move_pixels_vectorized(T_count, init_index, weights)
+    else:
+        pred_index = move_pixels(T_count, init_index, weights)
     pred = sid_obj_pred.get_value_from_sid_index(pred_index)
     pred_hist, _ = np.histogram(pred_index, weights=weights, bins=range(len(gt_hist) + 1))
     return pred, (init_index, init_hist, pred_index, pred_hist, T_count)

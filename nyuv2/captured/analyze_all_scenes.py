@@ -56,7 +56,12 @@ def cfg():
                        "run": lambda model, rgb, depth_range, device: model.predict(rgb).squeeze()}
     }
     use_intensity = True
-    figures_dir = "figures" if use_intensity else "figures_no_intensity"
+    vectorized = True
+    figures_dir = "figures"
+    if not use_intensity:
+        figures_dir += "_no_intensity"
+    if not vectorized:
+        figures_dir += "_no_vector"
 
     cuda_device = "0"                       # The gpu index to run on. Should be a string
     os.environ["CUDA_VISIBLE_DEVICES"] = cuda_device
@@ -82,7 +87,7 @@ def dorn_predict(model, rgb):
     return z_init
 
 @ex.automain
-def analyze(figures_dir, data_dir, calibration_file, models, scenes, use_intensity, device):
+def analyze(figures_dir, data_dir, calibration_file, models, scenes, use_intensity, vectorized, device):
     kinect_intrinsics, spad_intrinsics, RotationOfSpad, TranslationOfSpad = extract_camera_params(calibration_file)
     RotationOfKinect = RotationOfSpad.T
     TranslationOfKinect = -TranslationOfSpad.dot(RotationOfSpad.T)
@@ -166,9 +171,10 @@ def analyze(figures_dir, data_dir, calibration_file, models, scenes, use_intensi
 
             # Histogram Match
             weights = intensity
+            # weights = np.ones_like(r_init)
             # r_pred, t = image_histogram_match(r_init, spad_sid, weights, sid_obj)
             r_pred, t = image_histogram_match_variable_bin(r_init, spad_sid, weights,
-                                                           sid_obj_init, sid_obj_pred)
+                                                           sid_obj_init, sid_obj_pred, vectorized)
             z_pred = r_to_z(r_pred, kinect_intrinsics["FocalLength"])
 
             # print("z_pred range")

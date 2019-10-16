@@ -48,10 +48,19 @@ def cfg(data_config):
     eps_rel = 1e-5
     n_std = 0.5
 
+    # Ablation studies
+    intensity_ablation = False
+    vectorized = True
+
     entry = None
     save_outputs = True
     small_run = 0
     output_dir = "results"
+    if intensity_ablation:
+        output_dir += "_int"
+    if not vectorized:
+        output_dir += "_vec"
+
 
 
 @ex.automain
@@ -60,7 +69,7 @@ def run(dataset_type,
         densedepth_depth_file,
         hyper_string,
         sid_bins, alpha, beta, offset,
-        lam, eps_rel, n_std,
+        intensity_ablation, vectorized,
         entry, save_outputs, small_run, output_dir):
     # Load all the data:
     print("Loading SPAD data from {}".format(spad_file))
@@ -113,7 +122,8 @@ def run(dataset_type,
             #                                             n_std=1. if use_poisson else 0.01)
             # Rescale SPAD_data
             weights = np.ones_like(depth_data[i, 0, ...])
-            if use_intensity:
+            # Ablation study: Turn off intensity, even if spad has been simulated with it.
+            if use_intensity and not intensity_ablation:
                 weights = intensity_data[i, 0, ...]
             if dc_count > 0.:
                 spad = remove_dc_from_spad_edge(spad,
@@ -141,7 +151,7 @@ def run(dataset_type,
             spad_rescaled = rescale_bins(spad[min_depth_bin:max_depth_bin+1],
                                          min_depth_pred, max_depth_pred, sid_obj_pred)
             pred, t = image_histogram_match_variable_bin(depth_data[i, 0, ...], spad_rescaled, weights,
-                                                         sid_obj_init, sid_obj_pred)
+                                                         sid_obj_init, sid_obj_pred, vectorized)
             # break
             # Calculate metrics
             gt = dataset[i]["depth_cropped"].unsqueeze(0)

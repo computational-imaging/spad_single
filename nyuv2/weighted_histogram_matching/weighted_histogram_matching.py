@@ -28,8 +28,6 @@ def move_pixels(T, init_index, weights):
     assert init_index.shape == weights.shape
     pred_index = np.zeros_like(init_index)
     cpfs = np.cumsum(T, axis=1)
-
-    
     for row in range(init_index.shape[0]):
         for col in range(init_index.shape[1]):
             i = init_index[row, col]
@@ -53,6 +51,43 @@ def move_pixels_vectorized(T, init_index, weights):
     p = np.random.uniform(0., pixel_cpfs[..., -1], size=init_index.shape)  # Generate 1 random number for each pixel
     # Use argmax trick to get first index k where p[i,j] < pixel_cpfs[i,j,k] for all i,j
     pred_index = (np.expand_dims(p, 2) < pixel_cpfs).argmax(axis=2)
+    return pred_index
+
+def move_pixels_vectorized_weighted(T, init_index, weights, eps=1e-3):
+    assert init_index.shape == weights.shape
+    pred_index = np.zeros_like(init_index)
+    T_index = np.clip(T[init_index, :] - weights[..., np.newaxis] + eps, a_min=0., a_max=None)
+    # print(T_index)
+    pixel_cpfs = np.cumsum(T_index, axis=2)
+    # print(pixel_cpfs)
+    # pixel_cpfs = cpfs[init_index, :]  # Per-pixel cpf, cpf goes along axis 2
+    p = np.random.uniform(0., pixel_cpfs[..., -1], size=init_index.shape)  # Generate 1 random number for each pixel
+    # Use argmax trick to get first index k where p[i,j] < pixel_cpfs[i,j,k] for all i,j
+    pred_index = (np.expand_dims(p, 2) < pixel_cpfs).argmax(axis=2)
+    return pred_index
+
+
+def move_pixels_weighted(T, init_index, weights):
+    assert init_index.shape == weights.shape
+    pred_index = np.zeros_like(init_index)
+    for row in range(init_index.shape[0]):
+        for col in range(init_index.shape[1]):
+            i = init_index[row, col]
+            weight = weights[row, col]
+            moved = False
+            for k in T.shape[1]:
+                if T[i, k] >= weight:
+                    pred_index[row, col] = k
+                    T[i, k] -= weight
+                    moved = True
+                    break
+            if not moved and np.sum(T[i, :]) > 0:
+                # Randomly pick a nonzero bin
+                k = np.random.choice(range(T.shape[1]), p=T[i,:]/np.sum(T[i,:]))
+                T[i, k] = 0.
+                pred_index[row, col] = k
+            else:
+                pred_index[row, col] = i # Leave the same
     return pred_index
 
 
@@ -89,13 +124,14 @@ def image_histogram_match(init, gt_hist, weights, sid_obj):
 #     pred_index = move_pixels_raster(T_count, init_index, weights)
 #     pred_index = move_pixels(T_count, init_index, weights)
 #     pred_index = move_pixels_better(T_count, init_index, weights)
-    pred_index = move_pixels_vectorized(T_count, init_index, weights)
+#     pred_index = move_pixels_vectorized(T_count, init_index, weights)
+    pred_index = move_pixels_vectorized_weighted(T_count, init_index, weights)
     pred = sid_obj.get_value_from_sid_index(pred_index)
     pred_hist, _ = np.histogram(pred_index, weights=weights, bins=range(len(gt_hist) + 1))
     return pred, (init_index, init_hist, pred_index, pred_hist, T_count)
 
 
-def image_histogram_match_variable_bin(init, gt_hist, weights, sid_obj_init, sid_obj_pred):
+def image_histogram_match_variable_bin(init, gt_hist, weights, sid_obj_init, sid_obj_pred, vectorized=True):
     weights = weights * (np.sum(gt_hist) / np.sum(weights))
     init_index = np.clip(sid_obj_init.get_sid_index_from_value(init),
                          a_min=0, a_max=sid_obj_init.sid_bins - 1)
@@ -104,7 +140,11 @@ def image_histogram_match_variable_bin(init, gt_hist, weights, sid_obj_init, sid
         print("Negative values in gt_hist")
         raise Exception()
     T_count = find_movement(init_hist, gt_hist)
-    pred_index = move_pixels_vectorized(T_count, init_index, weights)
+    if vectorized:
+        pred_index = move_pixels_vectorized(T_count, init_index, weights)
+    # pred_index = move_pixels_vectorized_weighted(T_count, init_index, weights)
+    else:
+        pred_index = move_pixels(T_count, init_index, weights)
     pred = sid_obj_pred.get_value_from_sid_index(pred_index)
     pred_hist, _ = np.histogram(pred_index, weights=weights, bins=range(len(gt_hist) + 1))
     return pred, (init_index, init_hist, pred_index, pred_hist, T_count)
@@ -125,7 +165,8 @@ def image_histogram_match_lin(init, gt_hist, weights, min_depth, max_depth):
 #     pred_index = move_pixels_raster(T_count, init_index, weights)
 #     pred_index = move_pixels(T_count, init_index, weights)
 #     pred_index = move_pixels_better(T_count, init_index, weights)
-    pred_index = move_pixels_vectorized(T_count, init_index, weights)
+#     pred_index = move_pixels_vectorized(T_count, init_index, weights)
+    pred_index = move_pixels_weighted(T_count, init_index, weights)
     pred = np.take(bin_values, pred_index)
     pred_hist, _ = np.histogram(pred_index, weights=weights, bins=range(n_bins+1))
     return pred, (init_index, init_hist, pred_index, pred_hist, T_count)
