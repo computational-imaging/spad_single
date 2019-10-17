@@ -41,6 +41,8 @@
     "hyperref")
    (TeX-add-symbols
     "cvprPaperID"
-    "httilde"))
+    "httilde")
+   (LaTeX-add-bibliographies
+    "references"))
  :latex)
 

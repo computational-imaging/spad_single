@@ -105,9 +105,10 @@ def get_closer_to_mod(lower, upper, mod):
 
 def get_hist_med(histogram):
     """Returns the mean bin value"""
-    idx = np.array(range(len(histogram)))
     pdf = histogram/np.sum(histogram)
-    return np.floor(idx.dot(pdf))
+    cdf = np.cumsum(pdf)
+    med = (cdf > 0.5).argmax()
+    return med
 
 
 def savefig_no_whitespace(filepath):

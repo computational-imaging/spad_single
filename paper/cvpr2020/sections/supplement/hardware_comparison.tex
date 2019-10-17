@@ -1,4 +1,4 @@
-\begin{figure}
+\begin{figure}[H]
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Kitchen Scene}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -50,11 +50,15 @@
       & & \input{sections/figures/captured/midas/8_30_conference_room2_scene/rmses.tex}& \\ 
     \end{tabular}
     \caption{Captured results initialized using the MiDaS CNN.
-      Second row shows absolute difference between above estimates and ground truth.}
-    \label{fig:midas_captured}
+      Second row shows absolute difference between above estimates and ground
+      truth. MiDaS does not output metric depth, so the CNN depth maps are
+      scaled to be in the range $(0.494, 9.094)$ by default. However, MiDaS does produce
+      accurate ordinal depth, leading to stronger performance of our histogram
+      matching compared to other methods.}
+    \label{fig:midas_captured_1}
 %    \vspace{-1.5em}
 \end{figure}
-\begin{figure}
+\begin{figure}[H]
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Hallway}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -109,13 +113,16 @@
 %      (a)&(b)&(c)&(d)&(e)\\
     \end{tabular}
     \caption{Captured results initialized using the MiDaS CNN.
-      Second row shows absolute difference between above estimates and ground truth.}
-    \label{fig:midas_captured}
+      Second row shows absolute difference between above estimates and ground truth.MiDaS does not output metric depth, so the CNN depth maps are
+      scaled to be in the range $(0.494, 9.094)$ by default. However, MiDaS does produce
+      accurate ordinal depth, leading to stronger performance of our histogram
+      matching compared to other methods.}
+    \label{fig:midas_captured_2}
 %    \vspace{-1.5em}
 \end{figure}
  
 % %% MiDaS outdoor scene
-\begin{figure}
+\begin{figure}[H]
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Outdoor Scene}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -135,13 +142,18 @@
       & RGB & \input{sections/figures/captured/midas/8_31_outdoor3/rmses.tex}& \\ 
     \end{tabular}
     \caption{Captured results initialized using the MiDaS CNN on an outdoor scene.
-      Second row shows absolute difference between above estimates and ground truth.}
-    \label{fig:midas_outdoor_captured}
+      Second row shows absolute difference between above estimates and ground
+      truth. MiDaS does not output metric depth, so the CNN depth map is
+      scaled to be in the range $(0.494, 11.094)$ by default. However, MiDaS does produce
+      accurate ordinal depth, leading to stronger performance of our histogram
+      matching compared to other methods.
+}
+    \label{fig:midas_captured_3}
 %    \vspace{-1.5em}
 \end{figure}
 
 
-\begin{figure}
+\begin{figure}[H]
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Kitchen Scene}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -194,10 +206,10 @@
     \end{tabular}
     \caption{Captured results initialized using the DenseDepth CNN.
       Second row shows absolute difference between above estimates and ground truth.}
-    \label{fig:densedepth_captured}
+    \label{fig:densedepth_captured_1}
 %    \vspace{-1.5em}
 \end{figure}
-\begin{figure}
+\begin{figure}[H]
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Hallway}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -253,11 +265,11 @@
     \end{tabular}
     \caption{Captured results initialized using the DenseDepth CNN.
       Second row shows absolute difference between above estimates and ground truth.}
-    \label{fig:densedepth_captured}
+    \label{fig:densedepth_captured_2}
 %    \vspace{-1.5em}
 \end{figure}
 %% DenseDepth outdoor scene
-\begin{figure}
+\begin{figure}[H]
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Outdoor Scene}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -278,14 +290,14 @@
     \end{tabular}
     \caption{Captured results initialized using the DenseDepth CNN on an outdoor scene.
       Second row shows absolute difference between above estimates and ground truth.}
-    \label{fig:densedepth_outdoor_captured}
+    \label{fig:densedepth_captured_3}
 %    \vspace{-1.5em}
 \end{figure}
 
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-\begin{figure}
+\begin{figure}[H]
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Kitchen Scene}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -342,7 +354,7 @@
 %    \vspace{-1.5em}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Hallway}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -427,7 +439,7 @@
 % %    \vspace{-1.5em}
 % \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
     \centering
     \begin{tabular}{p{5mm}*{4}{>{\centering\arraybackslash}p{1.15in}}c}
       \multirow[t]{5}{=}[-1in]{\rotatebox[origin=rc]{90}{Outdoor Scene}} & Ground Truth & CNN & CNN Mean Rescaled & CNN Histogram Matched & \\
@@ -446,9 +458,9 @@
       \includegraphics[height=1.15in]{captured/dorn/8_31_outdoor3/diff_colorbar.pdf}\\
       & RGB & \input{sections/figures/captured/dorn/8_31_outdoor3/rmses.tex}& \\ 
     \end{tabular}
-    \caption{Captured results initialized using the DenseDepth CNN on an outdoor scene.
+    \caption{Captured results initialized using the DORN CNN on an outdoor scene.
       Second row shows absolute difference between above estimates and ground truth.}
-    \label{fig:dorn_outdoor_captured}
+    \label{fig:dorn_captured_3}
 %    \vspace{-1.5em}
 \end{figure}
 

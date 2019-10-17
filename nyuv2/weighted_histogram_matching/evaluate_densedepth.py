@@ -9,6 +9,7 @@ from spad_utils import rescale_bins
 from remove_dc_from_spad import remove_dc_from_spad_poisson, remove_dc_from_spad_ambient_estimate,\
     remove_dc_from_spad_edge
 from nyuv2_labeled_dataset import nyuv2_labeled_ingredient, load_data
+from models.core.checkpoint import safe_makedir
 
 from models.loss import get_depth_metrics
 
@@ -71,6 +72,8 @@ def run(dataset_type,
         sid_bins, alpha, beta, offset,
         intensity_ablation, vectorized,
         entry, save_outputs, small_run, output_dir):
+    safe_makedir(output_dir)
+
     # Load all the data:
     print("Loading SPAD data from {}".format(spad_file))
     spad_dict = np.load(spad_file, allow_pickle=True).item()

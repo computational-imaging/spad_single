@@ -24,12 +24,14 @@
     "sections/figures/captured/dorn/8_30_small_lab_scene/rmses"
     "sections/figures/captured/dorn/8_31_outdoor3/rmses")
    (LaTeX-add-labels
-    "fig:midas_captured"
-    "fig:midas_outdoor_captured"
-    "fig:densedepth_captured"
-    "fig:densedepth_outdoor_captured"
+    "fig:midas_captured_1"
+    "fig:midas_captured_2"
+    "fig:midas_captured_3"
+    "fig:densedepth_captured_1"
+    "fig:densedepth_captured_2"
+    "fig:densedepth_captured_3"
     "fig:dorn_captured_1"
     "fig:dorn_captured_2"
-    "fig:dorn_outdoor_captured"))
+    "fig:dorn_captured_3"))
  :latex)
 
