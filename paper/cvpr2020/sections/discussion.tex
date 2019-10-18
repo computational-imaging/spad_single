@@ -1,25 +1,59 @@
-short summary
+In summary, we demonstrate a method to greatly improve depth estimates from
+monocular depth estimators by correcting the scale ambiguity errors inherent
+with such techniques.  Our approach produces depth maps with accurate absolute
+depth, and helps the generalization of neural networks for MDE across scene
+types, including on data captured with our hardware prototype.  Moreover, we
+require only minimal additional sensing hardware; we show that a single measurement
+histogram from a diffused SPAD sensor contains enough information about global
+scene geometry to correct errors in monocular depth estimates.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{Limitations}
 
-\begin{itemize}
-	\item laser power vs range tradeoff; may be limited to short--medium range
-	\item if the monocular depth estimation fails, so will the histogram matching 
-\end{itemize}
+Since our method relies on the monocular depth estimate, the accuracy of the
+output depth map also relies on the performance of the initial depth estimate.
+The demonstrated results show that when the MDE technique produces a depth map
+with good ordinal depth, where the ordering object depth is roughly correct, the
+depth estimate can be corrected to produce accurate absolute depth. However,
+errors in the ordinal depth may not necessarily be corrected in the histogram
+matching procedure and so may propagate to the final output depth map.
+
+Additionally, since our method relies on a diffused pulsed laser, the laser
+power is spread out over the entire scene. So for distant scene points, very
+little light will return to the SPAD, and it may be difficult to accurately
+capture distant scene geometry in the histogram. Thus our method will likely be
+best suited to short to medium-range scenes.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{Future Work}
+While our hardware prototype is very large, future work could be done to
+miniaturize this system. Our algorithm or similar sensor fusion algorithms could
+also be integrated into electronics that already contain the required hardware
+components, for example, existing cell phones with single-pixel SPAD
+proximity sensors and RGB cameras.
 
-\begin{itemize}
-	\item miniaturize system
-	\item ...
-\end{itemize}
+Other methods for extracting scene information from the SPAD histogram could be
+also employed, including learning-based methods to combine the MDE and
+histogram. One might even consider sensing regimes where the number of
+returning signal photons is very low, such as when the SPAD and camera operate
+at high framerates. While most MDE techniques are tailored to clean RGB images,  
+the SPAD histogram could potentially be used to help MDE
+techniques generalize to noisy scenes under low-light conditions. 
+ 
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{Conclusions}
-
-\begin{itemize}
-	\item new depth estimation CNNs achieve marginal gains, let's think about computational photography approaches that augment the measurements to achieve better performance
-	\item ...
-\end{itemize}
+Neural network-based approaches to monocular depth estimation have yielded
+significant improvements over the past several years for this task. However,
+recently, such improvements have generally relied on new network architectures or
+revised training procedures and have produced only modest improvements. Computational
+photography approaches may provide the measurements needed to achieve much greater
+performance improvements, especially as the sensors in devices we use every day
+become more diverse, complex, and increasingly rely on techniques based on
+sensor fusion and sophisticated computational algorithms.
+ 
+%\begin{itemize}
+%	\item new depth estimation CNNs achieve marginal gains, let's think about computational photography approaches that augment the measurements to achieve better performance
+%	\item ...
+%\end{itemize}
