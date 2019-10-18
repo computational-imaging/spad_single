@@ -1,12 +1,4 @@
-\begin{figure}
-  \centering
-  \includegraphics[width=\columnwidth]{method.pdf}
-  \caption{\textbf{Overview of the full pipeline} We use a CNN to get an initial
-  per-pixel depth estimate. Then we perform exact histogram matching using
-  intensity-weighted pixel values on the corrected SPAD data.}
-\end{figure}
-
-Monocular depth estimation is a well-explored, yet active area of research (see Sec.~\ref{sec:related}). Any network trained for the MDE task takes as input an RGB image and estimates the depth map of the scene. Our approach augments existing MDE networks but is agnostic to the specific type of depth estimator. Indeed we show in Section~\ref{sec:evaluation} that our histogram matching technique equally improves a variety of different pre-trained estimators. In the remainder of this section, we therefore focus on modeling the image formation of a diffused single-photon avalanche diode (SPAD) and develop an approach to correcting an estimated depth map to match the global scene information captured by the SPAD.
+In this section, we describe the image formation of a diffused pulsed laser and single-photon avalanche diode (SPAD). We also describe an approach for correcting a depth map generated with a monocular depth estimator to match the global scene information captured by the diffused SPAD.
 
 %In this section, we describe the measurement model for a single-pixel time-of-flight lidar sensor under diffuse, pulsed laser illumination. 
 
@@ -18,112 +10,154 @@ intensity $g(t)$ illuminating some 3D scene. We parameterize the geometry of the
 scene as a distance map $z(x, y)$, where each of the 3D points has also some
 unknown reflectivity $\alpha$ at the wavelength of the laser. Ignoring
 interreflections of the emitted light within the scene, a single-pixel diffused
-SPAD integrates the light scattered back from the scene towards the
-detector as
+SPAD integrates light scattered back from the scene onto the detector as
 %
 \begin{equation}
-	s \left( t \right)= \int_{\Omega_x} \int_{\Omega_y} \frac{\alpha \left( x,y \right)}{z(x,y)^2}  g \left( t - \frac{2z(x,y)}{c} \right) dx dy ,
+	s \left( t \right)= \int_{\Omega_x} \int_{\Omega_y} \frac{\alpha \left( x,y \right)}{z(x,y)^2} \cdot  g \left( t - \frac{2z(x,y)}{c} \right) dx dy ,
 	\label{eq:pulse_integral} 
 \end{equation}  
 %
-where $c$ is the speed of light and $\Omega_{x,y}$ is the angular range of the
-diffuser. In this formulation, we assume that the diffuser spreads light
-uniformly over all angles. Each time such a light pulse is emitted into the
-scene and scattered back to the detector,
-the single-pixel SPAD time-stamps up to one of the returning photons with some
-probability. The process is
-repeated millions of times per second with the specific number of emitted pulses
-being controlled by the repetition rate of the laser.
-Each detected
-photon arrival event is discretized into a histogram $h$ of the form
+where $c$ is the speed of light, $\Omega_{x,y}$ is the spatial extent of the
+diffused light, and we assume that the light is diffused uniformly over the
+scene points. Each time such a light pulse is emitted into the scene and
+scattered back to the detector, the single-pixel SPAD time-stamps up to one of
+the returning photons with some probability. The process is repeated millions of
+times per second with the specific number of emitted pulses being controlled by
+the repetition rate of the laser.  Each detected photon arrival event is
+discretized into a histogram $h$ of the form
 %
 \begin{equation}
   h[n] \sim \mathcal{P} \left( \eta \int_{n\Delta t}^{(n+1)\Delta t} \left(f * s \right) \left( t \right)  dt + b \right),	
 	\label{eq:spad_measurements}
 \end{equation}
 %
-where $(n\Delta t, (n+1) \Delta t)$ models the $n^{th}$ time interval of the
+where $(n\Delta t, (n+1) \Delta t)$ models the $n^\text{th}$ time interval or bin of the
 temporal histogram, $\eta$ is the photon detection probability of the SPAD, $f$
 is a function that models the temporal uncertainty in the detector, and $b$
-represents ambient background light and false positive detections known as \textit{dark
-count}. As derived in previous work, the combination of signal, background, and
-noise can be modeled as an inhomogeneous Poisson process
-$\mathcal{P}$~\cite{Kirmani:2014,Shin2015}. Finally, as in \cite{Xin2019}, we adopt the term
-\textit{transient} for the histogram $h[n]$.
+represents background detections from ambient light and false positive detections known as \textit{dark
+count}. As derived in previous work, the combination of signal and background
+can be modeled as an inhomogeneous Poisson process
+$\mathcal{P}$~\cite{Kirmani:2014,Shin2015}. Finally, we adopt the term
+\textit{transient} for the histogram $h[n]$~\cite{Xin2019}.
 
-\subsection{Ambient Rejection and Falloff Correction}
-Before histogram matching can be applied, the raw SPAD transient is processed in
-three stages.
+\begin{figure}
+  \centering
+  \includegraphics[width=\columnwidth]{method.pdf}
+  \caption{\textbf{Overview of processing pipeline} The processing pipeline uses
+      the input SPAD measurements and an RGB image to produce an accurate depth
+      map. The SPAD measurements are pre-processed to adjust for ambient photon
+      detections, radiometric falloff factors, and to calibrate the bin widths.
+      From the RGB image, an MDE estimates an initial depth map
+      and the scene reflectance is estimated. A reflectance-weighted
+      depth histogram is compared to the processed SPAD measurements to
+      calculate a histogram matching matrix which is used to output the corrected depth map.
+  }
+  \label{fig:pipeline}
+\end{figure}
 
-In the first stage, we remove the ambient and dark count photons from the transient. 
-We compute an estimate of $b$ by assuming that the first $N$ bins of the SPAD transient
-contain only ambient and dark count photons (this is equivalent to assuming the
-minimum image distance is larger than $Nc\Delta T/2$) as:
+\subsection{Ambient Rejection and Falloff Correction} Before performing
+histogram matching, we apply three pre-processing steps to (1)
+remove background counts from the transient, (2) compensate for distance
+falloff effects, and (3) re-bin the histogram to improve relative accuracy
+with increasing distance. An overview of the processing pipeline, including
+these preprocessing steps and the histogram matching procedure is depicted in
+Figure~\ref{fig:pipeline}.
+
+In the first step, we remove the background counts from the
+transient by initally estimating the average amount of background counts
+in each time bin. For nearly all natural scenes, the closest objects to the
+camera are a finite distance away, and so the first bins of the SPAD
+measurement contain only background counts without any backscattered
+signal. We can therefore estimate the
+average number of background and noise counts $\hat{b}$ as 
+%
 \begin{equation}
   \hat b = \frac{1}{N}\sum_{n=0}^N h[n]. 
   \label{eq:ambient_estimate}
 \end{equation}
-We identify the first and last bins $n_{first}$ and $n_{last}$
-corresponding to the minimum and maximum scene depths. We do this with a simple
-edge thresholding procedure, computing the absolute first difference $d[n] =
-\abs{h[n] - h[n+1]}$. If $h[n]$ and $h[n+1]$ are sampled according to $\mathcal{P}(b)$ and $b$ is large, then 
-$h[n] - h[n+1]$ is well-approximated with a Gaussian with mean $0$ and variance $2b$.
-Therefore, we can extract a candidate edge set $\mathcal{E}$ as:
+%
+where we choose the number of bins $N$ to correspond to time
+values before the backscattered signal arrives. 
+
+While simply subtracting $\hat{b}$ from the measurements would remove many of
+the background counts, a large number of bins containing only background counts would still
+have non-zero values, resulting in a skewed
+estimate after applying histogram matching.  Instead, we estimate the temporal
+support of histogram bins containing signal photons (\ie the range of depths the
+scene) and only subtract $\hat{b}$ from these bins. We assume that other
+histogram bins contain only background counts that can be discarded. 
+
+Specifically, we identify the first and last bins that record backscattered signal
+photons by locating discontinuities in the recorded counts~\cite{Xin2019}. An initial spike in
+the measurements at bin $n_\text{first}$ results from the onset of backscattered signal from the closest
+object, and a steep dropoff occurs after bin $n_\text{last}$ after backscattered photons from the
+furthest object are recorded. 
+We estimate $n_\text{first}$ and $n_\text{last}$ by calculating  
+first order differences of the histogram $d[n] = \abs{h[n] - h[n+1]}$. 
+For a moderate number of background counts, the variance of $h[n] - h[n+1]$ can be approximated  
+as a Gaussian with mean $0$ and variance $2b$, and we identify candidate discontinuities
+$\mathcal{E}$ with a threshold on the measured differences:
+%
 \begin{equation}
   \mathcal{E} = \mset{n}{d[n] > \beta\sqrt{2\hat b}}.
   \label{eq:edge_set}
 \end{equation}
-In this work, we use $\beta = 5$, as it gives good results across both simulated
-and captured data.
-We compute initial estimates $n'_{first} = \min \mathcal{E}$ and
-$n'_{last} = \paren*{\max \mathcal{E}} + 1$ respectively. By appealing to Proposition 3 in
-\cite{Xin2019} and noting the similarity of our approach to collecting a single
-non-line-of-sight SPAD measurement we can conclude that our estimates must be
-close to the true values of $n_{first}$ and $n_{last}$.
-We refine these estimates by walking them outwards until their bin values drop
-below the ambient estimate $\hat b$, resulting in
-$\hat n_{first} = \max\paren*{\set{n'_{first}}\cup\mset{n}{h[n] > \hat b, n \leq n'_{first}}}$ and
-$\hat n_{last} = \min\paren*{\set{n'_{last}}\cup\mset{n}{h[n] > \hat b, n \geq n'_{last}}}$.
-Finally, we reject all photons outside of the valid range by clamping those bins
-to 0, and we subtract our ambient estimate from the photons within the valid
-range:
-\begin{equation}
-  h'_{clean}[n] = \begin{cases}
-    0 & n < \hat n_{first} \\
-    \max(h[n] - \hat b, 0) & \hat n_{first} \leq  n \leq \hat n_{last} \\
-    0 & n > \hat n_{last} \\
-  \end{cases}.
-  \label{eq:h_clean}
-\end{equation}
+We find that $\beta = 5$ yields good results across both simulated and captured
+data.
 
-In the second stage, we set 
+Initial estimates $n'_\text{first}$ and $n'_\text{last}$ are set to the minimum
+value in $\mathcal{E}$ and the maximum value, incremented by one bin. 
+Then, we refine these estimates by selecting the closest bins that remain above
+a threshold $\tau$ such that
 \begin{equation}
-  h_{clean}[n] = h'_{clean}[n] \cdot r_n^2
+    \begin{split}
+        &\hat n_\text{first}=\min\{n : h[n] > \tau, h[n+1] > \tau,
+            \cdots, h[n'_\text{first}] > \tau\}\\
+        &\hat n_\text{last}=\max\{n : h[n'_\text{last}] > \tau,
+    \cdots, h[n+1] > \tau, h[n] > \tau\}.
+    \end{split}
+\end{equation}
+The remaining ambient counts are discarded by settings the recorded counts to
+zero for all bins where $n < n_\text{last}$ and $n > n_\text{last}$.
+
+%Finally, we reject all photons outside of the valid range by
+%clamping those bins to 0, and we subtract our ambient estimate from the photons
+%within the valid range:
+%\begin{equation}
+%  h'_{clean}[n] = \begin{cases}
+%    0 & n < \hat n_{first} \\
+%    \max(h[n] - \hat b, 0) & \hat n_{first} \leq  n \leq \hat n_{last} \\
+%    0 & n > \hat n_{last} \\
+%  \end{cases}.
+%  \label{eq:h_clean}
+%\end{equation}
+
+In the second step, we compensate for distance falloff effects by multiplying the histogram
+by distance-dependent scaling factor,
+\begin{equation}
+    h'[n] = h[n] \cdot r_n^2.
   \label{eq:h_scaled}
 \end{equation}
-where $r_n= \paren*{n + \frac12}\paren*{\frac{c\Delta t}{2}}$ is the depth
-corresponding to bin $n$. This compensates for the radiometric falloff in a way
-that is consistent with our hardware prototype's falloff model 
+Here, $r_n= \paren*{n + \frac12}\paren*{\frac{c\Delta t}{2}}$ is the distance
+corresponding to bin $n$, and this radiometric falloff model is consistent with
+measurements captured with our hardware prototype.
 
-In the final stage, we re-bin the transient, applying the Spacing-Increasing Discretization
-(SID) of \cite{Fu2018} to produce $h_{target}$. This discretization scheme is
-exponential rather than linear, allocating more bins to closer distances and fewer
-bins to farther distances. The bin edges $t_i$ are given by the following equation,
+Last, we re-bin the transient so that the bin widths increase for increasingly
+distant objects. We select the Spacing-Increasing Discretization
+(SID) method of \cite{Fu2018}, which changes the bin widths according to an  
+exponential function, allocating more bins to closer distances and fewer
+bins to farther distances for a fixed number of bins. The bin edges $t_i$ are
+given by the following equation,
 parameterized by the number of bins $K$ and the range of distances $[\ell, u]$: 
 \begin{equation}
   t_i = e^{\log(\ell) + \frac{\log(u/\ell) \cdot i}{K}}  \qquad i = 0,\ldots, K.
   \label{eq:sid_bin_edges}
 \end{equation}
-This reduces the number of bins in the histogram
-matching procedure, giving speedups while maintaining performance. For the
-simulated results,
-we use $K = 140$ bins, and $(\ell, u) = (0.657, 9.972)$, (these numbers are
-inspired by the discretization scheme for the original DORN network in
-\cite{Fu2018})
- For the indoor caputred results, we use $K = 600$ bins, and $(\ell, u)=(0.4, 9) + \epsilon$ 
-and for the outdoor captured results, we use $K=600$ and $(\ell, u)=(0.4, 11) +
-\epsilon$ where $\epsilon \approx 0.094$ is the $z$ offset between the
-SPAD and the Kinect (see Hardware for details).
+This rebinning procedure allows us to use a reduced number of bins in the histogram
+matching procedure, reducing computation time while maintaining accuracy. For
+the simulated results we follow Fu et al.\ and use $K = 140$ bins with $(\ell, u)
+= (0.657, 9.972)$~\cite{Fu2018}. The output of the rebinning procedure is the
+target histogram $h_\text{target}$ which we use for histogram matching. 
 
 % \begin{itemize}
 %   \item Talk about histogram matching in the ideal case, jump straight to intensity 
@@ -213,22 +247,37 @@ SPAD and the Kinect (see Hardware for details).
 %  \label{alg:ehm}
 %  \input{sections/figures/exact_hist_matching_pseudo.tex}
 % \end{algorithm}
-Histogram matching is a procedure that takes a source image and a target
-histogram and maps the pixel values of the source image so that the image's
-histogram matches the target histogram. Given a single RGB image, we pass it
-through an MDE to produce a depth map. In a parallel processing step,
-we compute an estimate $W$ of the scene albedo using an intrinsic imaging method and
-take the color channel of the resulting albedo image that corresponds to the
-wavelength of the laser illumination.
-We then compute a weighted histogram $h_{source}$ of the depth map $\hat z_0$ where the
-per-pixel weights are given by $W$, and the bin edges are given by the SID
-discretization algorithm in \cite{Fu2018}.
+Histogram matching is a procedure that adjusts pixel values from an input image
+so that the image histogram matches a target histogram. We apply this procedure
+to match the histogram of an input depth map, obtained from an MDE, to the
+post-processed target histogram $h_\text{target}$ from the SPAD. 
+
+The MDE cannot be directly histogram-matched to the target histogram
+because the target histogram incorporates the spatially varying reflectance of
+the scene. To account for reflectance in the histogram matching procedure,
+we use the normalized image color channel closest to the laser wavelength as an
+estimate of the reflectance and compute a reflectance-weighted depth histogram
+$h_\text{source}$;
+instead of incrementing a bin in the depth histogram by one for every pixel in the MDE
+at the corresponding depth, we add the estimated reflectance value of the pixel
+to the histogram bin. 
 
 We match the histogram $h_{source}$ to $h_{target}$ using the method of
-\cite{Morovic2002}. We compute a pixel movement
-matrix $T$ such that $T[m, n]$ is the amount of mass that must be moved from $h_{source}[m]$
-to $h_{target}[n]$. We do so using the procedure outlined in \ref{alg:ehm}
+Morovic et al.~\cite{Morovic2002}. The method involves computing a pixel movement
+matrix $T$ such that $T[m, n]$ is the fraction of $h_{source}[m]$ that should be
+moved to $h_{target}[n]$. The details of this procedure are outlined in
+Algorithm~\ref{alg:ehm}. Intuitively, the procedure starts from the first bin of the
+source histogram and distributes its contents to the first bins of the target
+histogram, with successive source histogram bins being shifted to successive
+target bins in sequence.
 
+Finally, we use the movement matrix $T$ to shift the pixels of the MDE depth map
+to match the global depth of the target histogram. For a depth map pixel with
+depth bin $k$, we select the corrected bin by sampling from the distribution $T[k,
+:]/\sum_{n=1}^NT[k,n]$. This sampling procedure handles the
+case where a single input depth bin of the MDE is mapped to
+multiple output bins~\cite{Morovic2002}.
+%
 \begin{algorithm}[H]
  \caption{Pixel Movement} 
  \label{alg:ehm}
@@ -246,13 +295,9 @@ to $h_{target}[n]$. We do so using the procedure outlined in \ref{alg:ehm}
   \EndProcedure
  \end{algorithmic}
 \end{algorithm}
+%
 
-Finally, once we have obtained $T$, for a pixel $z_0[i, j]$ in bin $k$, we sample the new bin from the
-distribution $T[k, :]/\sum_{n=1}^NT[k,n]$ (which is a distribution over target
-depth bins $1,\ldots,N$) to get the bin of $\hat z[i,j]$. We can then apply the
-standard SID decoding procedure to get the depth corresponding to that bin
-\textcolor{red}{Does the above seem reasonable to include? Not sure if the
-  pseudocode is helpful/necessary or not.}
+
 %\subsection{Implementation Details}
 %For the Monocular Depth Estimator, we use pretrained versions of the
 %the Deep Ordinal Regression Network (DORN) \cite{} and the DenseDepth Network.
