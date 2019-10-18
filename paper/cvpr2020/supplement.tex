@@ -57,7 +57,26 @@
   \item Captured: 70, 140, 210, 280 bins
 \end{itemize}
 Compare RMSE and runtime.
+Simulated on NYU Depth v2. DenseDepth, SBR of 100. Only histogram matching
+was timed, not the running of the MDE or the denoising pipeline.
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{c|cc}
+    \toprule
+    \# of sid bins & RMSE & Approx. Time/image (sec) \\
+    \midrule
+    70  & $0.351$ & $0.24$ \\
+    140 & $0.346$ & $0.63$ \\
+    210 & $0.345$ & $1.12$ \\
+    280 & $0.345$ & $1.84$ \\
+    \bottomrule
+  \end{tabular}
+\end{figure}
+
+
 \section{Ablation study on effect of reflectance estimation}
+Simulated on NYU v2. DenseDepth, 140 bins. SPAD simulation uses intensity, SBR
+of 100.
 \begin{itemize}
   \item Intensity used to initialize histogram, not used to move pixels
   \item Intensity used to initialize histogram and move pixels
@@ -65,6 +84,27 @@ Compare RMSE and runtime.
   \item Intensity not used to initialize histogram, not used to move pixels
 \end{itemize}
 Compare RMSE and runtime.
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{c|c|cc}
+    \toprule
+    Intensity-weighted histogram & Intensity-aware pixel movement & Avg. RMSE & Approx. Time/image (sec) \\
+    \midrule
+    \multirow{2}{*}{Yes} & Yes & $0.346$ & $4.6$ \\
+                         & No & $0.346$ & $0.6$ \\
+    \midrule
+    \multirow{2}{*}{No} & Yes & $0.444$ & $4.7$ \\
+                        & No & $0.444$ & $0.6$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{Ablation study on simulated data for NYU Depth v2. When the SPAD
+    is simulated with the reflectance info but no reflectance estimate is used
+    to generate a weighted histogram from the CNN depth map, the results are
+    significantly worse. Furthermore, the pixel movement procedure need not take
+  into account the weights of the pixels being moved, since doing so provides no
+improvement and can take appreciably longer than a vectorized implementation
+that does not take pixel weights into account.}
+\end{figure}
 
 \section{Additional results on NYU Depth v2}
 Figures \ref{fig:densedepth_1}--\ref{fig:dorn_3} show additional results

@@ -11,6 +11,8 @@ from remove_dc_from_spad import remove_dc_from_spad_poisson, remove_dc_from_spad
 from nyuv2_labeled_dataset import nyuv2_labeled_ingredient, load_data
 from models.core.checkpoint import safe_makedir
 
+from time import process_time
+
 from models.loss import get_depth_metrics
 
 ex = Experiment("densedepth_weighted_hist_match", ingredients=[nyuv2_labeled_ingredient])
@@ -61,7 +63,8 @@ def cfg(data_config):
         output_dir += "_int"
     if not vectorized:
         output_dir += "_vec"
-
+    if sid_bins != 140:
+        output_dir += "_sid_{}".format(sid_bins)
 
 
 @ex.automain
@@ -72,6 +75,7 @@ def run(dataset_type,
         sid_bins, alpha, beta, offset,
         intensity_ablation, vectorized,
         entry, save_outputs, small_run, output_dir):
+    print("output dir: {}".format(output_dir))
     safe_makedir(output_dir)
 
     # Load all the data:
@@ -111,13 +115,15 @@ def run(dataset_type,
         metrics = np.zeros((len(dataset) if not small_run else small_run, len(metric_list)))
         entry_list = []
         outputs = []
+        times = []
         for i in range(depth_data.shape[0]):
             if small_run and i == small_run:
                 break
             entry_list.append(i)
-
             print("Evaluating {}[{}]".format(dataset_type, i))
             spad = spad_data[i,...]
+            bin_edges = np.linspace(min_depth, max_depth, len(spad) + 1)
+            bin_values = (bin_edges[1:] + bin_edges[:-1])/2
             # spad = preprocess_spad_ambient_estimate(spad, min_depth, max_depth,
             #                                             correct_falloff=use_squared_falloff,
             #                                             remove_dc= dc_count > 0.,
@@ -128,6 +134,7 @@ def run(dataset_type,
             # Ablation study: Turn off intensity, even if spad has been simulated with it.
             if use_intensity and not intensity_ablation:
                 weights = intensity_data[i, 0, ...]
+
             if dc_count > 0.:
                 spad = remove_dc_from_spad_edge(spad,
                                                 ambient=ambient,
@@ -135,8 +142,7 @@ def run(dataset_type,
                                                 grad_th=5*np.sqrt(2*ambient))
             # print(2*ambient)
             # print(5*np.sqrt(2*ambient))
-            bin_edges = np.linspace(min_depth, max_depth, len(spad) + 1)
-            bin_values = (bin_edges[1:] + bin_edges[:-1])/2
+
             if use_squared_falloff:
                 if lambertian:
                     spad = spad * bin_values ** 4
@@ -153,8 +159,10 @@ def run(dataset_type,
                                offset=0.)
             spad_rescaled = rescale_bins(spad[min_depth_bin:max_depth_bin+1],
                                          min_depth_pred, max_depth_pred, sid_obj_pred)
+            start = process_time()
             pred, t = image_histogram_match_variable_bin(depth_data[i, 0, ...], spad_rescaled, weights,
                                                          sid_obj_init, sid_obj_pred, vectorized)
+            times.append(process_time() - start)
             # break
             # Calculate metrics
             gt = dataset[i]["depth_cropped"].unsqueeze(0)
@@ -177,7 +185,7 @@ def run(dataset_type,
 
         if save_outputs:
             np.save(os.path.join(output_dir, "densedepth_{}_outputs.npy".format(hyper_string)), np.array(outputs))
-
+        print("Avg Time: {}".format(np.mean(times)))
         # Save metrics using pandas
         metrics_df = pd.DataFrame(data=metrics, index=entry_list, columns=metric_list)
         metrics_df.to_pickle(path=os.path.join(output_dir, "densedepth_{}_metrics.pkl".format(hyper_string)))
