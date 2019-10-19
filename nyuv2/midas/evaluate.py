@@ -68,8 +68,8 @@ def main(model_path,
 
 if __name__ == '__main__':
     model_path = os.path.join("MiDaS", "model.pt")
-    # crop = (20, 460, 24, 616)   # Standard crop
-    crop = (0, 480, 0, 640)       # No crop
+    crop = (20, 460, 24, 616)   # Standard crop
+    # crop = (0, 480, 0, 640)       # No crop
 
     output_dir = "results"
     cuda_device = "3"  # The gpu index to run on. Should be a string

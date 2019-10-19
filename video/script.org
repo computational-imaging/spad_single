@@ -1,0 +1,12 @@
+* Related Work
+** Existing MDEs suffer from scale invariant error.
+** Stereo methods are better, but still lacking (occlusions)
+** Scanning LiDAR is bulky and expensive
+** Combine the best of both worlds
+* Key insight: resolve scale-invariant error with a single pixel flash LiDAR
+** Able to timestamp returning photons with picosecond accuracy
+* Method
+** RGB pipeline first
+*** 
+** Accumulate photons into a histogram of image depths
+** Estimate an intensity image

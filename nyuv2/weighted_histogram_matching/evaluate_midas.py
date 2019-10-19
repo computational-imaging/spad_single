@@ -143,10 +143,17 @@ def run(dataset_type,
                 else:
                     spad = spad * bin_values ** 2
             # Scale SID object to maximize bin utilization
-            min_depth_bin = np.min(np.nonzero(spad))
-            max_depth_bin = np.max(np.nonzero(spad))
-            min_depth_pred = bin_edges[min_depth_bin]
-            max_depth_pred = bin_edges[max_depth_bin+1]
+            nonzeros = np.nonzero(spad)[0]
+            if nonzeros.size > 0:
+                min_depth_bin = np.min(nonzeros)
+                max_depth_bin = np.max(nonzeros) + 1
+                if max_depth_bin > len(bin_edges) - 2:
+                    max_depth_bin = len(bin_edges) - 2
+            else:
+                min_depth_bin = 0
+                max_depth_bin = len(bin_edges) - 2
+            min_depth_pred = np.clip(bin_edges[min_depth_bin], a_min=1e-2, a_max=None)
+            max_depth_pred = np.clip(bin_edges[max_depth_bin+1], a_min=1e-2, a_max=None)
             sid_obj_pred = SID(sid_bins=sid_obj_init.sid_bins,
                                alpha=min_depth_pred,
                                beta=max_depth_pred,
