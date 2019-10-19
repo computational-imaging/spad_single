@@ -52,13 +52,16 @@
 
 \maketitle
 \section{Ablation study on number of SID bins}
-\begin{itemize}
-  \item Simulation: 70, 140, 210, 280 bins
-  \item Captured: 70, 140, 210, 280 bins
-\end{itemize}
-Compare RMSE and runtime.
-Simulated on NYU Depth v2. DenseDepth, SBR of 100. Only histogram matching
-was timed, not the running of the MDE or the denoising pipeline.
+% \begin{itemize}
+%   \item Simulation: 70, 140, 210, 280 bins
+%   \item Captured: 70, 140, 210, 280 bins
+% \end{itemize}
+% Compare RMSE and runtime.
+We conducted an ablation study to assess the effect of the number of SID bins
+\cite{Fu2018} on both runtime and RMSE. We performed this analysis using SPAD
+data with a signal-to-background (SBR) of 100, simulated on the test set of NYU Depth v2. Our
+MDE was DenseDepth, and only the actual histogram matching portion 
+was timed, not the running of the MDE nor the denoising pipeline.
 \begin{figure}[H]
   \centering
   \begin{tabular}{c|cc}
@@ -71,19 +74,28 @@ was timed, not the running of the MDE or the denoising pipeline.
     280 & $0.345$ & $1.84$ \\
     \bottomrule
   \end{tabular}
+  \caption{Effect of number of SID bins on RMSE and runtime. The marginal
+    improvement in RMSE is offset by the increase in runtime as the number of
+    bins grows.}
+  \label{fig:sid_ablation}
 \end{figure}
 
 
 \section{Ablation study on effect of reflectance estimation}
-Simulated on NYU v2. DenseDepth, 140 bins. SPAD simulation uses intensity, SBR
-of 100.
-\begin{itemize}
-  \item Intensity used to initialize histogram, not used to move pixels
-  \item Intensity used to initialize histogram and move pixels
-  \item Intensity not used to initialize histogram, used to move pixels
-  \item Intensity not used to initialize histogram, not used to move pixels
-\end{itemize}
-Compare RMSE and runtime.
+We conducted an ablation study to assess whether the use of a reflectance
+estimate has an impact on the runtime and quality of the solution.
+We performed this analysis using SPAD
+data with a signal-to-background (SBR) of 100, simulated on the test set of NYU Depth v2. Our
+MDE was DenseDepth, and only the actual histogram matching portion 
+was timed, not the running of the MDE nor the denoising pipeline.
+
+% \begin{itemize}
+%   \item Intensity used to initialize histogram, not used to move pixels
+%   \item Intensity used to initialize histogram and move pixels
+%   \item Intensity not used to initialize histogram, used to move pixels
+%   \item Intensity not used to initialize histogram, not used to move pixels
+% \end{itemize}
+% Compare RMSE and runtime.
 \begin{figure}[H]
   \centering
   \begin{tabular}{c|c|cc}
@@ -100,7 +112,8 @@ Compare RMSE and runtime.
   \caption{Ablation study on simulated data for NYU Depth v2. When the SPAD
     is simulated with the reflectance info but no reflectance estimate is used
     to generate a weighted histogram from the CNN depth map, the results are
-    significantly worse. Furthermore, the pixel movement procedure need not take
+    significantly worse. Furthermore, once the pixel movement matrix has been
+    computed, the pixel movement procedure need not take
   into account the weights of the pixels being moved, since doing so provides no
 improvement and can take appreciably longer than a vectorized implementation
 that does not take pixel weights into account.}

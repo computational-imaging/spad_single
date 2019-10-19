@@ -2,23 +2,28 @@
 \toprule
 {} & $\delta^1 \uparrow$ & $\delta^2 \uparrow$ & $\delta^3 \uparrow$ &   $rel \downarrow$ &  $rmse \downarrow$ & $log10 \downarrow$ \\
 \midrule
-DORN~\cite{Fu2018}                               &               0.846 &               0.954 &               0.983 &              0.120 &              0.501 &              0.053 \\
+DORN                               &               0.846 &               0.954 &               0.983 &              0.120 &              0.501 &              0.053 \\
 DORN + median rescaling            &               0.871 &               0.964 &               0.988 &              0.111 &              0.473 &              0.048 \\
-DORN + GT histogram matching       &      \textbf{0.906} &      \textbf{0.972} &      \textbf{0.990} &              0.095 &              0.419 &  \underline{0.040} \\
-Proposed (SBR=10)                  &   \underline{0.903} &               0.970 &   \underline{0.989} &              0.091 &              0.422 &  \underline{0.040} \\
-Proposed (SBR=50)                  &      \textbf{0.906} &   \underline{0.971} &      \textbf{0.990} &     \textbf{0.089} &  \underline{0.410} &     \textbf{0.039} \\
-Proposed (SBR=100)                 &      \textbf{0.906} &   \underline{0.971} &      \textbf{0.990} &  \underline{0.090} &     \textbf{0.408} &     \textbf{0.039} \\
+DORN + GT histogram matching       &   \underline{0.906} &      \textbf{0.972} &      \textbf{0.990} &              0.095 &              0.419 &  \underline{0.040} \\
+Proposed (SBR=5)                   &               0.902 &               0.970 &   \underline{0.989} &              0.092 &              0.423 &  \underline{0.040} \\
+Proposed (SBR=10)                  &               0.905 &   \underline{0.971} &      \textbf{0.990} &  \underline{0.090} &  \underline{0.413} &     \textbf{0.039} \\
+Proposed (SBR=50)                  &   \underline{0.906} &   \underline{0.971} &      \textbf{0.990} &     \textbf{0.089} &     \textbf{0.408} &     \textbf{0.039} \\
+Proposed (SBR=100)                 &      \textbf{0.907} &   \underline{0.971} &      \textbf{0.990} &     \textbf{0.089} &     \textbf{0.408} &     \textbf{0.039} \\
 \midrule
-DenseDepth~\cite{Alhashim2018}                         &               0.847 &               0.973 &   \underline{0.994} &              0.123 &              0.461 &              0.053 \\
-DenseDepth + median rescaling      &               0.888 &               0.978 &      \textbf{0.995} &              0.106 &              0.409 &              0.045 \\
-DenseDepth + GT histogram matching &      \textbf{0.930} &      \textbf{0.984} &      \textbf{0.995} &     \textbf{0.079} &     \textbf{0.338} &     \textbf{0.034} \\
-Proposed (SBR=10)                  &               0.922 &               0.982 &   \underline{0.994} &              0.082 &              0.361 &              0.036 \\
-Proposed (SBR=50)                  &               0.925 &   \underline{0.983} &      \textbf{0.995} &  \underline{0.081} &              0.348 &  \underline{0.035} \\
-Proposed (SBR=100)                 &   \underline{0.926} &   \underline{0.983} &      \textbf{0.995} &  \underline{0.081} &  \underline{0.346} &  \underline{0.035} \\
+DenseDepth                         &               0.837 &      \textbf{0.988} &      \textbf{0.998} &              0.123 &              0.478 &              0.052 \\
+DenseDepth + median rescaling      &               0.888 &               0.978 &   \underline{0.995} &              0.106 &              0.409 &              0.045 \\
+DenseDepth + GT histogram matching &      \textbf{0.930} &   \underline{0.984} &   \underline{0.995} &     \textbf{0.079} &     \textbf{0.338} &     \textbf{0.034} \\
+Proposed (SBR=5)                   &               0.922 &               0.981 &               0.994 &              0.083 &              0.361 &              0.036 \\
+Proposed (SBR=10)                  &               0.924 &               0.982 &   \underline{0.995} &              0.082 &              0.352 &  \underline{0.035} \\
+Proposed (SBR=50)                  &               0.925 &               0.983 &   \underline{0.995} &  \underline{0.081} &              0.347 &  \underline{0.035} \\
+Proposed (SBR=100)                 &   \underline{0.926} &               0.983 &   \underline{0.995} &  \underline{0.081} &  \underline{0.346} &  \underline{0.035} \\
 \midrule
-MiDaS~\cite{Lasinger:2019} + GT histogram matching      &      \textbf{0.801} &      \textbf{0.943} &      \textbf{0.982} &     \textbf{0.149} &     \textbf{0.558} &     \textbf{0.062} \\
-Proposed (SBR=10)                  &               0.791 &               0.937 &   \underline{0.979} &  \underline{0.151} &              0.575 &  \underline{0.064} \\
-Proposed (SBR=50)                  &   \underline{0.793} &   \underline{0.938} &   \underline{0.979} &  \underline{0.151} &  \underline{0.570} &  \underline{0.064} \\
-Proposed (SBR=100)                 &   \underline{0.793} &   \underline{0.938} &   \underline{0.979} &  \underline{0.151} &              0.571 &  \underline{0.064} \\
+MiDaS                              &               0.029 &               0.059 &               0.094 &              0.794 &              2.262 &              0.802 \\
+MiDaS + median rescaling           &               0.574 &               0.826 &               0.928 &              0.289 &              0.980 &              0.111 \\
+MiDaS + GT histogram matching      &      \textbf{0.801} &      \textbf{0.943} &      \textbf{0.982} &     \textbf{0.149} &     \textbf{0.558} &     \textbf{0.062} \\
+Proposed (SBR=5)                   &               0.792 &               0.937 &               0.978 &              0.153 &              0.579 &              0.064 \\
+Proposed (SBR=10)                  &               0.793 &               0.937 &   \underline{0.979} &              0.152 &              0.572 &              0.064 \\
+Proposed (SBR=50)                  &   \underline{0.794} &   \underline{0.938} &   \underline{0.979} &  \underline{0.151} &  \underline{0.570} &  \underline{0.063} \\
+Proposed (SBR=100)                 &   \underline{0.794} &   \underline{0.938} &   \underline{0.979} &  \underline{0.151} &  \underline{0.570} &              0.064 \\
 \bottomrule
 \end{tabular}

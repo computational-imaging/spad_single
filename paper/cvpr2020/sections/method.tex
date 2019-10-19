@@ -43,7 +43,7 @@ $\mathcal{P}$~\cite{Kirmani:2014,Shin2015}. Finally, we adopt the term
 \begin{figure}
   \centering
   \includegraphics[width=\columnwidth]{method.pdf}
-  \caption{\textbf{Overview of processing pipeline} The processing pipeline uses
+  \caption{Overview of processing pipeline. The processing pipeline uses
       the input SPAD measurements and an RGB image to produce an accurate depth
       map. The SPAD measurements are pre-processed to adjust for ambient photon
       detections, radiometric falloff factors, and to calibrate the bin widths.
@@ -114,11 +114,12 @@ a threshold $\tau$ such that
         &\hat n_\text{first}=\min\{n : h[n] > \tau, h[n+1] > \tau,
             \cdots, h[n'_\text{first}] > \tau\}\\
         &\hat n_\text{last}=\max\{n : h[n'_\text{last}] > \tau,
-    \cdots, h[n+1] > \tau, h[n] > \tau\}.
+    \cdots, h[n-1] > \tau, h[n] > \tau\}.
     \end{split}
 \end{equation}
-The remaining ambient counts are discarded by settings the recorded counts to
-zero for all bins where $n < n_\text{last}$ and $n > n_\text{last}$.
+The remaining ambient counts are discarded by setting the recorded counts to
+zero for all bins where $n < n_\text{last}$ and $n > n_\text{last}$. We use 
+$\tau = \hat b + \sqrt{\hat b}$ in all of our experiments.
 
 %Finally, we reject all photons outside of the valid range by
 %clamping those bins to 0, and we subtract our ambient estimate from the photons
@@ -260,7 +261,7 @@ estimate of the reflectance and compute a reflectance-weighted depth histogram
 $h_\text{source}$;
 instead of incrementing a bin in the depth histogram by one for every pixel in the MDE
 at the corresponding depth, we add the estimated reflectance value of the pixel
-to the histogram bin. 
+to the histogram bin.
 
 We match the histogram $h_{source}$ to $h_{target}$ using the method of
 Morovic et al.~\cite{Morovic2002}. The method involves computing a pixel movement
@@ -279,10 +280,10 @@ case where a single input depth bin of the MDE is mapped to
 multiple output bins~\cite{Morovic2002}.
 %
 \begin{algorithm}[H]
- \caption{Pixel Movement} 
+ \caption{Find Pixel Movement} 
  \label{alg:ehm}
  \begin{algorithmic}
-  \Procedure{FindMovement}{$h_s$ of length $M$, $h_t$ of length $N$} 
+  \Procedure{FindPixelMovement}{$h_s$ of length $M$, $h_t$ of length $N$} 
     \State Initialize $T$ as an $M \times N$ array of zeros.
     \For{$m$ in $1,\ldots,M$}
       \For{$n$ in $1,\ldots,N$}
