@@ -63,6 +63,7 @@ with increasing distance. An overview of the processing pipeline, including
 these preprocessing steps and the histogram matching procedure is depicted in
 Figure~\ref{fig:pipeline}.
 
+\vspace{0.8em}\noindent{\bf Background Subtraction.}
 In the first step, we remove the background counts from the
 transient by initally estimating the average amount of background counts
 in each time bin. For nearly all natural scenes, the closest objects to the
@@ -133,6 +134,7 @@ $\tau = \hat b + \sqrt{\hat b}$ in all of our experiments.
 %  \label{eq:h_clean}
 %\end{equation}
 
+\vspace{0.8em}\noindent{\bf Falloff Compensation.}
 In the second step, we compensate for distance falloff effects by multiplying the histogram
 by distance-dependent scaling factor,
 \begin{equation}
@@ -143,6 +145,7 @@ Here, $r_n= \paren*{n + \frac12}\paren*{\frac{c\Delta t}{2}}$ is the distance
 corresponding to bin $n$, and this radiometric falloff model is consistent with
 measurements captured with our hardware prototype.
 
+\vspace{0.8em}\noindent{\bf Histogram Re-binning.}
 Last, we re-bin the transient so that the bin widths increase for increasingly
 distant objects. We select the Spacing-Increasing Discretization
 (SID) method of \cite{Fu2018}, which changes the bin widths according to an  
@@ -151,7 +154,7 @@ bins to farther distances for a fixed number of bins. The bin edges $t_i$ are
 given by the following equation,
 parameterized by the number of bins $K$ and the range of distances $[\ell, u]$: 
 \begin{equation}
-  t_i = e^{\log(\ell) + \frac{\log(u/\ell) \cdot i}{K}}  \qquad i = 0,\ldots, K.
+  t_i = e^{\log(\ell) + \frac{\log(u/\ell) \cdot i}{K}}  \qquad\text{for}\qquad i = 0,\ldots, K.
   \label{eq:sid_bin_edges}
 \end{equation}
 This rebinning procedure allows us to use a reduced number of bins in the histogram

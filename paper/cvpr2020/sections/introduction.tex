@@ -40,7 +40,7 @@ Here, we propose to use a single-pixel SPAD and pulsed light source in an unconv
 To this end, we develop a sensor fusion strategy that processes the ordinal depth computed by a monocular depth estimator to be consistent with the measurements captured by the diffused SPAD. We demonstrate in extensive simulations that our approach achieves substantial improvements in the quality of the estimated depth maps, regardless of which specific depth estimator is used. Moreover, we build an RGB-SPAD camera prototype and demonstrate in practice that our sensor fusion strategy achieves significantly higher-quality depth maps for a variety of captured scenes compared to MDE alone. With this work, we present a practical way to disambiguate depth estimation with RGB images using minimal additional sensing hardware. Specifically, we make the following contributions:
 %
 \begin{itemize}
-	\item We introduce the idea of augmenting an RGB camera with a global depth histogram captured by a SPAD to address scale ambiguity error in monocular depth estimators.	
+	\item We propose augmenting an RGB camera with a global depth histogram captured by a SPAD to address scale ambiguity error in monocular depth estimators.	
   \item We analyze this approach on indoor scenes using the NYU Depth v2 dataset and demonstrate that our approach is able to resolve scale ambiguity while being fast and easy to implement.
 	\item We build a prototype RGB-SPAD camera and evaluate its efficacy on captured data, assessing both the quality and the ability of our method to help generalization of monocular depth estimators across scene types. 
 \end{itemize}
