@@ -53,6 +53,14 @@ In the first two examples, the ``Hallway'' and ``Conference Room'' scenes, we se
 \begin{figure}[t]
 	\centering
 	\includegraphics[width=\columnwidth]{captured.pdf}
-	\caption{Experimental results. For each scene, we record a ground truth depth map that is raster-scanned with the SPAD (upper left subimages), and an RGB image (lower left). A monocular depth CNN predicts an initial depth map (top middle), which is corrected with the diffused SPAD histogram using the proposed method (top right). As shown by the error maps and root mean squared error (RMSE) for each example (lower center, right). The CNN is confused when we show it a photograph of a poster (bottom scene); it incorrectly predicts the depth of the scene depicted on the flat print. Our method is able to correct this error. }
+	\caption{Experimental results. For each scene, we record a ground truth depth
+    map that is raster-scanned with the SPAD (upper left subimages), and an RGB
+    image (lower left). A monocular depth CNN predicts an initial depth map (top
+    middle), which is corrected with the diffused SPAD histogram using the
+    proposed method (top right), as shown by the error maps and root mean
+    squared error (RMSE) for each example (lower center, right). The CNN is
+    confused when we show it a photograph of a poster (bottom scene); it
+    incorrectly predicts the depth of the scene depicted on the flat print. Our
+    method is able to correct this error.}
 	\label{fig:results_captured}
 \end{figure}

@@ -9,14 +9,16 @@ scene geometry to correct errors in monocular depth estimates.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{Limitations}
-The performance of our method is highly dependent on the accuracy of the initial depth map output by the monocular depth estimation algorithm.
+The performance of our method is highly dependent on the accuracy of the initial
+depth map of the MDE algorithm.
 %Since our method relies on the monocular depth estimate, the accuracy of the output depth map also relies on the performance of the initial depth estimate.
 Our results demonstrate that when the MDE technique produces a depth map
-with good ordinal depth, where the ordering object depth is roughly correct, the
-depth estimate can be corrected to produce accurate absolute depth. However, if the ordinal depth of the initial estimate is not correct, these errors will not be corrected by our histogram matching procedure and may propagate to the final output depth map.
+with good ordinal accuracy, where the ordering of object depths is roughly correct, the
+depth estimate can be corrected to produce accurate absolute depth. However, if
+the ordering of the initial depths is not correct, these errors will not be corrected by our histogram matching procedure and may propagate to the final output depth map.
 
 Additionally, since our method relies on a diffused pulsed laser, the laser
-power is spread out over the entire scene. Accordingly for distant scene points very
+power is spread out over the entire scene. Accordingly, for distant scene points very
 little light will return to the SPAD and it may be difficult to accurately
 capture distant scene geometry in the histogram. Thus our method is best suited to short to medium-range scenes.
 
@@ -28,7 +30,7 @@ components, for example, existing cell phones with single-pixel SPAD
 proximity sensors and RGB cameras.
 
 Other methods for extracting scene information from the SPAD histogram could be
-also employed, including learning-based methods to combine the MDE and
+employed, including learning-based methods to combine the MDE and
 histogram. One might even consider sensing regimes where the number of
 returning signal photons is low, such as when the SPAD and camera operate
 at high framerates. While most MDE techniques are tailored to clean RGB images,  
@@ -39,9 +41,8 @@ techniques generalize to noisy scenes under low-light conditions.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{Conclusions}
-Since their introduction, the performance of monocular depth estimation algorithms has improved tremendously.  However, recent advances, which have generally relied on new network architectures or revised training procedures, have produced only modest performance improvements. 
-This suggests we are approaching the limits of what can be achieved using a monocular image alone. 
-In this work we dramatically improve the performance of several monocular depth estimation algorithms by fusing their estimates with depth histograms measurements. 
+Since their introduction, monocular depth estimation algorithms have improved tremendously.  However, recent advances, which have generally relied on new network architectures or revised training procedures, have produced only modest performance improvements. 
+In this work we dramatically improve the performance of several monocular depth estimation algorithms by fusing their estimates with depth histogram measurements. 
 Such histograms are easy to capture using SPADs and are poised to become an important component of future low-cost imaging systems.
 %Moving forward, sensor fusion is poised to become an even more important component of a variety of vision systems.
 %Computational photography approaches may provide the measurements needed to achieve much greater performance improvements, especially as the sensors in devices we use every day become more diverse, complex, and increasingly rely on techniques based on sensor fusion and sophisticated computational algorithms.
