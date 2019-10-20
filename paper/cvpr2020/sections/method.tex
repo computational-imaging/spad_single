@@ -1,9 +1,24 @@
-In this section, we describe the image formation of a diffused pulsed laser and single-photon avalanche diode (SPAD). We also describe an approach for correcting a depth map generated with a monocular depth estimator to match the global scene information captured by the diffused SPAD.
+In this section, we describe the image formation of a diffused pulsed laser and single-photon avalanche diode (SPAD). We also describe an approach for correcting a depth map generated with a monocular depth estimator to match the global scene information captured by the SPAD.
 
 %In this section, we describe the measurement model for a single-pixel time-of-flight lidar sensor under diffuse, pulsed laser illumination. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Image Formation Model of a Diffused SPAD}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\columnwidth]{method.pdf}
+  \caption{Overview of processing pipeline. The processing pipeline uses
+      the input SPAD measurements and an RGB image to produce an accurate depth
+      map. The SPAD measurements are pre-processed to adjust for ambient photon
+      detections, radiometric falloff factors, and to calibrate the bin widths.
+      From the RGB image, an MDE estimates an initial depth map
+      and the scene reflectance is estimated. A reflectance-weighted
+      depth histogram is compared to the processed SPAD measurements to
+      calculate a histogram matching matrix which is used to output the corrected depth.
+  }
+  \label{fig:pipeline}
+\end{figure}
 
 Consider a diffused laser that emits a pulse at time $t = 0$ with time-varying
 intensity $g(t)$ illuminating some 3D scene. We parameterize the geometry of the
@@ -31,7 +46,7 @@ discretized into a histogram $h$ of the form
 	\label{eq:spad_measurements}
 \end{equation}
 %
-where $(n\Delta t, (n+1) \Delta t)$ models the $n^\text{th}$ time interval or bin of the
+where $[n\Delta t, (n+1) \Delta t)$ models the $n^\text{th}$ time interval or bin of the
 temporal histogram, $\eta$ is the photon detection probability of the SPAD, $f$
 is a function that models the temporal uncertainty in the detector, and $b$
 represents background detections from ambient light and false positive detections known as \textit{dark
@@ -40,20 +55,7 @@ can be modeled as an inhomogeneous Poisson process
 $\mathcal{P}$~\cite{Kirmani:2014,Shin2015}. Finally, we adopt the term
 \textit{transient} for the histogram $h[n]$~\cite{Xin2019}.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=\columnwidth]{method.pdf}
-  \caption{Overview of processing pipeline. The processing pipeline uses
-      the input SPAD measurements and an RGB image to produce an accurate depth
-      map. The SPAD measurements are pre-processed to adjust for ambient photon
-      detections, radiometric falloff factors, and to calibrate the bin widths.
-      From the RGB image, an MDE estimates an initial depth map
-      and the scene reflectance is estimated. A reflectance-weighted
-      depth histogram is compared to the processed SPAD measurements to
-      calculate a histogram matching matrix which is used to output the corrected depth map.
-  }
-  \label{fig:pipeline}
-\end{figure}
+
 
 \subsection{Ambient Rejection and Falloff Correction} Before performing
 histogram matching, we apply three pre-processing steps to (1)
@@ -65,7 +67,7 @@ Figure~\ref{fig:pipeline}.
 
 \vspace{0.8em}\noindent{\bf Background Subtraction.}
 In the first step, we remove the background counts from the
-transient by initally estimating the average amount of background counts
+transient by initially estimating the average amount of background counts
 in each time bin. For nearly all natural scenes, the closest objects to the
 camera are a finite distance away, and so the first bins of the SPAD
 measurement contain only background counts without any backscattered
@@ -138,10 +140,10 @@ $\tau = \hat b + \sqrt{\hat b}$ in all of our experiments.
 In the second step, we compensate for distance falloff effects by multiplying the histogram
 by distance-dependent scaling factor,
 \begin{equation}
-    h'[n] = h[n] \cdot r_n^2.
+    h'[n] = h[n] \cdot z_n^2.
   \label{eq:h_scaled}
 \end{equation}
-Here, $r_n= \paren*{n + \frac12}\paren*{\frac{c\Delta t}{2}}$ is the distance
+Here, $z_n= \paren*{n + \frac12}\paren*{\frac{c\Delta t}{2}}$ is the distance
 corresponding to bin $n$, and this radiometric falloff model is consistent with
 measurements captured with our hardware prototype.
 
@@ -282,10 +284,13 @@ depth bin $k$, we select the corrected bin by sampling from the distribution $T[
 case where a single input depth bin of the MDE is mapped to
 multiple output bins~\cite{Morovic2002}.
 %
+
+{ \footnotesize
 \begin{algorithm}[H]
  \caption{Find Pixel Movement} 
  \label{alg:ehm}
  \begin{algorithmic}
+	\footnotesize
   \Procedure{FindPixelMovement}{$h_s$ of length $M$, $h_t$ of length $N$} 
     \State Initialize $T$ as an $M \times N$ array of zeros.
     \For{$m$ in $1,\ldots,M$}
@@ -299,6 +304,7 @@ multiple output bins~\cite{Morovic2002}.
   \EndProcedure
  \end{algorithmic}
 \end{algorithm}
+}
 %
 
 

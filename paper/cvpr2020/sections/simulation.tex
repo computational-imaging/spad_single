@@ -35,7 +35,7 @@ To simulate a SPAD histogram, we take the provided depth map and
 calculate a weighted depth histogram by weighting the pixel contributions to
 each depth bin by the luminance of each pixel. To model radiometric falloff, we
 multiply each bin by $1/z^2$, and convolve with a modeled system temporal
-response, which we approximate as a Gaussian with a full-width at half-maximum of 70ps. We scale
+response, which we approximate as a Gaussian with a full-width at half-maximum of 70~ps. We scale
 the histogram by the total number of observed signal photon counts (set to 
 $10^6$) and  add a fixed number of background photons $b \in \set{10^5, 2\times
 10^4, 10^4}$. The background counts are evenly distributed across all bins to simulate the ambient and dark
