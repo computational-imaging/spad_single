@@ -5,7 +5,9 @@
 performance for that metric, while underline indicates second best. The proposed
 scheme outperforms DenseDepth and DORN on all metrics, and it closely matches or
 even outperforms the median rescaling scheme and histogram matching with the
-exact depth map histogram, even though those methods have access to ground truth. }
+exact depth map histogram, even though those methods have access to ground
+truth.}
+\vspace{-2em}
 \label{tab:comparison}
 \end{center}
 \end{table*}
@@ -19,8 +21,11 @@ exact depth map histogram, even though those methods have access to ground truth
   CNN~\cite{Alhashim2018}. The depth maps estimated by the CNN are reasonable,
   but contain systematic error. Oracle access to the ground truth depth maps,
   either through the median depth or the depth histogram, can remove this error
-  and correct the depth maps. The proposed method uses measurements from a single diffused SPAD and does not rely on ground truth depth, but it achieves a quality that closely matches the best-performing oracle.}
+  and correct the depth maps. The proposed method uses measurements from a
+  single diffused SPAD and does not rely on ground truth depth, but it achieves
+  a quality that closely matches the best-performing oracle.}
 	\label{fig:results_simulated}
+  \vspace{-1em}
 \end{figure*}
 
 
@@ -48,7 +53,22 @@ each bin is Poisson sampled to produce the final simulated SPAD transient.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Simulated Results}
 
-We show an extensive quantitative evaluation in Table~\ref{tab:comparison}. Here, we evaluate three recent monocular depth estimation techniques: DORN~\cite{Fu2018}, DenseDepth~\cite{Alhashim2018}, and MiDaS~\cite{Lasinger:2019}. To evaluate the quality of DORN and DenseDepth, we report various standard error metrics. Moreover, we show a simple post-processing step that rescales their outputs by the median ground truth depth~\cite{Alhashim2018}. We also show the results of histogram matching the output of the CNNs with the ground truth depth map histogram. Note that we do not report the quality of the direct output of MiDaS as this algorithm does not output metric depth. However, we do show its output histogram matched with the ground truth depth map histogram. In all cases, post-processing the estimated depth maps either with the median depth or depth histogram significantly improves the absolute depth estimation, often by a large margin compared to the raw output of the CNNs. Unfortunately, ground truth depth is typically not accessible so neither of these two post-processing methods are viable in practical application scenarios. 
+We show an extensive quantitative evaluation in Table~\ref{tab:comparison}.
+Here, we evaluate three recent monocular depth estimation techniques:
+DORN~\cite{Fu2018}, DenseDepth~\cite{Alhashim2018}, and
+MiDaS~\cite{Lasinger:2019}. To evaluate the quality of DORN and DenseDepth, we
+report various standard error metrics. Moreover, we show a simple
+post-processing step that rescales their outputs by the median ground truth
+depth~\cite{Alhashim2018}. We also show the results of histogram matching the
+output of the CNNs with the ground truth depth map histogram. Note that we do
+not report the quality of the direct output of MiDaS as this algorithm does not
+output metric depth. However, we do show its output histogram matched with the
+ground truth depth map histogram. In all cases, post-processing the estimated
+depth maps either with the median depth or depth histogram significantly
+improves the absolute depth estimation, often by a large margin compared to the
+raw output of the CNNs. Unfortunately, ground truth depth is typically not
+accessible so neither of these two post-processing methods are viable in
+practical application scenarios.
 
 Instead, our method uses the simulated measurements from a single diffused SPAD
 to correct the depth map. In Table~\ref{tab:comparison}, results are shown for several different
