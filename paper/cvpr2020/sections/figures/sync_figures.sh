@@ -11,3 +11,4 @@ rsync -R ././captured/**/**/?(gt_z_proj_crop_depth_fig|z_init_depth_fig|z_med_sc
 rsync -R ././captured/**/**/?(diff_colorbar|depth_colorbar).pdf "$gdrive" 
 rsync method.pdf "$gdrive"
 rsync captured.pdf "$gdrive"
+rsync dither.pdf "$gdrive"

@@ -29,7 +29,13 @@ Although access to the median ground truth depth is impossible in a realistic sc
 
 %Individual SPADs are easy to fabricate and sufficiently cost-effective to be deployed in consumer electronics. When coupled with high-power pulsed lasers, they also form the backbone of emerging single-photon LiDAR systems~\cite{Kirmani:2014,pawlikowska2017single,Li:2019}. However, the required ultra-fast time-stamping electronics make it difficult to fabricate high-resolution SPAD arrays at low cost. Moreover, the scanning requirement for single-pixel systems precludes high-resolution, high-framerate depth mapping and is a barrier to integration in small consumer electronics. 
 
-Here, we propose to use a single-pixel SPAD and pulsed light source in an unconventional way: rather than optically focusing them to record the distance to a single scene point, we diffuse the emitted light and the detector over the entire scene. The resulting measurement resembles a histogram of the depth of the scene and we demonstrate that this can be used to achieve accurate absolute depth when combined with a monocular depth estimate (\cf~Figure~\ref{fig:teaser}).
+Here, we propose to use a single-pixel SPAD and pulsed light source in an
+unconventional way: rather than optically focusing them to record the distance
+to a single scene point, we diffuse the emitted light and the detector over the
+entire scene. The resulting measurement resembles a histogram of the depth of
+the scene and we demonstrate that this can be used to achieve accurate absolute
+depth when combined with a monocular depth estimate
+(\cf~Figure~\ref{fig:teaser}).
 
 %Technically, a diffused SPAD does not record a true depth histogram, but a transient that is affected by square-distance falloff of the backscattered light, spatially varying reflectance of the scene, ambient photons, and detector noise. Nevertheless, we can interpret the measurements of a single-pixel SPAD as something similar to a depth histogram.
 
@@ -39,7 +45,18 @@ Here, we propose to use a single-pixel SPAD and pulsed light source in an unconv
 % move to discussion
 %Our method is not without limitations. It still requires a laser and single-pixel LiDAR detector, and as such, is sensitive to ambient photons. Being  a variant of histogram matching, our method is unable to transpose the values of pixels (i.e. if pixel $a$ is farther than pixel $b$ in the input, it will be farther than pixel $b$ in the output). In other words, our method is not able to resolve ordinal depth errors (errors where an object is wrongly placed closer or farther relative to another object). Finally, our method is non-differentiable, and is therefore unsuitable for end-to-end optimization of multi-part networks.
 
-To this end, we develop a sensor fusion strategy that processes the ordinal depth computed by a monocular depth estimator to be consistent with the measurements captured by the diffused SPAD. We demonstrate in extensive simulations that our approach achieves substantial improvements in the quality of the estimated depth maps, regardless of which specific depth estimator is used. Moreover, we build an RGB-SPAD camera prototype and demonstrate in practice that our sensor fusion strategy achieves significantly higher-quality depth maps for a variety of captured scenes compared to MDE alone. With this work, we present a practical way to disambiguate depth estimation with RGB images using minimal additional sensing hardware. Specifically, we make the following contributions:
+To this end, we develop a sensor fusion strategy that processes the ordinal
+depth computed by a monocular depth estimator to be consistent with the
+measurements captured by the diffused SPAD. We demonstrate in extensive
+simulations that our approach achieves substantial improvements in the quality
+of the estimated depth maps, regardless of which specific depth estimator is
+used. Moreover, we build an RGB-SPAD camera prototype and demonstrate in
+practice that our sensor fusion strategy achieves significantly higher-quality
+depth maps for a variety of captured scenes compared to MDE alone. With this
+work, we present a practical way to disambiguate depth estimation with RGB
+images using minimal additional sensing hardware. Specifically, we make the
+following contributions:
+
 %
 \begin{itemize}
 	\item We propose augmenting an RGB camera with a global depth histogram captured by a diffused SPAD to address scale ambiguity error in monocular depth estimators.	
