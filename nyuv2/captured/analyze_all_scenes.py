@@ -38,22 +38,22 @@ def cfg():
     # bin_width_ps is the bin width in picoseconds of the SPAD for that particular scene
     # min_r and max_r are set to reject direct reflections off the beam splitter.
     scenes = {
-        "8_29_kitchen_scene": {"offset": (-10, -8), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        "8_29_conference_room_scene": {"offset": (-16, -12), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        "8_30_conference_room2_scene": {"offset": (-16, -12), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        "8_30_Hallway": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        # "8_29_kitchen_scene": {"offset": (-10, -8), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        # "8_29_conference_room_scene": {"offset": (-16, -12), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        # "8_30_conference_room2_scene": {"offset": (-16, -12), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        # "8_30_Hallway": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
         "8_30_poster_scene": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        "8_30_small_lab_scene": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
-        "8_31_outdoor3": {"offset": (0, 0), "bin_width_ps": 32, "min_r": 0.4, "max_r": 11.},
+        # "8_30_small_lab_scene": {"offset": (0, 0), "bin_width_ps": 16, "min_r": 0.4, "max_r": 9.},
+        # "8_31_outdoor3": {"offset": (0, 0), "bin_width_ps": 32, "min_r": 0.4, "max_r": 11.},
     }
     # rgb in [0, 255]
     models = {
         "midas": {"load": lambda model_path, device: get_midas("MiDaS/model.pt", device),
                   "run": lambda model, rgb, depth_range, device: midas_predict(model, rgb/255., depth_range, device)},
-        "dorn": {"load": lambda model_path, device: DORN(),
-                 "run": lambda model, rgb, depth_range, device: dorn_predict(model, rgb)},
-        "densedepth": {"load": lambda model_path, device: load_densedepth(model_path, device),
-                       "run": lambda model, rgb, depth_range, device: model.predict(rgb).squeeze()}
+        # "dorn": {"load": lambda model_path, device: DORN(),
+        #          "run": lambda model, rgb, depth_range, device: dorn_predict(model, rgb)},
+        # "densedepth": {"load": lambda model_path, device: load_densedepth(model_path, device),
+        #                "run": lambda model, rgb, depth_range, device: model.predict(rgb).squeeze()}
     }
     use_intensity = True
     vectorized = True
@@ -167,7 +167,12 @@ def analyze(figures_dir, data_dir, calibration_file, models, scenes, use_intensi
 
             # Initialize with CNN
             z_init = run_model(model, rgb_cropped, depth_range=(min_depth, max_depth), device=device)
+            print("min(z_init):", np.min(z_init))
+            print("max(z_init):", np.max(z_init))
             r_init = z_to_r(z_init, kinect_intrinsics["FocalLength"])
+
+            print("min(r_init):", np.min(r_init))
+            print("max(r_init):", np.max(r_init))
 
             # Histogram Match
             weights = intensity

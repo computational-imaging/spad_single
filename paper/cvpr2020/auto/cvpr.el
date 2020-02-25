@@ -1,0 +1,41 @@
+(TeX-add-style-hook
+ "cvpr"
+ (lambda ()
+   (TeX-run-style-hooks
+    "eso-pic"
+    "xspace")
+   (TeX-add-symbols
+    "cvprtenhv"
+    "elvbf"
+    "cvprrulercount"
+    "cvprruleroffset"
+    "onedot"
+    "cvprfinalcopy"
+    "affiliation"
+    "cvprsection"
+    "cvprssect"
+    "cvprsect"
+    "section"
+    "cvprsubsection"
+    "cvprssubsect"
+    "cvprsubsect"
+    "subsection"
+    "fillzeros"
+    "makevruler"
+    "cvprruler"
+    "pid"
+    "eg"
+    "Eg"
+    "ie"
+    "Ie"
+    "cf"
+    "Cf"
+    "etc"
+    "vs"
+    "wrt"
+    "dof"
+    "etal")
+   (LaTeX-add-environments
+    "abstract"))
+ :latex)
+

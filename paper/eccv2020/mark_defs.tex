@@ -1,0 +1,51 @@
+\usepackage{mathtools}
+\DeclarePairedDelimiter{\paren}{\lparen}{\rparen}
+\DeclarePairedDelimiter{\bracket}{[}{]}
+\DeclarePairedDelimiter{\ang}{\langle}{\rangle}
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\DeclarePairedDelimiter{\set}{\{}{\}}
+\DeclarePairedDelimiter{\norm}{\|}{\|}
+\DeclareMathOperator{\dom}{dom}
+% The above let you do things like:
+% Let $A = \set{1,2,\ldots,n}$...
+
+\newtheorem{thm}{Theorem}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{defn}{Definition}[section]
+\newtheorem{conj}[thm]{Conjecture}
+
+\newcommand{\alg}[1]{\begin{algorithm}\begin{algorithmic}[0]#1\end{algorithmic}\end{algorithm}}
+\newcommand{\eqn}[1]{\begin{equation*}#1\end{equation*}}
+\newcommand{\eqnsplit}[1]{\begin{equation}\begin{split}
+#1
+\end{split}\end{equation}}
+\newcommand{\txt}[1]{\textrm{#1}}
+\newcommand{\s}[1]{\section{#1}}
+\newcommand{\sbs}[1]{\subsection{#1}}
+
+\newcommand{\id}{\mathrm{id}}
+\newcommand{\divs}{\mid}
+\newcommand{\tdivs}{\,\Big\vert\,}
+\newcommand{\ndivs}{\nmid}
+
+\newcommand{\mset}[2]{\set*{\, #1 : #2 \,}}
+\newcommand{\msset}[2]{\left\{\, #1 \;\middle\vert\; #2 \,\right\}}
+\newcommand{\smat}[1]{\paren*{\begin{smallmatrix} #1 \end{smallmatrix}}}
+\newcommand{\ord}[1]{\left| #1 \right|}
+% Blackboard bold.
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\E}{\mathbb{E}}
+
+\newcommand{\X}{\mathcal{X}}
+
+% Other
+\newcommand{\del}{\partial}
+\newcommand{\Real}{\text{Re}}
+\newcommand{\Imag}{\text{Im}}
+\newcommand{\res}{\text{res}}

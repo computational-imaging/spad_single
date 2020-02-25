@@ -1,0 +1,139 @@
+\documentclass[10pt,twocolumn,letterpaper]{article}
+\usepackage{cvpr}
+\usepackage{times}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% Include other packages here, before hyperref.
+\usepackage{float}
+% If you comment hyperref and then uncomment it, you should delete
+% egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
+% run, let it finish, and you should be clear).
+\usepackage[pagebackref=true,breaklinks=true,letterpaper=true,colorlinks,bookmarks=false]{hyperref}
+
+%%%%%%%%% PAPER ID  - PLEASE UPDATE
+\def\cvprPaperID{2224} % *** Enter the CVPR Paper ID here
+\def\httilde{\mbox{\tt\raisebox{-.5ex}{\symbol{126}}}}
+\raggedbottom
+\begin{document}
+\title{Optimizing MDE with Global Depth Histogram
+  Matching using a Single SPAD Transient}
+
+\maketitle
+\thispagestyle{empty}
+%%%%%%%%% BODY TEXT - ENTER YOUR RESPONSE BELOW
+We thank our reviewers for their constructive feedback and will make every
+effort to address their concerns.
+
+We propose a technique for augmenting the capabilities of monocular depth
+estimation using transient data from a single-pixel SPAD and diffuse laser
+illumination using a straightforward histogram matching algorithm. We agree with
+all of our reviewers that the idea of using such a depth transient is novel and
+worth investigating.
+
+\vspace{1mm}\noindent\textbf{Equivalence of scanning and diffuse SPAD (R1, R2)}
+First, for
+both scanned and diffuse modes, pileup can be corrected \cite{heide2018subpico} or avoided by operating in the
+low-flux regime. 
+Second, we empirically validate that the digitally summed scanned SPAD
+measurements and the diffused measurements are almost identical. We will add
+discussions of both of these points to the paper.
+\vspace{-2mm}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\linewidth]{figures/figure.pdf}
+  \caption{Setup and captured transients for scanned and diffuse mode.}
+\end{figure}
+
+\vspace{-3mm}\noindent\textbf{Energy of diffuse SPAD (R1, R2, R3)}
+Assuming an ambient spectral irradiance of $I_A = 0.1$ $mW/m^2$, we can calculate the
+laser power required to achieve a minimum SBR of 5 for a diffuse scene at $r = 2$ m
+and a field of view of $\theta = 40^\circ$ as
+\begin{equation}
+  P_{\text{min}} = I_A \cdot 4 r^2 \tan^2(\theta/2) \cdot SBR_{\text{min}}
+\end{equation}
+Which gives $P_{\text{min}} = 1.1$ W. laserpointersafety.com gives the Nominal
+Ocular Hazard Distance for this laser as 0.34m, i.e. the laser light level is
+safe beyond this distance. Given that there are VCELs with well above
+this capability, we feel that our method is a very competitive, eye safe, option for short
+range indoor scenes. 
+
+% McManamon 2012 provide the following equation for any LiDAR setup:
+% \begin{equation}
+%   P_R = P_T \cdot \frac{\rho_tA_t}{A_{\text{illum}}} \cdot \frac{A_{\text{rec}}}{\pi R^2} \cdot \eta_{\text{atm}}^2 \cdot \eta_{\text{sys}}
+% \end{equation}
+%   In the diffused setting, With a laser at 450 nm, and under the assumptions of $P_T=0.0003, \rho_t = 0.5,
+%   A_t = A_{\text{illum}}, A_{\text{rec}} = 7\times 10^{-8}$ (corresponding to a
+%   SPAD with aperture diameter $300$ $\mu$m), $R = 5, \eta_{\text{atm}} = 1$, and
+%   $\eta_{\text{sys}} = 0.5$ we
+%   accumulate $10^6$ signal photons in 0.04 sec, 0.8 sec in the low-flux regime.
+%   At 10MHz, this corresponds to 8 million pulses, or the equivalent of scanning
+%   each point in a $512 \times 512$ grid 30 times. (Include ambient flux levels?)
+
+\vspace{1mm}\noindent\textbf{Justification for two-step method (R1)} We believe
+our final architecture's strength is the fact that it is agnostic to the
+MDE strategy used and will note this in the paper.
+
+\vspace{1mm}\noindent\textbf{Kinect/Dual Pixels (R2)} While each of these methods has its own
+benefits and disadvantages, our approach adds minimal additional hardware to a
+single RGB camera. We will rephrase our comparisons to these methods accordingly.
+
+\vspace{1mm}\noindent\textbf{Failure/limited improvement cases (R2)} We show at least one example in
+the supplement where our method improves in RMSE by only 0.062. In general, our
+method struggles with scenes where the inital depth map contains ordinal depth
+errors.
+
+\vspace{1mm}\noindent\textbf{Maximum SBR used for simulated results (R2)} The
+experimental results are intended to show the performance of the method under
+more realistic conditions. For example, the SBR of the outdoor scene was
+apprximately 0.15. Detailed statistics for the experimental scenes will be
+included to help strengthen our argument for practicality.
+
+\vspace{1mm}\noindent\textbf{Interreflections (R2)} We neglect interreflections
+as a second-order effect following existing work on flash LiDAR systems. \cite{iddan20013dstudio}
+
+\vspace{1mm}\noindent\textbf{Uniform background assumption and negative
+  histogram values (R2)} When operating in the low-flux condition, we follow the
+many papers \cite{lindell2018} which model background photons as a constant term that adds equally to all bins.
+Also, our algorithm clips all negative histogram values to zero after the background
+subtraction step and we will update the section to reflect this.  
+
+\vspace{1mm}\noindent\textbf{Number of acquisition cycles (R1)} In simulation, the histogram
+is directly computed via equation (2).
+Scan times varied from 5 to 25 mins indoors and 3 mins for the outdoor
+scene (the number of $512 \times 512$
+frames can be computed from the scan time and the laser pulse rate of 10MHz).
+While this seems excessively long, this was a deliberate decision to maximize the fidelity of our
+ground truth reconstructions, not to simulate the real capture setting. We
+will report the scan times and number of acquisitions in the paper.
+
+\vspace{1mm}\noindent\textbf{Selection of $K$, $\ell$, and $u$ (R1)} For both simulation and
+experiment, $K$ is chosen to tradeoff between speed and accuracy. For
+$h_{\text{source}}$, $(\ell, u)$ are set to encompass all possible scene depths. For 
+    $h_{\text{target}}$, $(\ell, u)$ are chosen based on the depth values for
+    the bins $\hat n_{\text{first}}$ and $\hat n_{\text{last}}$, respectively.
+    We will update the paper to clarify this point.
+
+\vspace{1mm}\noindent\textbf{Use of overdramatic or imprecise language (R1, R2)} We will make various
+wording adjustments, such as using ``moderate'' instead of
+``slight'' to describe the improvement from median rescaling, using
+``augmenting'' instead of ``optimizing'', and changing improper uses of
+``histogram'' to ``transient''.
+
+\vspace{1mm}\noindent\textbf{Teaser colormaps misleadingly scaled (R2)} We will adjust both
+    figures to use the same scale.
+
+\vspace{1mm}\noindent\textbf{Approximating Poisson dist. with Gaussian (R3)} We will add a
+    footnote explaining our usage of this approximation where it occurs.
+
+\vspace{1mm}\noindent\textbf{Typo in L388 (R3)} We will correct $n < n_{\text{last}}$ to $n <
+    n_{\text{first}}$.
+
+{\small
+\bibliographystyle{ieeetr}
+\bibliography{references}
+}
+
+\end{document}

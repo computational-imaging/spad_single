@@ -1,0 +1,6 @@
+scanned
+10 s 512x512 scan with 1.35 A current and 0.05 neutral density filter.
+
+diffuser
+0.2 A pump current, no neutral density filter, 50 degree holographic square pattern diffuser
+each cell entry is 1 sec exposure time.

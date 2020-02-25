@@ -1,12 +1,44 @@
-* Related Work
-** Existing MDEs suffer from scale invariant error.
-** Stereo methods are better, but still lacking (occlusions)
-** Scanning LiDAR is bulky and expensive
-** Combine the best of both worlds
-* Key insight: resolve scale-invariant error with a single pixel flash LiDAR
-** Able to timestamp returning photons with picosecond accuracy
-* Method
-** RGB pipeline first
-*** 
-** Accumulate photons into a histogram of image depths
-** Estimate an intensity image
+* Depth Estimation - Input->Output, Robotics, autonomous driving, medical imaging images.
+** Estimating dense 3D geometry from 2D images is an important open problem with applications to robotics, autonomous driving, and medical imaging.
+* Related work: Stereo, scanning lidar, camera motion, focus cue related works.
+** Traditional depth sensing techniques include those based on stereo or multiview, active illumination, camera motion, or focus cues. However, each of these method has its own drawbacks including requiring multiple cameras, expensive scanning setups, or multiple exposures.
+* Monocular Depth Estimation and inherent scale ambiguity
+** Monocular Depth Estimation overcomes these challenges by requiring only a single RGB image to recover dense metric depth. However, inherent scale ambiguity makes monocular depth estimation an inherently ill-posed problem.
+* Single Photon Avalanche Diodes
+** Our goal is to take monocular depth estimation to the next level by combining the RGB camera with a single photon avalanche diode, or SPAD.
+** The SPAD provides a global depth histogram that can be used to scale the monocular depth estimate to the actual image scale.
+* Our Diffuse SPAD Measurement
+** These compact time-of-flight sensors have already found their way into current-generation smartphones, such as the iPhone X.
+** Here, we use the SPAD with pulsed laser illumination in an unconventional way: rather than optically focusing the laser to record the distance to a single scene point, we diffuse the emitted light and the detector over the entire scene. 
+** Each time the laser is fired, the SPAD detects and timestamps up to one returning photon, and records the time between the laser pulse and the detection.
+** Firing this laser millions of times per second allows the accumulation of millions of photons into a transient, a histogram of photon arrival times. 
+** This transient resembles a histogram of the depth of the scene, which can then be combined with a regular monocular depth estimator to achieve accurate absolute depth. 
+
+* Method 1: RGB pipeline
+** We will now discuss our sensor fusion method. 
+** We begin with a single RGB image and SPAD measurement histogram of the scene.
+** We pass the RGB image through a monocular depth estimator to acquire an initial depth estimate.
+** In parallel, we use the RGB image to generate a reflectance estimate of the scene at the wavelength of the laser illumination.
+** To complete this stage of the pipeline, we use the reflectance estimate and initial depth estimate to compute a weighted histogram of the image depths. We refer to this histogram as the source histogram.
+* Method 2: SPAD pipeline
+** 
+** Meanwhile, the SPAD transient is processed using a simple three-step procedure that removes background photons, corrects radiometric falloff, and re-bins the SPAD uniformly in log-space. We refer to this histogram as the target histogram.
+
+* Method 3: Histogram matching
+** Given the weighted initial depth histogram and the processed SPAD transient, we compute a pixel movement matrix that describes how the pixel mass should be transferred from the initial histogram to the final histogram.
+** We apply this movement matrix to the initial depth estimate to produce our final depth estimate.
+* Simulation Results 1
+** Here are some examples of our method applied to scenes from the NYU Depth v2 dataset. We simulate the SPAD transient using the ground truth depth and the luminance of the image instead of the reflectance. Our method is able to correct the initial depth estimate and properly scale the image.
+* Simulation Results 2
+* Simulation Results 3
+* Hardware prototype
+** We also built a hardware prototype and evaluated our method on real-world captured data.
+** Our prototype consists of a single-pixel SPAD in a confocal scanning setup,and a Kinect v2.
+** The scanner allows us to capture ground truth depth. We then simulate a single-pixel SPAD measurement by summing the SPAD data cube over the spatial dimensions.
+* Hardware Results 1
+** Here are some captured scenes and our method's reconstructions.
+** Our method is able to correct the scale of the initial depth estimate to produce highly accurate depth maps.
+* Hardware Results 2
+* Hardware Results 3
+* Discussion/Conclusion
+** 

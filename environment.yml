@@ -5,7 +5,7 @@ dependencies:
   - python=3.6
   - pytorch
   - torchvision
-  - cudatoolkit=10.0
+#  - cudatoolkit=10.0
   - numpy
   - scipy
   - scikit-image

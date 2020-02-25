@@ -136,9 +136,7 @@ def depth_imwrite(img, filepath):
     :param filepath:
     :return:
     """
-    # print("depth_imwrite to {}".format(filepath))
-    # print(np.max(img))
-    # print(np.min(img))
+    print("depth_imwrite to {}".format(filepath))
     img_scaled = ((img - np.min(img)) * 65535./(np.max(img) - np.min(img))).astype(np.uint16)
     cv2.imwrite(filepath + ".png", img_scaled)
 
