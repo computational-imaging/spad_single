@@ -15,16 +15,30 @@ depth map of the MDE algorithm.
 Our results demonstrate that when the MDE technique produces a depth map
 with good ordinal accuracy, where the ordering of object depths is roughly correct, the
 depth estimate can be corrected to produce accurate absolute depth. However, if
-the ordering of the initial depths is not correct, these errors will not be corrected by our histogram matching procedure and may propagate to the final output depth map.
+the ordering of the initial depths is not correct, these errors will not be
+corrected by our histogram matching procedure and may propagate to the final
+output depth map.
 
 Additionally, since our method relies on a diffused pulsed laser, the laser
 power is spread out over the entire scene. Accordingly, for distant scene points very
 little light will return to the SPAD and it may be difficult to accurately
-capture distant scene geometry in the histogram. Thus our method is best suited to short to medium-range scenes.
+capture distant scene geometry in the histogram. Thus our method is best suited
+to short to medium-range scenes. For example, assume an indoor scene with
+fluorescent bulbs and an ambient spectral irradiance of $I_A =
+2~\text{mW}/\text{m}^2$ (across the 1 nm pass band of a spectral filter matched
+to the laser). The laser power required to achieve a minimum SBR of 5 for a
+diffuse scene at $r = 2$ m
+and a field of view of $\theta = 40^\circ$ can be calculated as
+\begin{equation}
+  P_{\text{min}} = I_A \cdot 4 r^2 \tan^2(\theta/2) \cdot SBR_{\text{min}},
+\end{equation} 
+giving $P_{\text{min}}=21$ mW, less than the 60 mW of the Kinect.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{Future Work}
-While our hardware prototype is large, future work could miniaturize this system. Our algorithm or similar sensor fusion algorithms could
+While our hardware prototype is large, future work could miniaturize this
+system. Our algorithm or similar sensor fusion algorithms could
 also be integrated into electronics that already contain the required hardware
 components, for example, existing cell phones with single-pixel SPAD
 proximity sensors and RGB cameras.

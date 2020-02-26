@@ -5,45 +5,45 @@ The style file: splncs04.bst
 Database file #1: references.bib
 Warning--empty journal in Veerappan2011
 Warning--empty journal in Xin2019
-You've used 50 entries,
+You've used 51 entries,
             2850 wiz_defined-function locations,
-            863 strings with 13457 characters,
-and the built_in function-call counts, 28932 in all, are:
-= -- 2257
-> -- 1110
-< -- 36
-+ -- 459
-- -- 404
-* -- 1804
-:= -- 3737
-add.period$ -- 54
-call.type$ -- 50
-change.case$ -- 401
+            871 strings with 13696 characters,
+and the built_in function-call counts, 29799 in all, are:
+= -- 2322
+> -- 1157
+< -- 38
++ -- 478
+- -- 422
+* -- 1866
+:= -- 3848
+add.period$ -- 55
+call.type$ -- 51
+change.case$ -- 413
 chr.to.int$ -- 0
-cite$ -- 52
-duplicate$ -- 2619
-empty$ -- 2545
-format.name$ -- 453
-if$ -- 6252
+cite$ -- 53
+duplicate$ -- 2689
+empty$ -- 2604
+format.name$ -- 472
+if$ -- 6435
 int.to.chr$ -- 0
-int.to.str$ -- 50
-missing$ -- 542
-newline$ -- 156
-num.names$ -- 100
-pop$ -- 1118
+int.to.str$ -- 51
+missing$ -- 559
+newline$ -- 159
+num.names$ -- 102
+pop$ -- 1149
 preamble$ -- 1
-purify$ -- 301
+purify$ -- 312
 quote$ -- 0
-skip$ -- 789
+skip$ -- 812
 stack$ -- 0
-substring$ -- 1274
-swap$ -- 1418
-text.length$ -- 36
+substring$ -- 1312
+swap$ -- 1467
+text.length$ -- 38
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 196
+type$ -- 200
 warning$ -- 2
-while$ -- 188
-width$ -- 52
-write$ -- 476
+while$ -- 193
+width$ -- 53
+write$ -- 486
 (There were 2 warnings)

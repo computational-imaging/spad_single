@@ -38,7 +38,9 @@ scene points. Each time such a light pulse is emitted into the scene and
 scattered back to the detector, the single-pixel SPAD time-stamps up to one of
 the returning photons with some probability. The process is repeated millions of
 times per second with the specific number of emitted pulses being controlled by
-the repetition rate of the laser.  Each detected photon arrival event is
+the repetition rate of the laser. As derived in previous work, the resulting measurement
+can be modeled as an inhomogeneous Poisson process
+$\mathcal{P}$~\cite{Kirmani:2014,Shin2015,Shin2016}. Each detected photon arrival event is
 discretized into a histogram $h$ of the form
 %
 \begin{equation}
@@ -50,17 +52,17 @@ where $[n\Delta t, (n+1) \Delta t)$ models the $n^\text{th}$ time interval or bi
 temporal histogram, $\eta$ is the photon detection probability of the SPAD, $f$
 is a function that models the temporal uncertainty in the detector, and $b$
 represents background detections from ambient light and false positive detections known as \textit{dark
-count}. As derived in previous work, the combination of signal and background
-can be modeled as an inhomogeneous Poisson process
-$\mathcal{P}$~\cite{Kirmani:2014,Shin2015}. Finally, we adopt the term
+count}. Like previous work, we neglect scene interreflections
+and confine ourselves to the low-flux condition (where the number of photon
+detections is controlled to be much smaller than the number of emitted pulses)
+to avoid pileup~\cite{Shin2016}. Finally, we adopt the term
 \textit{transient} for the histogram $h[n]$~\cite{Xin2019}.
-
 
 
 \subsection{Ambient Rejection and Falloff Correction} Before performing
 histogram matching, we apply three preprocessing steps to (1)
 remove background counts from the transient, (2) compensate for distance
-falloff effects, and (3) re-bin the histogram to improve relative accuracy
+falloff effects, and (3) re-bin the transient to improve relative accuracy
 with increasing distance. An overview of the processing pipeline, including
 these preprocessing steps and the histogram matching procedure is depicted in
 Figure~\ref{fig:pipeline}.
@@ -86,9 +88,10 @@ While simply subtracting $\hat{b}$ from the measurements would remove many of
 the background counts, a large number of bins containing only background counts would still
 have non-zero values, resulting in a skewed
 estimate after applying histogram matching.  Instead, we estimate the temporal
-support of histogram bins containing signal photons (\ie the range of depths in the
-scene) and only subtract $\hat{b}$ from these bins. We assume that other
-histogram bins contain only background counts that can be discarded. 
+support of transient bins containing signal photons (\ie the range of depths in the
+scene) and only subtract $\hat{b}$ from these bins (clipping negative bin values
+to 0). We assume that other
+transient bins contain only background counts that can be discarded. 
 
 Specifically, we identify the first and last bins that record backscattered signal
 photons by locating discontinuities in the recorded counts~\cite{Xin2019}. An initial spike in
@@ -96,9 +99,10 @@ the measurements at bin $n_\text{first}$ results from the onset of backscattered
 object, and a steep dropoff occurs after bin $n_\text{last}$ after backscattered photons from the
 furthest object are recorded. 
 We estimate $n_\text{first}$ and $n_\text{last}$ by calculating  
-first order differences of the histogram $d[n] = \abs{h[n] - h[n+1]}$. 
-For a moderate number of background counts, the variance of $h[n] - h[n+1]$ can be approximated  
-as a Gaussian with mean $0$ and variance $2b$, and we identify candidate discontinuities
+first order differences of the transient $d[n] = \abs{h[n] - h[n+1]}$. 
+For a moderate number of background counts, each background bin $h[n]$ can be
+approximated as a Gaussian with mean and variance $b$, and thus $h[n] - h[n+1]$ can be approximated  
+as a Gaussian with mean $0$ and variance $2b$. We identify candidate discontinuities
 $\mathcal{E}$ with a threshold on the measured differences:
 %
 \begin{equation}
@@ -121,7 +125,7 @@ a threshold $\tau$ such that
     \end{split}
 \end{equation}
 The remaining ambient counts are discarded by setting the recorded counts to
-zero for all bins where $n < n_\text{last}$ and $n > n_\text{last}$. We use 
+zero for all bins where $n < n_\text{first}$ and $n > n_\text{last}$. We use 
 $\tau = \hat b + \sqrt{\hat b}$ in all of our experiments.
 
 %Finally, we reject all photons outside of the valid range by
@@ -137,8 +141,9 @@ $\tau = \hat b + \sqrt{\hat b}$ in all of our experiments.
 %\end{equation}
 
 \vspace{0.8em}\noindent{\bf Falloff Compensation.}
-In the second step, we compensate for distance falloff effects by multiplying the histogram
-by distance-dependent scaling factor,
+In the second step, we compensate for distance falloff effects by multiplying
+the transient
+by the distance-dependent scaling factor,
 \begin{equation}
     h'[n] = h[n] \cdot z_n^2.
   \label{eq:h_scaled}
@@ -147,7 +152,7 @@ Here, $z_n= \paren*{n + \frac12}\paren*{\frac{c\Delta t}{2}}$ is the distance
 corresponding to bin $n$, and this radiometric falloff model is consistent with
 measurements captured with our hardware prototype.
 
-\vspace{0.8em}\noindent{\bf Histogram Re-binning.}
+\vspace{0.8em}\noindent{\bf Transient Re-binning.}
 Last, we re-bin the transient so that the bin widths increase for increasingly
 distant objects. We select the Spacing-Increasing Discretization
 (SID) method of \cite{Fu2018}, which changes the bin widths according to an  
@@ -160,9 +165,12 @@ parameterized by the number of bins $K$ and the range of distances $[\ell, u]$:
   \label{eq:sid_bin_edges}
 \end{equation}
 This rebinning procedure allows us to use a reduced number of bins in the histogram
-matching procedure, reducing computation time while maintaining accuracy. For
-the simulated results we follow Fu et al.\ and use $K = 140$ bins with $(\ell, u)
-= (0.657, 9.972)$~\cite{Fu2018}. The output of the rebinning procedure is the
+matching procedure, reducing computation time while maintaining accuracy. The
+value of $K$ is selected to trade off between speed and accuracy. For
+the simulated results we use $K = 140$ bins with $(\ell,
+u)$ corresponding to the depth values of bins $\hat n_{\text{first}}$ and $\hat
+n_{\text{last}}$ respectively.
+ The output of the rebinning procedure is the
 target histogram $h_\text{target}$ which we use for histogram matching. 
 
 % \begin{itemize}
@@ -256,7 +264,9 @@ target histogram $h_\text{target}$ which we use for histogram matching.
 Histogram matching is a procedure that adjusts pixel values from an input image
 so that the image histogram matches a target histogram. We apply this procedure
 to match the histogram of an input depth map, obtained from a monocular depth estimator, to the
-post-processed target histogram $h_\text{target}$ from the SPAD. 
+post-processed target histogram $h_\text{target}$ from the SPAD. This
+initialize-then-refine approach allows us to swap out the monocular depth
+estimator to deal with different scene types without requiring end-to-end retraining.
 
 The input depth map cannot be directly histogram-matched to the target histogram
 because the target histogram incorporates the spatially varying reflectance of
@@ -266,9 +276,10 @@ estimate of the reflectance and compute a reflectance-weighted depth histogram
 $h_\text{source}$;
 instead of incrementing a bin in the depth histogram by one for every pixel in the MDE
 at the corresponding depth, we add the estimated reflectance value of the pixel
-to the histogram bin.
+to the histogram bin. We also re-bin this histogram, again following Fu et al.\
+and using $K = 140$ with $(\ell, u) = (0.657, 9.972)$~\cite{Fu2018}.
 
-We match the histogram $h_\text{source}$ to $h_\text{target}$ using the method of
+We match the re-binned histogram $h_\text{source}$ to $h_\text{target}$ using the method of
 Morovic et al.~\cite{Morovic2002}. The method involves computing a pixel movement
 matrix $T$ such that $T[m, n]$ is the fraction of $h_\text{source}[m]$ that should be
 moved to $h_\text{target}[n]$. The details of this procedure are outlined in

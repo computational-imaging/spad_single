@@ -13,10 +13,32 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{Monocular Depth Estimation}
 %
-Estimating a depth map from a single RGB image has been approached using Markov Random Fields~\cite{Saxena2006}, geometric approaches~\cite{Hoiem2005}, and non-parametric, SIFT-based methods~\cite{Karsch2014}. More recently, deep neural networks have been applied to this problem. For example, Eigen et al.~\cite{Eigen2014} use a multi-scale neural network to
-predict depth maps, Godard et al.~\cite{Godard2017} use an unsupervised approach that trains a network using stereo pairs, and Fu et al.~\cite{Fu2018} combine a logarithmic depth discretization scheme with an ordinal regression loss function. Various experiments using different types of encoder networks (\eg ResNet, DenseNet)~\cite{Alhashim2018,Laina2016} have also been employed with some success, as have approaches mixing deep learning with conditional random fields~\cite{Xu2017}, and attention-based approaches~\cite{Hao2018,Xu2018}. Recently, Lasinger et al.~\cite{Lasinger:2019} improved the robustness of monocular depth estimation using cross-dataset transfer.
+Estimating a depth map from a single RGB image has been approached using Markov
+Random Fields~\cite{Saxena2006}, geometric approaches~\cite{Hoiem2005}, and
+non-parametric, SIFT-based methods~\cite{Karsch2014}. More recently, deep neural
+networks have been applied to this problem. For example, Eigen et
+al.~\cite{Eigen2014} use a multi-scale neural network to predict depth maps,
+Godard et al.~\cite{Godard2017} use an unsupervised approach that trains a
+network using stereo pairs, and Fu et al.~\cite{Fu2018} combine a logarithmic
+depth discretization scheme with an ordinal regression loss function. Various
+experiments using different types of encoder networks (\eg ResNet,
+DenseNet)~\cite{Alhashim2018,Laina2016} have also been employed with some
+success, as have approaches mixing deep learning with conditional random
+fields~\cite{Xu2017}, and attention-based approaches~\cite{Hao2018,Xu2018}.
+Recently, Lasinger et al.~\cite{Lasinger:2019} improved the robustness of
+monocular depth estimation using cross-dataset transfer.
 
-Despite achieving remarkable success on estimating ordinal depth from a single image, none of these methods are able to resolve inherent scale ambiguity in a principled manner. We introduce a new approach that leverages existing monocular depth estimation networks and disambiguates the output using depth histogram-like measurements obtained from a single, diffused SPAD. Other approaches to disambiguating monocular depth estimation use optimized freeform lenses~\cite{Chang:2019:DeepOptics3D,Wu:2019} or dual-pixel sensors~\cite{Garg:2019}, but these approaches require custom lenses or sensors and specialized image reconstruction methods. In contrast, our approach is potentially compatible with existing camera systems (\eg deployed on current cell phones) and our algorithms could be used in tandem with existing camera ISPs.
+Despite achieving remarkable success on estimating ordinal depth from a single
+image, none of these methods are able to resolve inherent scale ambiguity in a
+principled manner. We introduce a new approach that leverages existing monocular
+depth estimation networks and disambiguates the output using depth
+histogram-like measurements obtained from a single, diffused SPAD. Other
+approaches to disambiguating monocular depth estimation use optimized freeform
+lenses~\cite{Chang:2019:DeepOptics3D,Wu:2019} or dual-pixel
+sensors~\cite{Garg:2019}, but these approaches require custom lenses or sensors
+and specialized image reconstruction methods. In contrast, our approach adds
+minimal additional hardware to a single RGB camera, and leverages sensors currently
+deployed in consumer electronics. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{Depth Imaging and Sensor Fusion with SPADs}
