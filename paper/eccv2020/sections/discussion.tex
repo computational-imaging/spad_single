@@ -23,16 +23,16 @@ Additionally, since our method relies on a diffused pulsed laser, the laser
 power is spread out over the entire scene. Accordingly, for distant scene points very
 little light will return to the SPAD and it may be difficult to accurately
 capture distant scene geometry in the histogram. Thus our method is best suited
-to short to medium-range scenes. For example, assume an indoor scene with
+to short to medium-range scenes. \edit{For example, assume an indoor scene with
 fluorescent bulbs and an ambient spectral irradiance of $I_A =
 2~\text{mW}/\text{m}^2$ (across the 1 nm pass band of a spectral filter matched
 to the laser). The laser power required to achieve a minimum SBR of 5 for a
 diffuse scene at $r = 2$ m
-and a field of view of $\theta = 40^\circ$ can be calculated as
+and a field of view of $\theta = 40^\circ$ can be calculated as}
 \begin{equation}
   P_{\text{min}} = I_A \cdot 4 r^2 \tan^2(\theta/2) \cdot SBR_{\text{min}},
 \end{equation} 
-giving $P_{\text{min}}=21$ mW, less than the 60 mW of the Kinect.
+\edit{giving $P_{\text{min}}=21$ mW, less than the 60 mW of the Kinect.}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

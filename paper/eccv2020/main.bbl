@@ -19,6 +19,12 @@ Burri, S., Homulle, H., Bruschini, C., Charbon, E.: Linospad: a time-resolved
   Detection IV. vol.~9899, p. 98990D. International Society for Optics and
   Photonics (2016)
 
+\bibitem{caramazza2018neural}
+Caramazza, P., Boccolini, A., Buschek, D., Hullin, M., Higham, C.F., Henderson,
+  R., Murray-Smith, R., Faccio, D.: Neural network identification of people
+  hidden from view with a single-pixel, single-photon detector. Scientific
+  reports  \textbf{8}(1),  11945 (2018)
+
 \bibitem{Chang:2019:DeepOptics3D}
 Chang, J., Wetzstein, G.: Deep optics for monocular depth estimation and 3d
   object detection. In: Proc. ICCV (2019)

@@ -36,9 +36,9 @@ histogram-like measurements obtained from a single, diffused SPAD. Other
 approaches to disambiguating monocular depth estimation use optimized freeform
 lenses~\cite{Chang:2019:DeepOptics3D,Wu:2019} or dual-pixel
 sensors~\cite{Garg:2019}, but these approaches require custom lenses or sensors
-and specialized image reconstruction methods. In contrast, our approach adds
+and specialized image reconstruction methods. \edit{In contrast, our approach adds
 minimal additional hardware to a single RGB camera, and leverages sensors currently
-deployed in consumer electronics. 
+deployed in consumer electronics.} 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{Depth Imaging and Sensor Fusion with SPADs}
@@ -123,7 +123,9 @@ reconstruction space, Swoboda and Schn\"orr~\cite{Swoboda2013} use a histogram
 to form an image prior based on the Wasserstein distance for image denoising and
 inpainting. Rother et al.~\cite{Rother2006} use a histogram prior to create an
 energy function that penalizes foreground segmentations with dissimilar
-histograms. In a slightly different application area, Zhang et
+histograms. \edit{Caramazza et al.~\cite{caramazza2018neural} use a single
+non-line-of-sight transient to recover the identity of a person hidden from
+view.} In a slightly different application area, Zhang et
 al.~\cite{Zhang2017} train a neural network to produce realistically colorized
 images given only a black-and-white image and a histogram of global color
 information.

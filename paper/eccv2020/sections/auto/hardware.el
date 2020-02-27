@@ -2,8 +2,8 @@
  "hardware"
  (lambda ()
    (LaTeX-add-labels
-    "fig:scanned_diffuse"
     "fig:prototype"
+    "fig:scanned_diffuse"
     "fig:results_captured"))
  :latex)
 

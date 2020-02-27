@@ -5,9 +5,9 @@ In this section, we describe the image formation of a diffused pulsed laser and 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Image Formation Model of a Diffused SPAD}
 
-\begin{figure}
+\begin{figure}[t!]
   \centering
-  \includegraphics[width=\columnwidth]{method.pdf}
+  \includegraphics[width=0.6\columnwidth]{method.pdf}
   \caption{Overview of processing pipeline. The processing pipeline uses
       the input SPAD measurements and an RGB image to produce an accurate depth
       map. The SPAD measurements are preprocessed to adjust for ambient photon
@@ -38,9 +38,9 @@ scene points. Each time such a light pulse is emitted into the scene and
 scattered back to the detector, the single-pixel SPAD time-stamps up to one of
 the returning photons with some probability. The process is repeated millions of
 times per second with the specific number of emitted pulses being controlled by
-the repetition rate of the laser. As derived in previous work, the resulting measurement
+the repetition rate of the laser. \edit{As derived in previous work, the resulting measurement
 can be modeled as an inhomogeneous Poisson process
-$\mathcal{P}$~\cite{Kirmani:2014,Shin2015,Shin2016}. Each detected photon arrival event is
+$\mathcal{P}$~\cite{Kirmani:2014,Shin2015,Shin2016}.} Each detected photon arrival event is
 discretized into a histogram $h$ of the form
 %
 \begin{equation}
@@ -52,10 +52,10 @@ where $[n\Delta t, (n+1) \Delta t)$ models the $n^\text{th}$ time interval or bi
 temporal histogram, $\eta$ is the photon detection probability of the SPAD, $f$
 is a function that models the temporal uncertainty in the detector, and $b$
 represents background detections from ambient light and false positive detections known as \textit{dark
-count}. Like previous work, we neglect scene interreflections
+count}. \edit{Like previous work, we neglect scene interreflections
 and confine ourselves to the low-flux condition (where the number of photon
 detections is controlled to be much smaller than the number of emitted pulses)
-to avoid pileup~\cite{Shin2016}. Finally, we adopt the term
+to avoid pileup~\cite{Shin2016}.} Finally, we adopt the term
 \textit{transient} for the histogram $h[n]$~\cite{Xin2019}.
 
 
@@ -95,14 +95,15 @@ transient bins contain only background counts that can be discarded.
 
 Specifically, we identify the first and last bins that record backscattered signal
 photons by locating discontinuities in the recorded counts~\cite{Xin2019}. An initial spike in
-the measurements at bin $n_\text{first}$ results from the onset of backscattered signal from the closest
-object, and a steep dropoff occurs after bin $n_\text{last}$ after backscattered photons from the
+the measurements at bin $n_\text{first}$ results from the onset of backscattered
+signal from the closest object, and a steep dropoff occurs after bin
+$n_\text{last}$ after backscattered photons from the
 furthest object are recorded. 
 We estimate $n_\text{first}$ and $n_\text{last}$ by calculating  
 first order differences of the transient $d[n] = \abs{h[n] - h[n+1]}$. 
-For a moderate number of background counts, each background bin $h[n]$ can be
+\edit{For a moderate number of background counts, each background bin $h[n]$ can be
 approximated as a Gaussian with mean and variance $b$, and thus $h[n] - h[n+1]$ can be approximated  
-as a Gaussian with mean $0$ and variance $2b$. We identify candidate discontinuities
+as a Gaussian with mean $0$ and variance $2b$.} We identify candidate discontinuities
 $\mathcal{E}$ with a threshold on the measured differences:
 %
 \begin{equation}
@@ -125,7 +126,7 @@ a threshold $\tau$ such that
     \end{split}
 \end{equation}
 The remaining ambient counts are discarded by setting the recorded counts to
-zero for all bins where $n < n_\text{first}$ and $n > n_\text{last}$. We use 
+zero for all bins where \edit{$n < n_\text{first}$} and $n > n_\text{last}$. We use 
 $\tau = \hat b + \sqrt{\hat b}$ in all of our experiments.
 
 %Finally, we reject all photons outside of the valid range by
@@ -165,11 +166,10 @@ parameterized by the number of bins $K$ and the range of distances $[\ell, u]$:
   \label{eq:sid_bin_edges}
 \end{equation}
 This rebinning procedure allows us to use a reduced number of bins in the histogram
-matching procedure, reducing computation time while maintaining accuracy. The
-value of $K$ is selected to trade off between speed and accuracy. For
-the simulated results we use $K = 140$ bins with $(\ell,
+matching procedure, reducing computation time while maintaining accuracy.
+\edit{For the simulated results we use $K = 140$ bins with $(\ell,
 u)$ corresponding to the depth values of bins $\hat n_{\text{first}}$ and $\hat
-n_{\text{last}}$ respectively.
+n_{\text{last}}$ respectively.}
  The output of the rebinning procedure is the
 target histogram $h_\text{target}$ which we use for histogram matching. 
 
@@ -261,43 +261,8 @@ target histogram $h_\text{target}$ which we use for histogram matching.
 %  \label{alg:ehm}
 %  \input{sections/figures/exact_hist_matching_pseudo.tex}
 % \end{algorithm}
-Histogram matching is a procedure that adjusts pixel values from an input image
-so that the image histogram matches a target histogram. We apply this procedure
-to match the histogram of an input depth map, obtained from a monocular depth estimator, to the
-post-processed target histogram $h_\text{target}$ from the SPAD. This
-initialize-then-refine approach allows us to swap out the monocular depth
-estimator to deal with different scene types without requiring end-to-end retraining.
-
-The input depth map cannot be directly histogram-matched to the target histogram
-because the target histogram incorporates the spatially varying reflectance of
-the scene. To account for reflectance in the histogram matching procedure,
-we use the normalized image color channel closest to the laser wavelength as an
-estimate of the reflectance and compute a reflectance-weighted depth histogram
-$h_\text{source}$;
-instead of incrementing a bin in the depth histogram by one for every pixel in the MDE
-at the corresponding depth, we add the estimated reflectance value of the pixel
-to the histogram bin. We also re-bin this histogram, again following Fu et al.\
-and using $K = 140$ with $(\ell, u) = (0.657, 9.972)$~\cite{Fu2018}.
-
-We match the re-binned histogram $h_\text{source}$ to $h_\text{target}$ using the method of
-Morovic et al.~\cite{Morovic2002}. The method involves computing a pixel movement
-matrix $T$ such that $T[m, n]$ is the fraction of $h_\text{source}[m]$ that should be
-moved to $h_\text{target}[n]$. The details of this procedure are outlined in
-Algorithm~\ref{alg:ehm}. Intuitively, the procedure starts from the first bin of the
-source histogram and distributes its contents to the first bins of the target
-histogram, with successive source histogram bins being shifted to successive
-target bins in sequence.
-
-Finally, we use the movement matrix $T$ to shift the pixels of the input depth map
-to match the global depth of the target histogram. For a depth map pixel with
-depth bin $k$, we select the corrected bin by sampling from the distribution $T[k,
-:]/\sum_{n=1}^NT[k,n]$. This sampling procedure handles the
-case where a single input depth bin of the MDE is mapped to
-multiple output bins~\cite{Morovic2002}.
-%
-
 { \footnotesize
-\begin{algorithm}[H]
+\begin{algorithm}
  \caption{Find Pixel Movement} 
  \label{alg:ehm}
  \begin{algorithmic}
@@ -316,6 +281,42 @@ multiple output bins~\cite{Morovic2002}.
  \end{algorithmic}
 \end{algorithm}
 }
+
+Histogram matching is a procedure that adjusts pixel values from an input image
+so that the image histogram matches a target histogram. We apply this procedure
+to match the histogram of an input depth map, obtained from a monocular depth estimator, to the
+post-processed target histogram $h_\text{target}$ from the SPAD. This
+initialize-then-refine approach allows us to swap out the monocular depth
+estimator to deal with different scene types without requiring end-to-end retraining.
+
+The input depth map cannot be directly histogram-matched to the target histogram
+because the target histogram incorporates the spatially varying reflectance of
+the scene. To account for reflectance in the histogram matching procedure,
+we use the normalized image color channel closest to the laser wavelength as an
+estimate of the reflectance and compute a reflectance-weighted depth histogram
+$h_\text{source}$;
+instead of incrementing a bin in the depth histogram by one for every pixel in the MDE
+at the corresponding depth, we add the estimated reflectance value of the pixel
+to the histogram bin. \edit{We also re-bin this histogram, again following Fu et al.\
+and using $K = 140$ with $(\ell, u) = (0.657, 9.972)$~\cite{Fu2018}.}
+
+We match the re-binned histogram $h_\text{source}$ to $h_\text{target}$ using the method of
+Morovic et al.~\cite{Morovic2002}. The method involves computing a pixel movement
+matrix $T$ such that $T[m, n]$ is the fraction of $h_\text{source}[m]$ that should be
+moved to $h_\text{target}[n]$. The details of this procedure are outlined in
+Algorithm~\ref{alg:ehm}. Intuitively, the procedure starts from the first bin of the
+source histogram and distributes its contents to the first bins of the target
+histogram, with successive source histogram bins being shifted to successive
+target bins in sequence.
+
+Finally, we use the movement matrix $T$ to shift the pixels of the input depth map
+to match the global depth of the target histogram. For a depth map pixel with
+depth bin $k$, we select the corrected bin by sampling from the distribution $T[k,
+:]/\sum_{n=1}^NT[k,n]$. This sampling procedure handles the
+case where a single input depth bin of the MDE is mapped to
+multiple output bins~\cite{Morovic2002}.
+%
+
 %
 
 

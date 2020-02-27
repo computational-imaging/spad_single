@@ -1,32 +1,4 @@
-\begin{table*}[!t]
-\begin{center}
-\input{sections/figures/sim_table.tex}
-\caption{Quantitative evaluation using NYU Depth v2. Bold indicates best
-performance for that metric, while underline indicates second best. The proposed
-scheme outperforms DenseDepth and DORN on all metrics, and it closely matches or
-even outperforms the median rescaling scheme and histogram matching with the
-exact depth map histogram, even though those methods have access to ground
-truth.}
-\vspace{-2em}
-\label{tab:comparison}
-\end{center}
-\end{table*}
 
-\begin{figure*}[!h]
-  % \includegraphics[width=\textwidth]{comparison/densedepth_468_comparison.pdf}
-  % \includegraphics[width=\textwidth]{comparison/densedepth_194_comparison.pdf}
-  \includegraphics[width=\textwidth]{comparison.pdf}
-  %\includegraphics[width=\textwidth]{comparison/densedepth_258_comparison.png}
-  \caption{Simulated results from NYU v2 computed with the DenseDepth
-  CNN~\cite{Alhashim2018}. The depth maps estimated by the CNN are reasonable,
-  but contain systematic error. Oracle access to the ground truth depth maps,
-  either through the median depth or the depth histogram, can remove this error
-  and correct the depth maps. The proposed method uses measurements from a
-  single diffused SPAD and does not rely on ground truth depth, but it achieves
-  a quality that closely matches the best-performing oracle.}
-	\label{fig:results_simulated}
-  \vspace{-1em}
-\end{figure*}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -50,6 +22,19 @@ each bin is Poisson sampled to produce the final simulated SPAD transient.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Simulated Results}
+\begin{table*}[!t]
+\begin{center}
+\input{sections/figures/sim_table.tex}
+\caption{Quantitative evaluation using NYU Depth v2. Bold indicates best
+performance for that metric, while underline indicates second best. The proposed
+scheme outperforms DenseDepth and DORN on all metrics, and it closely matches or
+even outperforms the median rescaling scheme and histogram matching with the
+exact depth map histogram, even though those methods have access to ground
+truth.}
+\vspace{-2em}
+\label{tab:comparison}
+\end{center}
+\end{table*}
 
 We show an extensive quantitative evaluation in Table~\ref{tab:comparison}.
 Here, we evaluate three recent monocular depth estimation CNNs:
@@ -80,6 +65,22 @@ that the proposed method is agnostic to the specific depth estimation CNN
 applied to get the initial depth map and that it generally achieves significant
 improvements in the estimated depth maps, clearly surpassing the variation in
 performance between depth estimation CNNs.
+
+\begin{figure*}[!h]
+  % \includegraphics[width=\textwidth]{comparison/densedepth_468_comparison.pdf}
+  % \includegraphics[width=\textwidth]{comparison/densedepth_194_comparison.pdf}
+  \includegraphics[width=\textwidth]{comparison.pdf}
+  %\includegraphics[width=\textwidth]{comparison/densedepth_258_comparison.png}
+  \caption{Simulated results from NYU v2 computed with the DenseDepth
+  CNN~\cite{Alhashim2018}. The depth maps estimated by the CNN are reasonable,
+  but contain systematic error. Oracle access to the ground truth depth maps,
+  either through the median depth or the depth histogram, can remove this error
+  and correct the depth maps. The proposed method uses measurements from a
+  single diffused SPAD and does not rely on ground truth depth, but it achieves
+  a quality that closely matches the best-performing oracle.}
+	\label{fig:results_simulated}
+  \vspace{-1em}
+\end{figure*}
 
 
 In Figure~\ref{fig:results_simulated}, we also show qualitative results of our
