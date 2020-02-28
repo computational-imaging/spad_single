@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Sync figures with Google Drive or other folders so everyone can see them
 gdrive="/Volumes/GoogleDrive/Shared drives/Stanford Computational Imaging/Projects/single_spad_depth/figures/";
-rsync captured/midas/8_30_small_lab_scene/teaser.pdf "$gdrive"
+rsync -r . "$gdrive/raw"
+rsync captured/midas/8_30_small_lab_scene/teaser_eccv.pdf "$gdrive"
 rsync full_pipeline/full_pipeline.jpeg "$gdrive"
 shopt -s extglob  #Allows for | in bash pattern matching below
 rsync -r comparison/*.pdf "$gdrive/comparison"
