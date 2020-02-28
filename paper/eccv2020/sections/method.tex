@@ -1,4 +1,4 @@
-In this section, we describe the image formation of a diffused pulsed laser and single-photon avalanche diode (SPAD). We also describe an approach for correcting a depth map generated with a monocular depth estimator to match the global scene information captured by the SPAD.
+In this section, we describe the image formation of a diffused pulsed laser and time-resolved detector. \edit{Although our model is derived for the specific case of imaging with a single-photon avalanche diode (SPAD), the resulting image formation model equally applies to other time-resolved detectors}. We also describe an approach for correcting a depth map generated with a monocular depth estimator to match the global scene information captured by the \edit{transient}.
 
 %In this section, we describe the measurement model for a single-pixel time-of-flight lidar sensor under diffuse, pulsed laser illumination. 
 
@@ -9,13 +9,13 @@ In this section, we describe the image formation of a diffused pulsed laser and 
   \centering
   \includegraphics[width=\columnwidth]{method.pdf}
   \caption{Overview of processing pipeline. The processing pipeline uses
-      the input SPAD measurements and an RGB image to produce an accurate depth
-      map. The SPAD measurements are preprocessed to adjust for ambient photon
+      the input \edit{transient measurement} and an RGB image to produce an accurate depth
+      map. The \edit{transient is} preprocessed to adjust for ambient photon
       detections, radiometric falloff factors, and to calibrate the bin widths.
       From the RGB image, an MDE estimates an initial depth map
       and the scene reflectance is estimated. A reflectance-weighted
-      depth histogram is compared to the processed SPAD measurements to
-      calculate a histogram matching matrix which is used to output the corrected depth.
+      depth histogram is compared to the processed \edit{transient} to
+      calculate a histogram matching matrix which is used to output the corrected depth. \edit{PLEASE CHANGE FIGURE LAYOUT!}
   }
   \label{fig:pipeline}
 \end{figure}
@@ -88,7 +88,7 @@ While simply subtracting $\hat{b}$ from the measurements would remove many of
 the background counts, a large number of bins containing only background counts would still
 have non-zero values, resulting in a skewed
 estimate after applying histogram matching.  Instead, we estimate the temporal
-support of transient bins containing signal photons (\ie the range of depths in the
+support of transient bins containing signal photons (\ie, the range of depths in the
 scene) and only subtract $\hat{b}$ from these bins (clipping negative bin values
 to 0). We assume that other
 transient bins contain only background counts that can be discarded. 
@@ -145,13 +145,15 @@ $\tau = \hat b + \sqrt{\hat b}$ in all of our experiments.
 In the second step, we compensate for distance falloff effects by multiplying
 the transient
 by the distance-dependent scaling factor,
+%
 \begin{equation}
     h'[n] = h[n] \cdot z_n^2.
   \label{eq:h_scaled}
 \end{equation}
+%
 Here, $z_n= \paren*{n + \frac12}\paren*{\frac{c\Delta t}{2}}$ is the distance
 corresponding to bin $n$, and this radiometric falloff model is consistent with
-measurements captured with our hardware prototype.
+measurements captured with our prototype.
 
 \vspace{0.8em}\noindent{\bf Transient Re-binning.}
 Last, we re-bin the transient so that the bin widths increase for increasingly
@@ -161,10 +163,12 @@ exponential function, allocating more bins to closer distances and fewer
 bins to farther distances for a fixed number of bins. The bin edges $t_i$ are
 given by the following equation,
 parameterized by the number of bins $K$ and the range of distances $[\ell, u]$: 
+%
 \begin{equation}
   t_i = e^{\log(\ell) + \frac{\log(u/\ell) \cdot i}{K}}  \qquad\text{for}\qquad i = 0,\ldots, K.
   \label{eq:sid_bin_edges}
 \end{equation}
+%
 This rebinning procedure allows us to use a reduced number of bins in the histogram
 matching procedure, reducing computation time while maintaining accuracy.
 \edit{For the simulated results we use $K = 140$ bins with $(\ell,
@@ -263,7 +267,7 @@ target histogram $h_\text{target}$ which we use for histogram matching.
 % \end{algorithm}
 { \footnotesize
 \begin{algorithm}
- \caption{Find Pixel Movement} 
+ \caption{Find Pixel Movement \edit{MOVE TO SUPPLEMENT!}} 
  \label{alg:ehm}
  \begin{algorithmic}
 	\footnotesize
@@ -297,8 +301,7 @@ estimate of the reflectance and compute a reflectance-weighted depth histogram
 $h_\text{source}$;
 instead of incrementing a bin in the depth histogram by one for every pixel in the MDE
 at the corresponding depth, we add the estimated reflectance value of the pixel
-to the histogram bin. \edit{We also re-bin this histogram, again following Fu et al.\
-and using $K = 140$ with $(\ell, u) = (0.657, 9.972)$~\cite{Fu2018}.}
+to the histogram bin. \edit{We also re-bin this histogram, following Fu et al. and using $K = 140$ with $(\ell, u) = (0.657, 9.972)$~\cite{Fu2018}.}
 
 We match the re-binned histogram $h_\text{source}$ to $h_\text{target}$ using the method of
 Morovic et al.~\cite{Morovic2002}. The method involves computing a pixel movement
@@ -315,7 +318,8 @@ depth bin $k$, we select the corrected bin by sampling from the distribution $T[
 :]/\sum_{n=1}^NT[k,n]$. This sampling procedure handles the
 case where a single input depth bin of the MDE is mapped to
 multiple output bins~\cite{Morovic2002}.
-%
+
+\edit{Pseudo-code for this procedure is included in the supplement; we will make source code and data available.}
 
 %
 
