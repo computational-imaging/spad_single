@@ -17,14 +17,14 @@ classification~\cite{maturana2015voxnet,qi2016volumetric,wu20153d}.
     single RGB image (upper left). The ill-posedness of the problem prevents
     reliable absolute depth estimation, resulting in large errors (inset image).
     The proposed method uses a \edit{single transient measurement aggregating the time-of-flight information of the entire scene (lower left)} to correct the output of the depth estimation and optimize the quality of the
-    estimated absolute depth (lower right).}
+    estimated absolute depth (lower right). \edit{PLEASE CHANGE FIGURE LAYOUT!}}
   \label{fig:teaser}
 \end{figure}
 
 Traditional depth sensing techniques include those based on stereo or multiview,
 active illumination, camera motion, or focus cues~\cite{szeliski2010computer}.
 However, each of these techniques has aspects that may make their deployment
-challenging. For example, stereo or multiview techniques require multiple
+challenging \edit{in certain scenarios}. For example, stereo or multiview techniques require multiple
 cameras, active illumination techniques may have limited resolution or require
 time-consuming scanning procedures, and other techniques require camera motion
 or multiple exposures at different focus distances.
@@ -34,8 +34,8 @@ One of the most promising approaches to overcoming these challenges is monocular
 depth estimation (MDE), which requires only a single RGB image from a
 conventional camera to recover a dense depth
 map~\cite{Alhashim2018,Eigen2014,Fu2018,Laina2016,Saxena2006}. Recent approaches
-to MDE employ neural network models that learn to predict depth by exploiting
-monocular image cues such as perspective, occlusion, shading, and relative
+to MDE employ neural networks that learn to predict depth by exploiting
+\edit{pictorial depth} cues such as perspective, occlusion, shading, and relative
 object size. While such models have significantly improved over recent years,
 MDE approaches to date are incapable of reliably estimating absolute distances
 in a scene due to the inherent scale ambiguities of monocular image cues.
@@ -84,11 +84,11 @@ single-pixel \edit{time-resolved detector} %, single-photon avalanche diode (SPA
 to sense distance to an
 object directly in front of the phone. %SPADs 
 \edit{
-Time-resolved detectors, such as avalanche photon diodes (APDs) or single-photon avalanche diodes (SPADs), measure the full waveform of time-resolved incident radiance at each pixel. These detectors form the backbone of modern LiDAR
+Time-resolved detectors, such as avalanche photon diodes (APDs) or single-photon avalanche diodes (SPADs), measure the full waveform of time-resolved incident radiance at each pixel (Fig.~\ref{fig:teaser}). These detectors form the backbone of modern LiDAR
 systems~\cite{Kirmani:2014,Li:2019,pawlikowska2017single}. However, single-photon sensor arrays} have
-not been used for 3D imaging on consumer electronics because the requirement for
+not yet been used for 3D imaging on consumer electronics, primarily because the requirement for
 ultra-fast timing electronics makes it difficult to produce high-resolution
-arrays at low cost, and because the scanning requirement for single-pixel
+arrays at low cost and because the scanning requirement for single-pixel
 systems introduces a point of mechanical failure and complicates
 high-resolution, high-framerate imaging.
 
@@ -106,9 +106,8 @@ high-resolution, high-framerate imaging.
 Here, we propose to use a single-pixel \edit{time-resolved detector} and pulsed light source in an
 unconventional way: rather than optically focusing them to record the distance
 to a single scene point, we diffuse the emitted light and \edit{aggregate the reflected light over the
-entire scene with the detector}. The resulting \edit{transient} measurement resembles a histogram of the depth of
-the scene and we demonstrate that this can be used to achieve accurate absolute
-depth when combined with the estimate of \edit{any monocular depth estimator in a post-processing step} (\cf~Figure~\ref{fig:teaser}).
+entire scene with the detector}. The resulting \edit{transient} measurement resembles a histogram of the scene depth and we demonstrate that this can be used to achieve accurate absolute
+depth when combined with the estimate of \edit{any monocular depth estimator in a post-processing step} (Fig.~\ref{fig:teaser}).
 
 %Technically, a diffused SPAD does not record a true depth histogram, but a
 %transient that is affected by square-distance falloff of the backscattered
@@ -148,13 +147,13 @@ images using minimal additional sensing hardware. Specifically, we make the
 following contributions:
 %
 \begin{itemize}
-	\item We propose augmenting an RGB camera with a global depth histogram \edit{aggregated by a diffused time-resolved detector} to address scale ambiguity error in monocular depth estimators.	
+	\item We propose augmenting an RGB camera with a global depth histogram \edit{aggregated by a time-resolved detector} to address scale ambiguity error in monocular depth estimators.	
   \item We analyze this approach on indoor scenes using the NYU Depth v2 dataset and demonstrate that our approach is able to resolve scale ambiguity while being fast and easy to implement.
 	\item We build a prototype camera and evaluate its efficacy on captured data, assessing both the quality and the ability of our method to help generalization of monocular depth estimators across scene types. 
 \end{itemize}
 
 
-\edit{\emph{Overview of Limitations:} our prototype camera uses a scanned SPAD and digitally aggregates the captured transients to emulate a single diffused measurement. The benefit of this approach is that we have access to ground truth depth, allowing us to evaluate the efficacy of our method with measured data. However, when operating SPADs in certain conditions, they may observe a nonlinear aggregation effect known as pileup. In these conditions, the emulated measurements may differ from a single optically diffused measurement. Yet, we experimentally verify that digitally and optically aggregated measurements captured with our system are very similar and pileup could also be computationally corrected~\cite{Heide:2018,Rapp:2019}, although we did not attempt to do this.} 
+\edit{\emph{Overview of Limitations:} our prototype camera uses a scanned SPAD and digitally aggregates the captured transients to emulate a single optically diffused measurement. The benefit of this approach is access to ground truth depth, allowing us to evaluate the efficacy of our method with measured data. However, when operating SPADs in certain conditions, they may observe a nonlinear aggregation effect known as pileup. In these conditions, the aggregated measurements may differ from a single optically diffused measurement. Yet, we experimentally verify that digitally and optically aggregated measurements captured with our system are very similar and pileup could also be computationally corrected~\cite{Heide:2018,Rapp:2019}, although we did not attempt this.} 
 
 %\edit{Our method is not without limitations. It still requires a laser and single-pixel LiDAR detector and is sensitive to ambient photons, which limit the maximum range. Being a variant of histogram matching, our method is not able to resolve ordinal depth errors (errors where an object is wrongly placed closer or farther relative to another object). In spite of these limitations, we find that our method performs remarkably well in practice.}
 
