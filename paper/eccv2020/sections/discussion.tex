@@ -8,7 +8,8 @@ histogram from a diffused SPAD sensor contains enough information about global
 scene geometry to correct errors in monocular depth estimates.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\paragraph{Limitations}
+%\paragraph{Limitations}
+
 The performance of our method is highly dependent on the accuracy of the initial
 depth map of the MDE algorithm.
 %Since our method relies on the monocular depth estimate, the accuracy of the output depth map also relies on the performance of the initial depth estimate.
@@ -18,6 +19,8 @@ depth estimate can be corrected to produce accurate absolute depth. However, if
 the ordering of the initial depths is not correct, these errors will not be
 corrected by our histogram matching procedure and may propagate to the final
 output depth map.
+
+\edit{ADD DISCUSSION ON PILEUP ETC HER}
 
 Additionally, since our method relies on a diffused pulsed laser, the laser
 power is spread out over the entire scene. Accordingly, for distant scene points very
@@ -29,6 +32,7 @@ fluorescent bulbs and an ambient spectral irradiance of $I_A =
 to the laser). The laser power required to achieve a minimum SBR of 5 for a
 diffuse scene at $r = 2$ m
 and a field of view of $\theta = 40^\circ$ can be calculated as}
+%
 \begin{equation}
   P_{\text{min}} = I_A \cdot 4 r^2 \tan^2(\theta/2) \cdot SBR_{\text{min}},
 \end{equation} 

@@ -9,8 +9,8 @@
 
 % INITIAL SUBMISSION - The following two lines are NOT commented
 % CAMERA READY - Comment OUT the following two lines
-% \usepackage{ruler}
-% \usepackage[width=122mm,left=12mm,paperwidth=146mm,height=193mm,top=12mm,paperheight=217mm]{geometry}
+\usepackage{ruler}
+\usepackage[width=122mm,left=12mm,paperwidth=146mm,height=193mm,top=12mm,paperheight=217mm]{geometry}
 
 
 \usepackage{booktabs}
@@ -54,8 +54,8 @@
 \mainmatter
 \def\ECCVSubNumber{3668}  % Insert your submission number here
 
-\title{Improving Monocular Depth Estimation with Global Depth Histogram
-  Matching using a Single SPAD Transient} % Replace with your title
+%\title{Improving Monocular Depth Estimation with Global Depth Histogram Matching using a Single SPAD Transient} % Replace with your title
+\title{\textcolor{red}{Disambiguating Monocular Depth Estimation with a Single Transient}} % Replace with your title
 
 % INITIAL SUBMISSION 
 %\begin{comment}
@@ -91,21 +91,15 @@ ABC Institute, Rupert-Karls-University Heidelberg, Heidelberg, Germany\\
 \maketitle
 
 \begin{abstract}
-  Existing monocular depth estimation algorithms successfully predict the
+  Monocular depth estimation algorithms successfully predict the
   relative depth {order} of objects in a scene.
   However, because of the fundamental scale ambiguity associated with monocular
-  images, these algorithms fail at correctly predicting an object's true metric
-  depth.
-  In this work, we demonstrate how a depth histogram of the scene, which can be
-  readily captured using a single-pixel diffused single-photon avalanche diode
-  (SPAD), can be fused with the output of existing monocular depth estimation
-  algorithms to resolve the depth ambiguity problem.
+  images, these algorithms fail at correctly predicting true metric
+  depth. In this work, we demonstrate how a depth histogram of the scene, which can be readily captured using a \textcolor{red}{single-pixel time-resolved detector}, can be fused with the output of existing monocular depth estimation algorithms to resolve the depth ambiguity problem.
   We validate this novel sensor fusion technique experimentally and in extensive
-  simulation. We show that it dramatically improves the performance of several
-  state-of-the-art monocular depth estimation algorithms.
-  \dots
-  \keywords{monocular depth estimation, single-photon avalanche diode, histogram
-  matching, LiDAR, sensor fusion}
+  simulation. We show that it significantly improves the performance of several
+  state-of-the-art monocular depth estimation algorithms.  
+  \keywords{depth estimation, time-of-flight imaging}
 \end{abstract}
 
 
