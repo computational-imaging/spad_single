@@ -23,15 +23,17 @@ each bin is Poisson sampled to produce the final simulated transient.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Simulated Results}
 \begin{table*}[!t]
-\begin{center}
-\input{sections/figures/sim_table.tex}
-\caption{Quantitative evaluation using NYU Depth v2. Bold indicates best
+  \begin{center}
+   {\fontsize{7pt}{8pt}\selectfont 
+      \input{sections/figures/sim_table.tex}
+   } 
+\caption{
+  Quantitative evaluation using NYU Depth v2. Bold indicates best
 performance for that metric, while underline indicates second best. The proposed
 scheme outperforms DenseDepth and DORN on all metrics, and it closely matches or
 even outperforms the median rescaling scheme and histogram matching with the
 exact depth map histogram, even though those methods have access to ground
-truth. \edit{DECREASE FONT SIZE!}}
-\vspace{-2em}
+truth.}
 \label{tab:comparison}
 \end{center}
 \end{table*}
@@ -65,7 +67,7 @@ applied to get the initial depth map and that it generally achieves significant
 improvements in the estimated depth maps, clearly surpassing the variation in
 performance between depth estimation CNNs.
 
-\begin{figure*}[!h]
+\begin{figure*}[t]
   % \includegraphics[width=\textwidth]{comparison/densedepth_468_comparison.pdf}
   % \includegraphics[width=\textwidth]{comparison/densedepth_194_comparison.pdf}
   \includegraphics[width=\textwidth]{comparison.pdf}

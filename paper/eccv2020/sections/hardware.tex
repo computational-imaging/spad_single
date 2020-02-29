@@ -3,19 +3,19 @@
 \subsection{Prototype RGB-SPAD Camera Hardware}
 
 % The laser operates at 450~nm with a pulse repetition rate of 25~MHz with a peak power of 450~mW and average power of 0.5~mW.
-\begin{figure}[t]
-	\centering
-  \includegraphics[width=0.5\columnwidth]{prototype_single_col.pdf}
-  \caption{Prototype scanning setup. The pulsed light from the laser travels
-    through a beam splitter before being guided by the galvo to the scene.
-    Returning light is measured by the single-pixel SPAD. The Kinect v2 RGB 
-    camera is used to capture the image used to generate the monocular depth estimate
-    (the depth camera is not used).}
-  \label{fig:prototype}
-  % \vspace{-0.5em}
-\end{figure}
+% \begin{figure}[t]
+% 	\centering
+%   \includegraphics[width=0.5\columnwidth]{prototype_single_col.pdf}
+%   \caption{Prototype scanning setup. The pulsed light from the laser travels
+%     through a beam splitter before being guided by the galvo to the scene.
+%     Returning light is measured by the single-pixel SPAD. The Kinect v2 RGB 
+%     camera is used to capture the image used to generate the monocular depth estimate
+%     (the depth camera is not used).}
+%   \label{fig:prototype}
+%   % \vspace{-0.5em}
+% \end{figure}
 
-As shown in Figure~\ref{fig:prototype}, our prototype comprises a color camera
+As shown in Figure~\ref{fig:hardware}, our prototype comprises a color camera
 (Microsoft Kinect v2), a single-pixel SPAD (Micro Photon Devices 100~$\mu m$ PDM
 series, free-running), a laser (ALPHALAS PICOPOWER-LD-450-50), and a two-axis
 galvanometer mirror system (Thorlabs GVS012). The laser operates at 670~nm with
@@ -41,11 +41,15 @@ following scene under both raster-scanned and diffuse mode conditions:
 
 \begin{figure}[t]
 	\centering
-  \includegraphics[width=0.8\columnwidth]{scanned_diffuse.pdf}
-  \caption{Scene and measurements for diffused and summed scanned mode. The observed
+  \includegraphics[width=\columnwidth]{hardware.pdf}
+  \caption{(a) Prototype scanning setup. The pulsed light from the laser travels
+    through a beam splitter before being guided by the galvo to the scene.
+    Returning light is measured by the single-pixel SPAD. The Kinect v2 RGB 
+    camera is used to capture the image used to generate the monocular depth estimate
+    (the depth bccamera is not used). (b) Scene and (c) measurements for diffused and summed scanned mode. The observed
     counts in the diffuse mode match closely with the sum of the raster-scanned
-    measurements. \edit{PLEASE EDIT THIS FIGURE TO MAKE BOTH PANELS THE SAME HEIGHT. MAYBE JUST COMBINE IT WITH THE PROTOTYPE INTO A SINGLE 2-PANEL FIGURE.}}
-  \label{fig:scanned_diffuse}
+    measurements.}
+  \label{fig:hardware}
   % \vspace{-0.5em}
 \end{figure}
 

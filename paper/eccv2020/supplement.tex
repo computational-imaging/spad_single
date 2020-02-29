@@ -1,0 +1,276 @@
+% updated April 2002 by Antje Endemann
+% Based on CVPR 07 and LNCS, with modifications by DAF, AZ and elle, 2008 and AA, 2010, and CC, 2011; TT, 2014; AAS, 2016; AAS, 2020
+
+\documentclass[runningheads]{llncs}
+\usepackage{graphicx}
+\usepackage{comment}
+\usepackage{amsmath,amssymb} % define this before the line numbering.
+\usepackage{color}
+
+% INITIAL SUBMISSION - The following two lines are NOT commented
+% CAMERA READY - Comment OUT the following two lines
+\usepackage{ruler}
+\usepackage[width=122mm,left=12mm,paperwidth=146mm,height=193mm,top=12mm,paperheight=217mm]{geometry}
+
+
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{bm}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage[utf8x]{inputenc}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{algorithmicx}
+\usepackage{dblfloatfix}
+
+\input{mark_defs.tex}
+% \DeclareRobustCommand\onedot{\futurelet\@let@token\@onedot}
+% \def\@onedot{\ifx\@let@token.\else.\null\fi\xspace}
+
+\def\eg{\emph{e.g.}} \def\Eg{\emph{E.g.}}
+\def\ie{\emph{i.e.}} \def\Ie{\emph{I.e.}}
+\def\cf{\emph{c.f.}} \def\Cf{\emph{C.f.}}
+\def\etc{\emph{etc}} \def\vs{\emph{vs.}}
+\def\wrt{w.r.t.} \def\dof{d.o.f.}
+\def\etal{\emph{et al.}}
+
+\newcommand{\edit}[1]{\textcolor{red}{#1}}
+
+\graphicspath{{figures/}{"G:/Shared drives/Stanford Computational
+    Imaging/Projects/single_spad_depth/figures/"}{"H:/Shared drives/Stanford Computational
+    Imaging/Projects/single_spad_depth/figures/"}{"/Users/gordon/mount/teamdrive/Shared
+    drives/Stanford Computational Imaging/Projects/single_spad_depth/figures/"}
+  {"/Volumes/GoogleDrive/Shared drives/Stanford Computational Imaging/Projects/single_spad_depth/figures/"}}
+% Pages are numbered in submission mode, and unnumbered in camera-ready
+
+\begin{document}
+% \renewcommand\thelinenumber{\color[rgb]{0.2,0.5,0.8}\normalfont\sffamily\scriptsize\arabic{linenumber}\color[rgb]{0,0,0}}
+% \renewcommand\makeLineNumber {\hss\thelinenumber\ \hspace{6mm} \rlap{\hskip\textwidth\ \hspace{6.5mm}\thelinenumber}}
+% \linenumbers
+\pagestyle{headings}
+\mainmatter
+\def\ECCVSubNumber{3668}  % Insert your submission number here
+
+%\title{Improving Monocular Depth Estimation with Global Depth Histogram Matching using a Single SPAD Transient} % Replace with your title
+\title{\textcolor{red}{Disambiguating Monocular Depth Estimation with a Single
+    Transient: Supplemental Information}} % Replace with your title
+
+% INITIAL SUBMISSION 
+%\begin{comment}
+\titlerunning{ECCV-20 submission ID \ECCVSubNumber} 
+\authorrunning{ECCV-20 submission ID \ECCVSubNumber} 
+\author{Anonymous ECCV submission}
+\institute{Paper ID \ECCVSubNumber}
+%\end{comment}
+%******************
+
+% CAMERA READY SUBMISSION
+\begin{comment}
+\titlerunning{Abbreviated paper title}
+% If the paper title is too long for the running head, you can set
+% an abbreviated paper title here
+%
+\author{First Author\inst{1}\orcidID{0000-1111-2222-3333} \and
+Second Author\inst{2,3}\orcidID{1111-2222-3333-4444} \and
+Third Author\inst{3}\orcidID{2222--3333-4444-5555}}
+%
+\authorrunning{F. Author et al.}
+% First names are abbreviated in the running head.
+% If there are more than two authors, 'et al.' is used.
+%
+\institute{Princeton University, Princeton NJ 08544, USA \and
+Springer Heidelberg, Tiergartenstr. 17, 69121 Heidelberg, Germany
+\email{lncs@springer.com}\\
+\url{http://www.springer.com/gp/computer-science/lncs} \and
+ABC Institute, Rupert-Karls-University Heidelberg, Heidelberg, Germany\\
+\email{\{abc,lncs\}@uni-heidelberg.de}}
+\end{comment}
+%******************
+\maketitle
+
+\section{Ablation study on number of SID bins}
+% \begin{itemize}
+%   \item Simulation: 70, 140, 210, 280 bins
+%   \item Captured: 70, 140, 210, 280 bins
+% \end{itemize}
+% Compare RMSE and runtime.
+We conducted an ablation study on the effect of the number of SID bins
+\cite{Fu2018} on both runtime and RMSE. We performed this analysis using SPAD
+data with a signal-to-background (SBR) of 100, simulated on the test set of NYU
+Depth v2. We used DenseDepth~\cite{Alhashim2018} for our MDE CNN.
+Only the histogram matching portion was timed, not the CNN nor the
+denoising pipeline.
+
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{c|cc}
+    \toprule
+    \# of sid bins & RMSE & Approx. Time/image (sec) \\
+    \midrule
+    70  & $0.351$ & $0.24$ \\
+    140 & $0.346$ & $0.63$ \\
+    210 & $0.345$ & $1.12$ \\
+    280 & $0.345$ & $1.84$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{Effect of number of SID bins on RMSE and runtime. The marginal
+    improvement in RMSE is offset by the increase in runtime as the number of
+    bins grows.}
+  \label{fig:sid_ablation}
+\end{figure}
+
+
+\section{Ablation study on effect of reflectance estimation}
+We conducted an ablation study on whether the use of a reflectance
+estimate has an impact on the runtime and quality of the solution.
+We performed this analysis using SPAD
+data with a signal-to-background (SBR) of 100, simulated on the test set of NYU
+Depth v2 and using DenseDepth~\cite{Alhashim2018} for our MDE CNN.
+Only the histogram matching portion was timed, not the CNN nor the denoising pipeline.
+
+% \begin{itemize}
+%   \item Intensity used to initialize histogram, not used to move pixels
+%   \item Intensity used to initialize histogram and move pixels
+%   \item Intensity not used to initialize histogram, used to move pixels
+%   \item Intensity not used to initialize histogram, not used to move pixels
+% \end{itemize}
+% Compare RMSE and runtime.
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{c|c|c|c}
+    \toprule
+    Intensity-weighted & Intensity-aware & Avg. & Time \\ histogram & pixel movement & RMSE & per image (sec) \\
+    \midrule
+    \multirow{2}{*}{Yes} & Yes & $0.346$ & $4.6$ \\
+                         & No & $0.346$ & $0.6$ \\
+    \midrule
+    \multirow{2}{*}{No} & Yes & $0.444$ & $4.7$ \\
+                        & No & $0.444$ & $0.6$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{Effect of reflectance modeling on RMSE and runtime. When the SPAD
+    is simulated with the reflectance info but no reflectance estimate is used
+    to generate a weighted histogram from the CNN depth map, the results are
+    significantly worse. Furthermore, once the pixel movement matrix has been
+    computed, the pixel movement procedure need not take
+    into account the weights of the pixels being moved, since doing so provides no
+    improvement and can take appreciably longer than a vectorized implementation
+    that does not take pixel weights into account.}
+\end{figure}
+
+\section{Pseudocode, pixel shifting, and dither artifacts}
+We give pseudocode for our algorithm here. In the first part of our algorithm we
+compute the pixel shifting matrix mapping the histogram $h_s$ (computed from the
+initial depth map and reflectance estimate)to $h_t$ (computed from the captured
+transient).
+{ \footnotesize
+\begin{algorithm}
+ \caption{Find Pixel Movement \edit{MOVE TO SUPPLEMENT!}} 
+ \label{alg:ehm}
+ \begin{algorithmic}
+	\footnotesize
+  \Procedure{FindPixelMovement}{$h_s$ of length $M$, $h_t$ of length $N$} 
+    \State Initialize $T$ as an $M \times N$ array of zeros.
+    \For{$m$ in $1,\ldots,M$}
+      \For{$n$ in $1,\ldots,N$}
+        \State $p_s \gets \sum_{i=1}^{n-1} T[m, i]$
+        \State $p_t \gets \sum_{i=1}^{m-1} T[i, n]$
+        \State $T[m, n] \gets \min(h_s[m] - p_s, h_t[n] - p_t)$
+      \EndFor
+    \EndFor
+    \State \textbf{return} $T$
+  \EndProcedure
+ \end{algorithmic}
+\end{algorithm}
+}
+
+Given this pixel movement matrix $T$, we apply the appropriate movements to the
+initial depth map $I$. The pixels of the image $I$ take depth bin values in $\set{0,\ldots,K-1}$. 
+{ \footnotesize
+  \begin{algorithm}[H]
+    \caption{Move Pixels}
+    \label{alg:move_pixels}
+    \begin{algorithmic}
+      \footnotesize
+      \Procedure{MovePixels}{input image $I$ size $M \times N$,
+        pixel movement matrix $T$ of size $K \times K$}
+      \For{$k$ in $0,\ldots, K-1$}
+        \State $p[k,:] \gets T[k,:]/\sum_{i=1}^K T[k,i]$
+      \EndFor
+      \For{$m$ in $1,\ldots,M$}
+        \For{$n$ in $1,\ldots,N$}
+          \State Sample $k'$ according to $p[I[m,n],:]$.
+          \State $I[m,n] \gets k'$.
+        \EndFor
+      \EndFor
+      \State \textbf{return} $I$
+      \EndProcedure
+    \end{algorithmic}
+  \end{algorithm}
+} Because the pixel shifting process in Algorithm \ref{alg:move_pixels} contains
+a sampling step, it is possible for
+\textit{dither artifacts} to appear in the output image $I$, as shown in figure
+\ref{fig:dither}. Specifically, when there are multiple possible output depth
+bins for a given input depth bin, and a large region of equal depth in the input
+image, the randomness in the pixel shifting algorithm will distribute the pixels
+of large, equal-depth region in the input across the multiple possible output
+depth bins in a random fashion.
+
+\begin{figure}[H]
+  \centering \includegraphics[width=0.66\textwidth]{dither.pdf}
+  \caption{Example of dither artifacts. Sometimes, when our histogram matching
+    is applied to images with large regions of similar depths, dither artifacts
+    will occur.}
+  \label{fig:dither}
+\end{figure}
+
+
+\section{Additional results on NYU Depth v2}
+Figures \ref{fig:densedepth_1}--\ref{fig:midas_3} show additional results
+for our method on the NYU Depth v2 dataset when the depth estimate is
+initialized with the DenseDepth \cite{Alhashim2018} (Figures
+\ref{fig:densedepth_1}--\ref{fig:densedepth_3}), DORN \cite{Fu2018} (Figures
+\ref{fig:dorn_1}--\ref{fig:dorn_3}) 
+and MiDaS \cite{Lasinger:2019} (Figures \ref{fig:midas_1} -- \ref{fig:midas_3}) monocular depth estimators.
+
+We compare the output of the network $z_0$, the
+median-rescaled network output (where the depth map $z_0$ is scaled pixel-wise by a
+scalar $\frac{\text{median}(z_{GT})}{\text{median}(z_0)}$, $z_{GT}$ being the
+ground truth depth map), the network output matched to the ground truth depth histogram, and the output of
+our histogram matching method under a signal-to-background ratio (SBR) of 100.
+We use the luminance of the RGB image as our reflectance map
+for both SPAD simulation and histogram matching.
+We show absolute difference maps and also give
+the root-mean-square error (RMSE) for each example.
+% \input{sections/supplement/simulation_comparison.tex}
+
+\section{Additional results for hardware prototype}
+Figures \ref{fig:midas_captured_1}--\ref{fig:dorn_captured_3} show all the
+captured results when the depth estimate is initialized with the MiDaS
+\cite{Lasinger:2019} (Figures \ref{fig:midas_captured_1}--\ref{fig:midas_captured_3}),
+DenseDepth (Figures \ref{fig:densedepth_captured_1}--\ref{fig:densedepth_captured_3}),
+and DORN (Figures \ref{fig:dorn_captured_1}--\ref{fig:dorn_captured_3}). We compare
+the output of the network $z_0$, the mean-rescaled network output where the
+depth map $z_0$ has been scaled pixel-wise by the scalar
+$\frac{\text{median}(h_{target})}{\text{median}(z_0)}$ ($h_{target}$ is the
+processed SPAD transient), and the output of our method. As our laser is red, we
+use the R channel of the RGB image as our reflectance map. We show absolute
+difference maps and also give the root-mean-square-error (RMSE) for each
+example.
+
+Black pixels in the ground truth depth correspond to locations where our scanner
+was unable to produce an accurate depth estimate (this can occur for a variety
+of reasons including dark albedo and surface specularity). These pixels are masked off and not used in the RMSE
+calculation, and appear as an absolute difference of 0 in the difference maps.
+% \input{sections/supplement/hardware_comparison.tex}
+
+\clearpage 
+
+{\small
+\bibliographystyle{splncs04}
+\bibliography{references}
+}
+\end{document}

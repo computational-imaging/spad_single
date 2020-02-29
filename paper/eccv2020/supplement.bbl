@@ -1,0 +1,19 @@
+\begin{thebibliography}{1}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\providecommand{\doi}[1]{https://doi.org/#1}
+
+\bibitem{Alhashim2018}
+Alhashim, I., Wonka, P.: High quality monocular depth estimation via transfer
+  learning. arXiv:1812.11941v2  (2018)
+
+\bibitem{Fu2018}
+Fu, H., Gong, M., Wang, C., Batmanghelich, K., Tao, D.: Deep ordinal regression
+  network for monocular depth estimation. In: Proc. CVPR (2018)
+
+\bibitem{Lasinger:2019}
+Lasinger, K., Ranftl, R., Schindler, K., Koltun, V.: Towards robust monocular
+  depth estimation: Mixing datasets for zero-shot cross-dataset transfer.
+  arXiv:1907.01341  (2019)
+
+\end{thebibliography}

@@ -13,11 +13,13 @@ classification~\cite{maturana2015voxnet,qi2016volumetric,wu20153d}.
 \begin{figure}[t]
   \centering
   \includegraphics[width=\columnwidth]{teaser_eccv.pdf}
-  \caption{Monocular depth estimation predicts a depth map (upper right) from a
-    single RGB image (upper left). The ill-posedness of the problem prevents
-    reliable absolute depth estimation, resulting in large errors (inset image).
-    The proposed method uses a \edit{single transient measurement aggregating the time-of-flight information of the entire scene (lower left)} to correct the output of the depth estimation and optimize the quality of the
-    estimated absolute depth (lower right). \edit{PLEASE CHANGE FIGURE LAYOUT!}}
+  \caption{Monocular depth estimation predicts a depth map (second from right) from a
+    single RGB image (second from left). The ill-posedness of the problem prevents
+    reliable absolute depth estimation, resulting in large errors (inset images).
+    The proposed method uses a \edit{single transient measurement aggregating
+      the time-of-flight information of the entire scene (leftmost)} to correct
+    the output of the depth estimation and optimize the quality of the
+    estimated absolute depth (rightmost).}
   \label{fig:teaser}
 \end{figure}
 
@@ -84,8 +86,12 @@ single-pixel \edit{time-resolved detector} %, single-photon avalanche diode (SPA
 to sense distance to an
 object directly in front of the phone. %SPADs 
 \edit{
-Time-resolved detectors, such as avalanche photon diodes (APDs) or single-photon avalanche diodes (SPADs), measure the full waveform of time-resolved incident radiance at each pixel (Fig.~\ref{fig:teaser}). These detectors form the backbone of modern LiDAR
-systems~\cite{Kirmani:2014,Li:2019,pawlikowska2017single}. However, single-photon sensor arrays} have
+Time-resolved detectors, such as avalanche photon diodes (APDs) or single-photon
+avalanche diodes (SPADs), measure the full waveform of time-resolved incident
+radiance at each pixel (Fig.~\ref{fig:teaser}). These detectors form the
+backbone of modern LiDAR
+systems~\cite{Kirmani:2014,Li:2019,pawlikowska2017single}. However,
+single-photon sensor arrays} have
 not yet been used for 3D imaging on consumer electronics, primarily because the requirement for
 ultra-fast timing electronics makes it difficult to produce high-resolution
 arrays at low cost and because the scanning requirement for single-pixel
@@ -106,8 +112,12 @@ high-resolution, high-framerate imaging.
 Here, we propose to use a single-pixel \edit{time-resolved detector} and pulsed light source in an
 unconventional way: rather than optically focusing them to record the distance
 to a single scene point, we diffuse the emitted light and \edit{aggregate the reflected light over the
-entire scene with the detector}. The resulting \edit{transient} measurement resembles a histogram of the scene depth and we demonstrate that this can be used to achieve accurate absolute
-depth when combined with the estimate of \edit{any monocular depth estimator in a post-processing step} (Fig.~\ref{fig:teaser}).
+entire scene with the detector}. The resulting \edit{transient} measurement
+resembles a histogram of the scene depth and we demonstrate that this can be
+used to achieve accurate absolute depth when combined with the estimate of
+\edit{any monocular depth estimator in a post-processing step}
+(Fig.~\ref{fig:teaser}).
+
 
 %Technically, a diffused SPAD does not record a true depth histogram, but a
 %transient that is affected by square-distance falloff of the backscattered

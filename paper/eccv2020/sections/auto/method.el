@@ -8,7 +8,6 @@
     "eq:ambient_estimate"
     "eq:edge_set"
     "eq:h_scaled"
-    "eq:sid_bin_edges"
-    "alg:ehm"))
+    "eq:sid_bin_edges"))
  :latex)
 
