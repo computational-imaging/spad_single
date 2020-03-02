@@ -20,23 +20,50 @@ the ordering of the initial depths is not correct, these errors will not be
 corrected by our histogram matching procedure and may propagate to the final
 output depth map.
 
-\edit{ADD DISCUSSION ON PILEUP ETC HER}
+\edit{Furthermore, our system uses a SPAD and is therefore susceptible to pileup.
+Because the SPAD must be quenched before it can
+detect another photon, earlier photons
+from closer objects may systematically prevent detection of photons from further
+objects, causing strong distortion of the transient. Fortunately, at the expense of
+longer acquisition times, pileup can be mitigated
+to a large extent by operating in the low-flux regime
+where the number of photon events per second is controlled to be at most 5\% the
+number of laser pulses per second~\cite{Single photon paper}. Finally, even in
+the high-flux regime, it is sometimes possible to
+correct pileup computationally~\cite{felix pileup correction}.}
 
-Additionally, since our method relies on a diffused pulsed laser, the laser
+\edit{While our prototype shows results for scanned/summed measurements, our scanning prototype operates in the low-flux regime,
+avoiding pileup. A hypothetical diffused SPAD prototype could also operate in
+this low-flux regime, which would yield identical measurement models and identical
+results. Figure~\ref{fig:hardware}(b)-(c) empirically shows that collecting and summing scanned
+measurements is nearly identical to capturing diffused measurements. ?!We show
+empirical comparisons between the two modes on a more complex scene in the supplement?!}
+
+\edit{Even if diffused and scanned/summed measurements are equivalent
+  computationally, they are not equivalent energetically. In the diffuse
+  setting, }the laser
 power is spread out over the entire scene. Accordingly, for distant scene points very
 little light will return to the SPAD and it may be difficult to accurately
 capture distant scene geometry in the histogram. Thus our method is best suited
-to short to medium-range scenes. \edit{For example, assume an indoor scene with
+to short to medium-range scenes. \edit{Nevertheless, assuming an indoor scene with
 fluorescent bulbs and an ambient spectral irradiance of $I_A =
 2~\text{mW}/\text{m}^2$ (across the 1 nm pass band of a spectral filter matched
-to the laser). The laser power required to achieve a minimum SBR of 5 for a
+to the laser), we find that the laser power required to achieve a minimum SBR of 5 for a
 diffuse scene at $r = 2$ m
 and a field of view of $\theta = 40^\circ$ can be calculated as}
 %
 \begin{equation}
   P_{\text{min}} = I_A \cdot 4 r^2 \tan^2(\theta/2) \cdot SBR_{\text{min}},
 \end{equation} 
-\edit{giving $P_{\text{min}}=21$ mW, less than the 60 mW of the Kinect.}
+\edit{giving $P_{\text{min}}=21$ mW, less than the 60 mW of the Kinect. Note
+  that this calculation involves only on the signal-to-background photon ratio,
+  which is independent of the actual number of counts recorded per exposure. In
+  other words, pileup and laser energy concerns may 
+  be addressed entirely independently. As for acquisition time, at a 10 MHz
+  pulse rate with
+  a 5\% photon detection rate, it takes just two seconds to acquire a million
+  photon events. This number is dependent on scene albedo, but all time-of-flight imaging
+systems share this dependency.}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
