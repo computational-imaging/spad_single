@@ -126,6 +126,10 @@ Lindell, D.B., O'Toole, M., Wetzstein, G.: Single-photon {3D} imaging with deep
 Maturana, D., Scherer, S.: Voxnet: {A} 3d convolutional neural network for
   real-time object recognition. In: Proc. IROS (2015)
 
+\bibitem{mcmanamon2012ladar}
+McManamon, P.: Review of ladar: a historic, yet emerging, sensor technology
+  with rich phenomenology. Optical Engineering  \textbf{51}(6),  060901 (2012)
+
 \bibitem{Morovic2002}
 Morovic, J., Shaw, J., Sun, P.L.: A fast, non-iterative and exact histogram
   matching algorithm. Pattern Recognition Letters  \textbf{23}(1-3),  127–135
@@ -140,6 +144,10 @@ Niclass, C., Rochas, A., Besse, P.A., Charbon, E.: Design and characterization
 Nikolova, M., Wen, Y.W., Chan, R.: Exact histogram specification for digital
   images using a variational approach. J. Math. Imaging. Vis.  \textbf{46}(3),
   309–325 (2013)
+
+\bibitem{oconnortcspc}
+O’Connor, D.V., Phillips, D.: Time-correlated single photon counting.
+  Academic Press (1984)
 
 \bibitem{OToole2017}
 O’Toole, M., Heide, F., Lindell, D.B., Zang, K., Diamond, S., Wetzstein, G.:
@@ -217,7 +225,7 @@ Szeliski, R.: Computer vision: algorithms and applications. Springer Science \&
 Veerappan, C., Richardson, J., Walker, R., Li, D.U., Fishburn, M.W., Maruyama,
   Y., Stoppa, D., Borghetti, F., Gersbach, M., Henderson, R.K.: A $160 \times
   128$ single-photon image sensor with on-pixel 55ps 10b time-to-digital
-  converter  \textbf{2011 IEEE International Solid-State Circuits Conference},
+  converter. In: 2011 IEEE International Solid-State Circuits Conference. p.
   312–314 (2011)
 
 \bibitem{Wu:2019}
@@ -233,7 +241,7 @@ Wu, Z., Song, S., Khosla, A., Yu, F., Zhang, L., Tang, X., Xiao, J.: {3D}
 \bibitem{Xin2019}
 Xin, S., Nousias, S., Kutulakos, K.N., Sankaranarayanan, A.C., Narasimhan,
   S.G., Gkioulekas, I.: A theory of fermat paths for non-line-of-sight shape
-  reconstruction  \textbf{Proc. CVPR} (2019)
+  reconstruction. In: Proc. CVPR (2019)
 
 \bibitem{Xu2017}
 Xu, D., Ricci, E., Ouyang, W., Wang, X., Sebe, N.: Multi-scale continuous crfs

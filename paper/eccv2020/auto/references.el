@@ -2,6 +2,9 @@
  "references"
  (lambda ()
    (LaTeX-add-bibitems
+    "mcmanamon2012ladar"
+    "oconnortcspc"
+    "o1984time"
     "caramazza2018neural"
     "gupta2019photonflooded"
     "ingle2019highflux"
@@ -51,6 +54,7 @@
     "lin2013holistic"
     "gupta2014learning"
     "song2014sliding"
+    "Rapp:2019"
     "song2016deep"
     "wu20153d"
     "maturana2015voxnet"
