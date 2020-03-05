@@ -1,12 +1,12 @@
 # Fdb version 3
-["bibtex supplement"] 1583389751 "supplement.aux" "supplement.bbl" "supplement" 1583389768
+["bibtex supplement"] 1583436268 "supplement.aux" "supplement.bbl" "supplement" 1583436271
   "./splncs04.bst" 1583383378 33694 182740d5d784dd29ee55be34dddd4ccc ""
   "references.bib" 1583383377 18329 0a7652330a0c289da9c7354c2a8d510d ""
-  "supplement.aux" 1583389768 9955 596633613ce5ed7dfd90c9d5d17ca082 "pdflatex"
+  "supplement.aux" 1583436271 10595 1c1a0bddb3c70564f7bfa196019b0300 "pdflatex"
   (generated)
-  "supplement.bbl"
   "supplement.blg"
-["pdflatex"] 1583389765 "supplement.tex" "supplement.pdf" "supplement" 1583389768
+  "supplement.bbl"
+["pdflatex"] 1583436268 "supplement.tex" "supplement.pdf" "supplement" 1583436271
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1572595918 3332 103109f5612ad95229751940c61aada0 ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm" 1572595918 1120 1e8878807317373affa7f7bba4cf2f6a ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy6.tfm" 1572595918 1124 14ccf5552bc7f77ca02a8a402bea8bfb ""
@@ -63,6 +63,7 @@
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmss9.pfb" 1572595918 24373 a91d375736817a75026663adcb2190c1 ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1572595918 32569 5e5ddc8df908dea60932f3c484a54c0d ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb" 1572595918 32587 1788b0c1c5b39540c96f5e42ccd6dae8 ""
+  "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb" 1572595918 32716 08e384dc442464e7285e891af9f45947 ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb" 1572595918 32442 c975af247b6702f7ca0c299af3616b80 ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb" 1572595918 37944 359e864bd06cde3b1cf57bb20757fb06 ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex9.pfb" 1572595918 30212 b6aafa449db0097a6b9b890f66741063 ""
@@ -341,6 +342,7 @@
   "figures/captured/midas/8_31_outdoor3/z_med_scaled_diff_fig.png" 1583383382 50457 6eed626f62de6cbb0dcc82d8999d89b8 ""
   "figures/captured/midas/8_31_outdoor3/z_pred_depth_fig.png" 1583383382 27818 722e906f54e6e3c7c54a0798e37e1ff8 ""
   "figures/captured/midas/8_31_outdoor3/z_pred_diff_fig.png" 1583383382 42274 571715574d0132e6745164a98c5df53b ""
+  "figures/captured_diffuse.pdf" 1583432189 13297109 17a64590202f536d964d9be9e13410fa ""
   "figures/comparison/densedepth_103_comparison.pdf" 1583383383 424281 ff85038ec9c284bcaac709080b52248d ""
   "figures/comparison/densedepth_107_comparison.pdf" 1583383383 419775 2dfd43415174d4f8b4571608df1ebb85 ""
   "figures/comparison/densedepth_187_comparison.pdf" 1583383383 412468 046541648a811cbc05b34de3ec26151d ""
@@ -403,12 +405,12 @@
   "sections/figures/captured/midas/8_30_poster_scene/rmses.tex" 1583383377 42 ab218c0ca3bfa3076a6dbf2ef9c8ce9c ""
   "sections/figures/captured/midas/8_30_small_lab_scene/rmses.tex" 1583383377 42 434feeedc6d05261a3399ecdc9a67b6d ""
   "sections/figures/captured/midas/8_31_outdoor3/rmses.tex" 1583383377 42 53f5a6a5143c2499f49f3d80b172d8dd ""
-  "sections/supplement/hardware_comparison.tex" 1583383378 33904 1bcb9f7da90543a783963a4f307e0ff7 ""
+  "sections/supplement/hardware_comparison.tex" 1583433853 33904 b6fd8f60329d7d4206c5283790f5c971 ""
   "sections/supplement/simulation_comparison.tex" 1583383378 9054 8afe16c0773cf7f0c2a537f35d937774 ""
-  "supplement.aux" 1583389768 9955 596633613ce5ed7dfd90c9d5d17ca082 "pdflatex"
-  "supplement.bbl" 1583389751 674 d0fcaae3e1a0b229900cb8d96d632e74 "bibtex supplement"
-  "supplement.tex" 1583389763 15635 8a0ba0297fa5bd60e54feff849f8f375 ""
+  "supplement.aux" 1583436271 10595 1c1a0bddb3c70564f7bfa196019b0300 "pdflatex"
+  "supplement.bbl" 1583436268 674 d0fcaae3e1a0b229900cb8d96d632e74 "bibtex supplement"
+  "supplement.tex" 1583436264 19695 de910dd06a21a724dc2b26b42a1c8307 ""
   (generated)
-  "supplement.aux"
   "supplement.pdf"
+  "supplement.aux"
   "supplement.log"

@@ -27,13 +27,13 @@ capture distant scene geometry in the histogram. Thus our method is best suited
 to short to medium-range scenes with a reasonable power budget for the diffused
 illumination.} \edit{For example, assuming an indoor scene with
 fluorescent bulbs and an ambient spectral irradiance of $I_A =
-2~\text{mW}/\text{m}^2$ (across the 1 nm pass band of a spectral filter matched
+1~\text{mW}/\text{m}^2$ (across the 1 nm pass band of a spectral filter matched
 to the laser), we find that the laser power required to achieve a minimum SBR of 5 for a
-diffuse scene at $r = 2$ m
+diffuse scene at $R = 3$ m
 and a field of view of $\theta = 40^\circ$ can be calculated as}
 %
 \begin{equation}
-  P_{\text{min}} = I_A \cdot 4 r^2 \tan^2(\theta/2) \cdot SBR_{\text{min}},
+  P_{\text{min}} = I_A \cdot 4 R^2 \tan^2(\theta/2) \cdot SBR_{\text{min}},
 \end{equation} 
 \edit{giving $P_{\text{min}}=21$ mW. We note that this is significantly 
 less than the 60 mW used by the Kinect sensor to diffusely illuminate a scene.}
@@ -95,12 +95,12 @@ also be integrated into electronics that already contain the required hardware
 components, for example, existing cell phones with single-pixel SPAD
 proximity sensors and RGB cameras.
 
-Other methods for extracting scene information from a depth histogram could be
+Other methods for extracting scene information from a transient could be
 employed, including learning-based methods to combine the MDE estimates and
 histogram. One might even consider sensing regimes where the number of
 returning signal photons is low, such as when the time-resolved detector and camera operate
 at high framerates. While most MDE techniques are tailored to clean RGB images,  
-the depth histogram could be used to help MDE
+the transient could be used to help MDE
 techniques generalize to noisy scenes under low-light conditions. 
  
 
@@ -108,7 +108,7 @@ techniques generalize to noisy scenes under low-light conditions.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{Conclusions}
 Since their introduction, monocular depth estimation algorithms have improved tremendously.  However, recent advances, which have generally relied on new network architectures or revised training procedures, have produced only modest performance improvements. 
-In this work we dramatically improve the performance of several monocular depth estimation algorithms by fusing their estimates with depth histogram measurements. 
+In this work we dramatically improve the performance of several monocular depth estimation algorithms by fusing their estimates with transient measurements. 
 Such histograms are easy to capture using time-resolved single-photon detectors and are poised to become an important component of future low-cost imaging systems.
 %Moving forward, sensor fusion is poised to become an even more important component of a variety of vision systems.
 %Computational photography approaches may provide the measurements needed to achieve much greater performance improvements, especially as the sensors in devices we use every day become more diverse, complex, and increasingly rely on techniques based on sensor fusion and sophisticated computational algorithms.
