@@ -15,6 +15,16 @@
 %   % \vspace{-0.5em}
 % \end{figure}
 
+\begin{figure}[t]
+	\centering
+  \includegraphics[width=\columnwidth]{captured_diffuse_small.pdf}
+  \caption{Diffused SPAD results captured at $\sim$25mW laser power indoors.
+    The resulting corrected depth maps from both scanning and summing transient measurements and diffusing
+    the laser illumination are very similar qualitatively and quantitatively.}
+  \label{fig:captured_diffuse_small}
+  % \vspace{-0.5em}
+\end{figure}
+
 As shown in Figure~\ref{fig:hardware}, our prototype comprises a color camera
 (Microsoft Kinect v2), a single-pixel SPAD (Micro Photon Devices 100~$\mu m$ PDM
 series, free-running), a laser (ALPHALAS PICOPOWER-LD-450-50), and a two-axis
@@ -37,8 +47,19 @@ scene. This allows us to validate the accuracy of the proposed histogram
 matching algorithm, which only uses the integrated single histogram, by
 comparing it with the captured depth --- \edit{such validation would not be possible if we were to capture measurements with an actual diffused SPAD.}
 
-\edit{To verify that our simulated diffused SPAD measurements match measurements produced by an actual diffused SPAD, we set up a system consisting of a diffused and scanned SPAD side-by-side. Details about this system can be found in the supplement. We then captured measurements of the simple scene shown in Figure~\ref{fig:hardware}(b) with both SPADs. The aggregated measurements from the scanned SPAD are shown alongside the diffused SPAD's measurements in Figure ~\ref{fig:hardware}(c). These results demonstrate that the two systems produce near equivalent measurements. Slight differences in their two histograms can be attributed to a baseline difference of about 10cm between the SPAD positions. That is, they observe scene from slightly different perspectives.
-}
+\edit{To verify that our simulated diffused SPAD measurements match measurements
+  produced by an actual diffused SPAD, we set up a system consisting of a
+  diffused and scanned SPAD side-by-side. Details about this system can be found
+  in the supplement. We then captured measurements of the simple scene shown in
+  Figure~\ref{fig:hardware}(b) with both SPADs. The aggregated measurements from
+  the scanned SPAD are shown alongside the diffused SPAD's measurements in
+  Figure ~\ref{fig:hardware}(c). These results demonstrate that the two systems
+  produce near equivalent measurements. Slight differences in their two
+  histograms can be attributed to a baseline difference of about 10cm between
+  the SPAD positions. That is, they observe scene from slightly different
+  perspectives.NOTE:JUSTIFY USE OF DIFFERENT PROTOTYPE FOR RESULTS IN THE WILD WITH EYE SAFETY?}
+\edit{We show proof-of-concept results captured by this system in
+  Figure~\ref{fig:captured_diffuse_small}. For}
 
 \begin{figure}[t]
 	\centering

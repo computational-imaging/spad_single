@@ -168,7 +168,7 @@ initial depth map and reflectance estimate)to $h_t$ (computed from the captured
 transient).
 { \footnotesize
 \begin{algorithm}
- \caption{Find Pixel Movement \edit{MOVE TO SUPPLEMENT!}} 
+ \caption{Find Pixel Movement} 
  \label{alg:ehm}
  \begin{algorithmic}
 	\footnotesize
@@ -227,6 +227,39 @@ depth bins in a random fashion.
   \label{fig:dither}
 \end{figure}
 
+\section{Nominal values for SBR calculation}
+Here we give the values used in the equation for received power, repeated here
+for convenience:
+  \begin{equation}
+    P_R = P_T \cdot \rho \cdot \frac{A_{rec}}{\pi R^2} \cdot \eta.
+  \end{equation}
+The object in question is a vertical, planar, perfectly Lambertian surface. The following table gives the values used for this calculation.
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{c|c|c}
+    \toprule
+    Symbol & Description & Nominal Value \\
+    \midrule
+    $\rho$  & Albedo of lambertian surface & $0.3$ \\
+    $P_T$ & Total irradiance at wavelength (W/$\text{m}^2$) & $0.026$ \\
+    $R$ & Distance to surface (m) & $3$ \\
+    $A_{rec}$ & Area of detector ($\text{m}^2$) & $1.96 \times 10^{-9}$ \\
+    $\eta$ & Quantum efficiency of detector & $0.3$ \\
+    $P_R$ & Received power at detector (W) & $1.62 \times 10^{-13}$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{}
+  \label{fig:sbr_calculation}
+\end{figure}
+Once $P_R$ is determined, we compute the number of photons using the laser
+wavelength $\lambda = 532$ nm as
+\begin{equation}
+  N = \frac{P_R\lambda}{hc}
+\end{equation}
+where $h \approx 6.626 \tiems 10^{-34}$ is Planck's constant and $c \approx 3
+\times 10^8$ is the speed of light. Now using the fact that our laser runs at 10
+MHz, we get the number of photons per pulse as $0.043$, which puts us in the
+low-flux regime.
 
 \section{Comparison of diffused vs. scanned imaging}
 In our experiments, we capture measurements by scanning the scene with a
@@ -255,7 +288,7 @@ estimate from the Kinect RGB image. We illustrate the results of this procedure
 in Fig.~\ref{fig:comparison}. The reconstructions from the scanned and diffused
 measurements are similar in reconstruction quality and also show similar
 quantitative improvement in terms or error over the initial depth estimate. The
-normalized photon counts are also shown in Fig.~\ref{fig:comparison}, and we
+unnormalized photon counts are also shown in Fig.~\ref{fig:comparison}, and we
 note that the counts show similar trends. The number of recorded photons in
 these experiments is shown in Table~\ref{tab:photon_counts}. In both cases, the
 rate of detected photons is far less ($<$5\%) than the number of emitted laser
@@ -263,7 +296,14 @@ pulses, and so we conclude that the measurements are captured in the low-flux
 regime where pileup effects are negligible. We attribute most of the differences
 between the scanned and diffused transients to the baseline between the
 positions of the diffused and scanned SPADs (see Fig.~\ref{fig:hardware}).
-
+\begin{figure}[H]
+  \centering \includegraphics[width=\textwidth]{captured_diffuse.pdf}
+  \caption{Comparing Scan + Sum and Diffused SPAD. The transients shown are
+    equal-time (and thus equal energy), and display qualitative similarity in
+    the absence of pileup.}
+  \label{fig:comparison}
+\end{figure}
+  
 \begin{figure}[H]
   \centering \includegraphics[width=\textwidth]{diffused_hardware/setup.pdf}
   \caption{Modified hardware setup. The setup is used to compare scanned and
@@ -283,8 +323,8 @@ positions of the diffused and scanned SPADs (see Fig.~\ref{fig:hardware}).
      \centering
      \begin{tabular}{lccc} \toprule
          \textbf{Experiment} & \textbf{Detected Photons} & \textbf{Laser Pulses} & \textbf{Detection Rate} \\\hline
-         \textbf{Scanned} & XXX & $6\times10^7$ & XXX \\
-         \textbf{Diffused} & XXX & $6\times10^7$ & XXX \\
+         \textbf{Scanned} & $1.4\times10^7$ & $6\times10^8$ & $2.3\%$ \\
+         \textbf{Diffused} & $2.4\times10^7$ & $6\times10^8$ & $4.0\%$ \\
         \bottomrule
     \end{tabular}
     \vspace{0.4em}
