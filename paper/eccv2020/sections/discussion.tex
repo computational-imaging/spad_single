@@ -20,9 +20,9 @@ the ordering of the initial depths is not correct, these errors will not be
 corrected by our histogram matching procedure and may propagate to the final
 output depth map.
 
-\edit{In the diffuse setting, the laser
+\edit{In the optically diffused configuration, the laser
 power is spread out over the entire scene. Accordingly, for distant scene points very
-little light will return to the SPAD and it may be difficult to accurately
+little light may return to the SPAD and it may be difficult to accurately
 capture distant scene geometry in the histogram. Thus our method is best suited
 to short to medium-range scenes with a reasonable power budget for the diffused
 illumination.} \edit{For example, assuming an indoor scene with
@@ -39,7 +39,7 @@ and a field of view of $\theta = 40^\circ$ can be calculated as}
 less than the 60 mW used by the Kinect sensor to diffusely illuminate a scene.}
 
 \edit{Under these scene parameters, we can compute the total incident 
-  flux on the SPAD per second (derived in~\cite{mcmanamon2012ladar}) as}
+  flux on the detector per second (derived in~\cite{mcmanamon2012ladar}) as}
   \begin{equation}
     P_R = P_T \cdot \rho \cdot \frac{A_{rec}}{\pi R^2} \cdot \eta
   \end{equation}
@@ -48,12 +48,12 @@ less than the 60 mW used by the Kinect sensor to diffusely illuminate a scene.}
   the object, and $\eta$ is the quantum efficiency of the detector. For a range of 
   values similar to those of our experiments (detailed in the supplement), we find that
   the ratio of photon detections to illumination pulses is roughly 4\%, or well within 
-  low-flux regime where pileup is negligible~\cite{oconnortcspc}.
+  low-flux regime where SPAD pileup is negligible~\cite{oconnortcspc}.
   We also empirically validate that our method works with a diffused setup and an output power of 
-  approximately 25 mW without significant pileup effects as detailed in the supplement.
+  approximately 25 mW without significant pileup effects as shown in Figure~\ref{fig:captured_diffuse_small} and detailed in the supplement.
   } \edit{However, even for operation in the high-flux regime, pileup can be mitigated  
     by reducing the amount of incident light, for example by reducing the aperture size or 
-    using neutral density filters, or by using a pile-up correction technique~\cite{Heide:2018}.}
+    using neutral density filters, or by using a pileup correction~\cite{Heide:2018,Rapp:2019}.}
 
   %\edit{Note
   % that this calculation involves only on the signal-to-background photon ratio,
@@ -95,12 +95,12 @@ also be integrated into electronics that already contain the required hardware
 components, for example, existing cell phones with single-pixel SPAD
 proximity sensors and RGB cameras.
 
-Other methods for extracting scene information from the SPAD histogram could be
+Other methods for extracting scene information from a depth histogram could be
 employed, including learning-based methods to combine the MDE estimates and
 histogram. One might even consider sensing regimes where the number of
-returning signal photons is low, such as when the SPAD and camera operate
+returning signal photons is low, such as when the time-resolved detector and camera operate
 at high framerates. While most MDE techniques are tailored to clean RGB images,  
-the SPAD histogram could be used to help MDE
+the depth histogram could be used to help MDE
 techniques generalize to noisy scenes under low-light conditions. 
  
 
@@ -109,7 +109,7 @@ techniques generalize to noisy scenes under low-light conditions.
 \paragraph{Conclusions}
 Since their introduction, monocular depth estimation algorithms have improved tremendously.  However, recent advances, which have generally relied on new network architectures or revised training procedures, have produced only modest performance improvements. 
 In this work we dramatically improve the performance of several monocular depth estimation algorithms by fusing their estimates with depth histogram measurements. 
-Such histograms are easy to capture using SPADs and are poised to become an important component of future low-cost imaging systems.
+Such histograms are easy to capture using time-resolved single-photon detectors and are poised to become an important component of future low-cost imaging systems.
 %Moving forward, sensor fusion is poised to become an even more important component of a variety of vision systems.
 %Computational photography approaches may provide the measurements needed to achieve much greater performance improvements, especially as the sensors in devices we use every day become more diverse, complex, and increasingly rely on techniques based on sensor fusion and sophisticated computational algorithms.
  

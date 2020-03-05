@@ -87,7 +87,7 @@ to sense distance to an
 object directly in front of the phone. %SPADs 
 \edit{
 Time-resolved detectors, such as avalanche photon diodes (APDs) or single-photon
-avalanche diodes (SPADs), measure the full waveform of time-resolved incident
+avalanche diodes (SPADs), can measure the full waveform of time-resolved incident
 radiance at each pixel (Fig.~\ref{fig:teaser}). These detectors form the
 backbone of modern LiDAR
 systems~\cite{Kirmani:2014,Li:2019,pawlikowska2017single}. However,
@@ -157,13 +157,13 @@ images using minimal additional sensing hardware. Specifically, we make the
 following contributions:
 %
 \begin{itemize}
-	\item We propose augmenting an RGB camera with a global depth histogram \edit{aggregated by a time-resolved detector} to address scale ambiguity error in monocular depth estimators.	
+	\item We propose augmenting an RGB camera with a global depth histogram aggregated by a time-resolved detector to address scale ambiguity in MDE.	
   \item We analyze this approach on indoor scenes using the NYU Depth v2 dataset and demonstrate that our approach is able to resolve scale ambiguity while being fast and easy to implement.
 	\item We build a prototype camera and evaluate its efficacy on captured data, assessing both the quality and the ability of our method to help generalization of monocular depth estimators across scene types. 
 \end{itemize}
 
 
-\edit{\emph{Overview of Limitations:} our prototype camera uses a scanned SPAD and digitally aggregates the captured transients to emulate a single optically diffused measurement. The benefit of this approach is access to ground truth depth, allowing us to evaluate the efficacy of our method with measured data. However, when operating SPADs in certain conditions, they may observe a nonlinear aggregation effect known as pileup. In these conditions, the aggregated measurements may differ from a single optically diffused measurement. Yet, we experimentally verify that digitally and optically aggregated measurements captured with our system are very similar and pileup could also be computationally corrected~\cite{Heide:2018,Rapp:2019}, although we did not attempt this.} 
+%\edit{\emph{Overview of Limitations:} our prototype camera uses a scanned SPAD and digitally aggregates the captured transients to emulate a single optically diffused measurement. The benefit of this approach is access to ground truth depth, allowing us to evaluate the efficacy of our method with measured data. However, when operating SPADs in certain conditions, they may observe a nonlinear aggregation effect known as pileup. In these conditions, the aggregated measurements may differ from a single optically diffused measurement. Yet, we experimentally verify that digitally and optically aggregated measurements captured with our system are very similar and pileup could also be computationally corrected~\cite{Heide:2018,Rapp:2019}, although we did not attempt this.} 
 
 %\edit{Our method is not without limitations. It still requires a laser and single-pixel LiDAR detector and is sensitive to ambient photons, which limit the maximum range. Being a variant of histogram matching, our method is not able to resolve ordinal depth errors (errors where an object is wrongly placed closer or farther relative to another object). In spite of these limitations, we find that our method performs remarkably well in practice.}
 
