@@ -24,7 +24,8 @@ output depth map.
 power is spread out over the entire scene. Accordingly, for distant scene points very
 little light will return to the SPAD and it may be difficult to accurately
 capture distant scene geometry in the histogram. Thus our method is best suited
-to short to medium-range scenes.} \edit{Nevertheless, assuming an indoor scene with
+to short to medium-range scenes with a reasonable power budget for the diffused
+illumination.} \edit{For example, assuming an indoor scene with
 fluorescent bulbs and an ambient spectral irradiance of $I_A =
 2~\text{mW}/\text{m}^2$ (across the 1 nm pass band of a spectral filter matched
 to the laser), we find that the laser power required to achieve a minimum SBR of 5 for a
@@ -34,7 +35,8 @@ and a field of view of $\theta = 40^\circ$ can be calculated as}
 \begin{equation}
   P_{\text{min}} = I_A \cdot 4 r^2 \tan^2(\theta/2) \cdot SBR_{\text{min}},
 \end{equation} 
-\edit{giving $P_{\text{min}}=21$ mW, less than the 60 mW of the Kinect.}
+\edit{giving $P_{\text{min}}=21$ mW. We note that this is significantly 
+less than the 60 mW used by the Kinect sensor to diffusely illuminate a scene.}
 
 \edit{Under these scene parameters, we can compute the total incident 
   flux on the SPAD per second (derived in~\cite{mcmanamon2012ladar}) as}
@@ -43,18 +45,15 @@ and a field of view of $\theta = 40^\circ$ can be calculated as}
   \end{equation}
   \edit{where $P_T$ is the illumination power in the visible region, $\rho$ is its
   albedo, $A_{rec}$ is the area of the detector region, $R$ is the distance to
-  the object, and $\eta$ is the quantum efficiency of the detector. For nominal
-  values of these quantities, and a laser pulse repitition rate of 10 MHz, we find that the number of photon detections is well
-  above the threshold required to assume the low-flux condition (roughly 1-5\%
-  of the number of illuminations per second~\cite{oconnortcspc}).
-  } \edit{Given this high incident photon count, we would envision using an optical
-    element such as an aperture or neutral density filter to return to the
-    low-flux regime, or use a pile-up correction technique~\cite{Heide:2018}.}
-
-  \edit{Lastly, Figure~\ref{fig:hardware}(b)-(c) empirically shows that in the
-  low-flux regime, collecting and summing scanned
-measurements is nearly identical to capturing diffused measurements. ?!We show
-empirical comparisons between the two modes on a more complex scene in the supplement?!}
+  the object, and $\eta$ is the quantum efficiency of the detector. For a range of 
+  values similar to those of our experiments (detailed in the supplement), we find that
+  the ratio of photon detections to illumination pulses is roughly 4\%, or well within 
+  low-flux regime where pileup is negligible~\cite{oconnortcspc}.
+  We also empirically validate that our method works with a diffused setup and an output power of 
+  approximately 25 mW without significant pileup effects as detailed in the supplement.
+  } \edit{However, even for operation in the high-flux regime, pileup can be mitigated  
+    by reducing the amount of incident light, for example by reducing the aperture size or 
+    using neutral density filters, or by using a pile-up correction technique~\cite{Heide:2018}.}
 
   %\edit{Note
   % that this calculation involves only on the signal-to-background photon ratio,

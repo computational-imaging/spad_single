@@ -228,6 +228,70 @@ depth bins in a random fashion.
 \end{figure}
 
 
+\section{Comparison of diffused vs. scanned imaging}
+In our experiments, we capture measurements by scanning the scene with a
+single-pixel SPAD detector whose optical path is aligned with a laser. This
+arrangement allows us to capture a reference ``ground truth'' depth map for
+quantitative validation of our method. To emulate measurements captured using a
+system where the laser and detector are diffused over the scene, we digitally
+sum the measurements to obtain a single transient. 
+
+In order to verify that digital summation of scanned measurements yields results
+that are similar to those captured by a diffused laser and detector, we capture
+an example scene using a modified hardware prototype in both scanned and
+diffused modes. The hardware prototype (shown in Fig.~\ref{fig:hardware})
+consists of a more powerful laser (Katana 05HP, 532 nm) which we operate at
+approximately 25 mW output power with two single-pixel SPAD detectors. One SPAD
+is aligned with the optical path of the laser, and the other SPAD is operated
+without a lens to integrate light from the entire scene. Both SPADs are fitted
+with a 10 nm bandpass filter centered at 532 nm, which reduces the amount of
+integrated ambient light. We attach a holographic diffuser (Thorlabs ED1-S50) to
+the laser output in order to diffuse light onto the scene or alternatively
+remove the diffuser and use a pair of scanning mirrors to scan the scene.
+
+The modified hardware setup is used to capture an example scene in both scanned and
+diffused modes, and the resulting transients are used to refine an initial depth
+estimate from the Kinect RGB image. We illustrate the results of this procedure
+in Fig.~\ref{fig:comparison}. The reconstructions from the scanned and diffused
+measurements are similar in reconstruction quality and also show similar
+quantitative improvement in terms or error over the initial depth estimate. The
+normalized photon counts are also shown in Fig.~\ref{fig:comparison}, and we
+note that the counts show similar trends. The number of recorded photons in
+these experiments is shown in Table~\ref{tab:photon_counts}. In both cases, the
+rate of detected photons is far less ($<$5\%) than the number of emitted laser
+pulses, and so we conclude that the measurements are captured in the low-flux
+regime where pileup effects are negligible. We attribute most of the differences
+between the scanned and diffused transients to the baseline between the
+positions of the diffused and scanned SPADs (see Fig.~\ref{fig:hardware}).
+
+\begin{figure}[H]
+  \centering \includegraphics[width=\textwidth]{diffused_hardware/setup.pdf}
+  \caption{Modified hardware setup. The setup is used to compare scanned and
+  diffused measurements and employs two SPAD detectors and two laser
+  configurations. In the first configuration, the scene is illuminated by
+  sending the laser light through a holographic diffuser and a lensless SPAD 
+  integrates light from the entire scene. In the second, the SPAD is aligned
+  with the optical path of the laser and the scene is scanned using a pair of
+  scanning mirrors. The baseline between the two SPADs (right) results in some
+  observed differences in the recorded transients.}
+  \label{fig:dither}
+\end{figure}
+
+\begin{table}[ht!]
+    \renewcommand{\arraystretch}{1.3}
+    \setlength{\tabcolsep}{10pt}
+     \centering
+     \begin{tabular}{lccc} \toprule
+         \textbf{Experiment} & \textbf{Detected Photons} & \textbf{Laser Pulses} & \textbf{Detection Rate} \\\hline
+         \textbf{Scanned} & XXX & $6\times10^7$ & XXX \\
+         \textbf{Diffused} & XXX & $6\times10^7$ & XXX \\
+        \bottomrule
+    \end{tabular}
+    \vspace{0.4em}
+    \caption{\textbf{Recorded photons for diffused vs. scanned scene.} In each capture mode, scanned or diffused, the number of detected photons does not exceed 5\% of the number of emitted laser pulses, placing the capture within the low-flux regime where pileup effects are negligible.}
+    \label{tab:photon_counts}
+\end{table}
+
 \section{Additional results on NYU Depth v2}
 Figures \ref{fig:densedepth_1}--\ref{fig:midas_3} show additional results
 for our method on the NYU Depth v2 dataset when the depth estimate is
@@ -245,7 +309,7 @@ We use the luminance of the RGB image as our reflectance map
 for both SPAD simulation and histogram matching.
 We show absolute difference maps and also give
 the root-mean-square error (RMSE) for each example.
-% \input{sections/supplement/simulation_comparison.tex}
+\input{sections/supplement/simulation_comparison.tex}
 
 \section{Additional results for hardware prototype}
 Figures \ref{fig:midas_captured_1}--\ref{fig:dorn_captured_3} show all the
@@ -265,7 +329,7 @@ Black pixels in the ground truth depth correspond to locations where our scanner
 was unable to produce an accurate depth estimate (this can occur for a variety
 of reasons including dark albedo and surface specularity). These pixels are masked off and not used in the RMSE
 calculation, and appear as an absolute difference of 0 in the difference maps.
-% \input{sections/supplement/hardware_comparison.tex}
+ \input{sections/supplement/hardware_comparison.tex}
 
 \clearpage 
 
