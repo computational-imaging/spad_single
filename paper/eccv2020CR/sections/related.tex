@@ -63,9 +63,10 @@ proximity sensors. This unique configuration captures a measurement that closely
 resembles the depth histogram of the scene. Our sensor fusion algorithm achieves
 reliable absolute depth estimation by combining the transient measurement with the
 output of a monocular depth estimator using a histogram matching technique.
-While other recent work also explored RGB-SPAD sensor fusion~\cite{Lindell2018},
+\edit{While other recent work also explored RGB-SPAD sensor
+fusion~\cite{Lindell2018,sun2020spadnet},
 the RGB image was primarily used to guide the denoising and upsampling of
-measurements from a SPAD array.
+measurements from a SPAD array.}
 
  
 %Previous work (see \cite{Horaud2016} for a survey) has been able to use
@@ -119,9 +120,11 @@ reconstruction space, Swoboda and Schn\"orr~\cite{Swoboda2013} use a histogram
 to form an image prior based on the Wasserstein distance for image denoising and
 inpainting. Rother et al.~\cite{Rother2006} use a histogram prior to create an
 energy function that penalizes foreground segmentations with dissimilar
-histograms. Caramazza et al.~\cite{caramazza2018neural} use a single
+histograms. \edit{In the area of non-line-of-sight
+imaging~\cite{faccio2020non,lindell2019wave,liu2020phasor,liu2019non,o2018confocal},
+Caramazza et al.~\cite{caramazza2018neural} use a single
 non-line-of-sight transient to recover the identity of a person hidden from
-view. In a slightly different application area, Zhang et
+view.} In a slightly different application area, Zhang et
 al.~\cite{Zhang2017} train a neural network to produce realistically colorized
 images given only a black-and-white image and a histogram of global color
 information.
