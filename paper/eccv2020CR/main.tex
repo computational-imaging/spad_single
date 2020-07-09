@@ -1,0 +1,130 @@
+% updated April 2002 by Antje Endemann
+% Based on CVPR 07 and LNCS, with modifications by DAF, AZ and elle, 2008 and AA, 2010, and CC, 2011; TT, 2014; AAS, 2016; AAS, 2020
+
+\documentclass[runningheads]{llncs}
+\usepackage{graphicx}
+\usepackage{comment}
+\usepackage{amsmath,amssymb} % define this before the line numbering.
+\usepackage{color}
+
+% INITIAL SUBMISSION - The following two lines are NOT commented
+% CAMERA READY - Comment OUT the following two lines
+% \usepackage{ruler}
+% \usepackage[width=122mm,left=12mm,paperwidth=146mm,height=193mm,top=12mm,paperheight=217mm]{geometry}
+
+
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{bm}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage[utf8x]{inputenc}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{algorithmicx}
+\usepackage{dblfloatfix}
+
+\input{mark_defs.tex}
+% \DeclareRobustCommand\onedot{\futurelet\@let@token\@onedot}
+% \def\@onedot{\ifx\@let@token.\else.\null\fi\xspace}
+
+\def\eg{\emph{e.g.}} \def\Eg{\emph{E.g.}}
+\def\ie{\emph{i.e.}} \def\Ie{\emph{I.e.}}
+\def\cf{\emph{c.f.}} \def\Cf{\emph{C.f.}}
+\def\etc{\emph{etc}} \def\vs{\emph{vs.}}
+\def\wrt{w.r.t.} \def\dof{d.o.f.}
+\def\etal{\emph{et al.}}
+
+\newcommand{\edit}[1]{\textcolor{red}{#1}}
+% \newcommand{\edit}[1]{#1}
+
+\graphicspath{{figures/}{"G:/Shared drives/Stanford Computational
+    Imaging/Projects/single_spad_depth/figures/"}{"H:/Shared drives/Stanford Computational
+    Imaging/Projects/single_spad_depth/figures/"}{"/Users/gordon/mount/teamdrive/Shared
+    drives/Stanford Computational Imaging/Projects/single_spad_depth/figures/"}
+  {"/Volumes/GoogleDrive/Shared drives/Stanford Computational Imaging/Projects/single_spad_depth/figures/"}}
+% Pages are numbered in submission mode, and unnumbered in camera-ready
+
+\begin{document}
+% \renewcommand\thelinenumber{\color[rgb]{0.2,0.5,0.8}\normalfont\sffamily\scriptsize\arabic{linenumber}\color[rgb]{0,0,0}}
+% \renewcommand\makeLineNumber {\hss\thelinenumber\ \hspace{6mm} \rlap{\hskip\textwidth\ \hspace{6.5mm}\thelinenumber}}
+% \linenumbers
+\pagestyle{headings}
+\mainmatter
+\def\ECCVSubNumber{3668}  % Insert your submission number here
+
+\title{Disambiguating Monocular Depth Estimation with a Single Transient} % Replace with your title
+
+% CAMERA READY SUBMISSION
+% \begin{comment}
+\titlerunning{Disambiguating Monocular Depth Estimation with a Single Transient}
+% If the paper title is too long for the running head, you can set
+% an abbreviated paper title here
+%
+\author{Mark Nishimura  \and
+David B. Lindell \and
+Chris Metzler \and
+Gordon Wetzstein}
+%
+\authorrunning{M. Nishimura et al.}
+% First names are abbreviated in the running head.
+% If there are more than two authors, 'et al.' is used.
+%
+\institute{Stanford University, Stanford, CA \\
+\email{\{markn1, lindell, cmetzler, gordon.wetzstein\}@stanford.edu}}
+%******************
+\maketitle
+
+\begin{abstract}
+  Monocular depth estimation algorithms successfully predict the
+  relative depth {order} of objects in a scene.
+  However, because of the fundamental scale ambiguity associated with monocular
+  images, these algorithms fail at correctly predicting true metric
+  depth. In this work, we demonstrate how a depth histogram of the scene, which
+  can be readily captured using a single-pixel time-resolved
+    detector, can be fused with the output of existing monocular depth
+  estimation algorithms to resolve the depth ambiguity problem.
+  We validate this novel sensor fusion technique experimentally and in extensive
+  simulation. We show that it significantly improves the performance of several
+  state-of-the-art monocular depth estimation algorithms.  
+  \keywords{depth estimation, time-of-flight imaging}
+\end{abstract}
+
+
+\section{Introduction}
+\label{sec:intro}
+\input{sections/introduction}
+
+\section{Related Work}
+\label{sec:related}
+\input{sections/related}
+
+\section{Method}
+\label{sec:method}
+\input{sections/method}
+
+\section{Evaluation and Assessment}
+\label{sec:evaluation}
+\input{sections/simulation}
+
+\section{Experimental Demonstration}
+\label{sec:prototype}
+\input{sections/hardware}
+
+\section{Discussion}
+\label{sec:discussion}
+\input{sections/discussion}
+
+\clearpage
+% ---- Bibliography ----
+%
+% BibTeX users should specify bibliography style 'splncs04'.
+% References will then be sorted and formatted in the correct style.
+%
+\bibliographystyle{splncs04}
+\bibliography{references}
+
+\end{document}
+

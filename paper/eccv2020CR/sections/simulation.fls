@@ -1,0 +1,6 @@
+PWD /Users/mark/Documents/Stanford/ares/spad_single/paper/eccv2020/sections
+INPUT /usr/local/texlive/2019/texmf.cnf
+INPUT /usr/local/texlive/2019/texmf-dist/web2c/texmf.cnf
+INPUT /usr/local/texlive/2019/texmf-var/web2c/pdftex/pdflatex.fmt
+INPUT simulation.tex
+OUTPUT simulation.log

@@ -1,0 +1,22 @@
+\begin{algorithmic}[1]
+  \Procedure{ExactHistogramMatching}{$I$, $W$, $t$}
+  \State $s \gets \text{Histogram}(I, W)$
+  \State $M \gets \text{zeros}(rows=\text{length(s)}, cols=\text{length}(t)))$ 
+  \For{$i$ in $1,...,\text{length}(s)$}
+    \For{$j$ in $1,...,\text{length}(j)$}
+      \State $c_t \gets \sum_{\ell = 1}^{i-1} M_{\ell j}$
+      \State $c_s \gets \sum_{\ell = 1}^{j-1} M_{i \ell}$
+      \State $M_{ij} \gets \min(s_i - c_s, t_j - c_t)$
+    \EndFor
+  \EndFor
+  \State $\hat I \gets \text{zeros}(\text{shape}(I))$
+  \For{each pixel $p = I_{ij}$}
+    \State $d = \frac{M_{p,:}}{\text{sum}(M_{p,:})}$ \Comment{$d$ is a
+      probabilty distribution}
+    \State Sample $q \in \set{1,...,length(t)}$ according to $d$.
+    \State $\hat I_{ij} \gets q$
+  \EndFor
+  \State \textbf{return} $\hat I$
+  \EndProcedure
+\end{algorithmic}
+  
