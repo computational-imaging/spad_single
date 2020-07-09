@@ -3,18 +3,23 @@
 \providecommand{\urlprefix}{URL }
 \providecommand{\doi}[1]{https://doi.org/#1}
 
+\bibitem{ahmad2020extensible}
+Ahmad~Siddiqui, T., Madhok, R., O'Toole, M.: An extensible multi-sensor fusion
+  framework for 3d imaging. In: Proceedings of the IEEE/CVF Conference on
+  Computer Vision and Pattern Recognition Workshops. pp. 1008--1009 (2020)
+
 \bibitem{Alhashim2018}
 Alhashim, I., Wonka, P.: High quality monocular depth estimation via transfer
   learning. arXiv:1812.11941v2  (2018)
 
 \bibitem{burri2017linospad}
-Burri, S., Bruschini, C., Charbon, E.: Linospad: A compact linear spad camera
-  system with 64 fpga-based tdc modules for versatile 50 ps resolution
+Burri, S., Bruschini, C., Charbon, E.: Linospad: A compact linear {SPAD} camera
+  system with 64 {FPGA}-based {TDC} modules for versatile 50 ps resolution
   time-resolved imaging. Instruments  \textbf{1}(1), ~6 (2017)
 
 \bibitem{burri2016linospad}
-Burri, S., Homulle, H., Bruschini, C., Charbon, E.: Linospad: a time-resolved
-  $256 \times 1$ cmos spad line sensor system featuring 64 fpga-based tdc
+Burri, S., Homulle, H., Bruschini, C., Charbon, E.: Linospad: {A} time-resolved
+  $256 \times 1$ {CMOS SPAD} line sensor system featuring 64 {FPGA}-based {TDC}
   channels running at up to 8.5 giga-events per second. In: Optical Sensing and
   Detection IV. vol.~9899, p. 98990D. International Society for Optics and
   Photonics (2016)
@@ -22,17 +27,20 @@ Burri, S., Homulle, H., Bruschini, C., Charbon, E.: Linospad: a time-resolved
 \bibitem{caramazza2018neural}
 Caramazza, P., Boccolini, A., Buschek, D., Hullin, M., Higham, C.F., Henderson,
   R., Murray-Smith, R., Faccio, D.: Neural network identification of people
-  hidden from view with a single-pixel, single-photon detector. Scientific
-  reports  \textbf{8}(1),  11945 (2018)
+  hidden from view with a single-pixel, single-photon detector. Sci. Rep.
+  \textbf{8}(1),  11945 (2018)
 
 \bibitem{Chang:2019:DeepOptics3D}
-Chang, J., Wetzstein, G.: Deep optics for monocular depth estimation and 3d
+Chang, J., Wetzstein, G.: Deep optics for monocular depth estimation and {3D}
   object detection. In: Proc. ICCV (2019)
 
 \bibitem{Eigen2014}
 Eigen, D., Puhrsch, C., Fergus, R.: Depth map prediction from a single image
-  using a multi-scale deep network. In: Advances in neural information
-  processing systems. pp. 2366--2374 (2014)
+  using a multi-scale deep network. In: Proc. NeurIPS (2014)
+
+\bibitem{faccio2020non}
+Faccio, D., Velten, A., Wetzstein, G.: Non-line-of-sight imaging. Nature
+  Reviews Physics pp. 1--10 (2020)
 
 \bibitem{Fu2018}
 Fu, H., Gong, M., Wang, C., Batmanghelich, K., Tao, D.: Deep ordinal regression
@@ -44,8 +52,7 @@ Garg, R., Wadhwa, N., Ansari, S., Barron, J.T.: Learning single camera depth
 
 \bibitem{geiger2013vision}
 Geiger, A., Lenz, P., Stiller, C., Urtasun, R.: Vision meets robotics: The
-  kitti dataset. The International Journal of Robotics Research
-  \textbf{32}(11),  1231--1237 (2013)
+  {KITTI} dataset. Int. J. Robot. Res.  \textbf{32}(11),  1231--1237 (2013)
 
 \bibitem{Godard2017}
 Godard, C., Mac~Aodha, O., Brostow, G.J.: Unsupervised monocular depth
@@ -53,23 +60,23 @@ Godard, C., Mac~Aodha, O., Brostow, G.J.: Unsupervised monocular depth
 
 \bibitem{gonzales1977gray}
 Gonzales, R., Fittes, B.: Gray-level transformations for interactive image
-  enhancement. Mechanism and Machine Theory  \textbf{12}(1),  111--122 (1977)
+  enhancement. Mech. Mach. Theory  \textbf{12}(1),  111--122 (1977)
 
 \bibitem{Gonzalez2008}
 Gonzalez, R.C., Woods, R.E.: Digital Image Processing. Prentice-Hall, Inc.,
   Upper Saddle River, NJ, USA (2008)
 
 \bibitem{gupta2019photonflooded}
-Gupta, A., Ingle, A., Velten, A., Gupta, M.: Photon-flooded single-photon 3d
+Gupta, A., Ingle, A., Velten, A., Gupta, M.: Photon-flooded single-photon {3D}
   cameras. In: Proc. CVPR. IEEE (2019)
 
 \bibitem{gupta2013perceptual}
 Gupta, S., Arbelaez, P., Malik, J.: Perceptual organization and recognition of
-  indoor scenes from rgb-d images. In: Proc. CVPR (2013)
+  indoor scenes from {RGB-D} images. In: Proc. CVPR (2013)
 
 \bibitem{gupta2014learning}
 Gupta, S., Girshick, R., Arbel{\'a}ez, P., Malik, J.: Learning rich features
-  from rgb-d images for object detection and segmentation. In: Proc. ECCV
+  from {RGB-D} images for object detection and segmentation. In: Proc. ECCV
   (2014)
 
 \bibitem{Hao2018}
@@ -78,7 +85,7 @@ Hao, Z., Li, Y., You, S., Lu, F.: Detail preserving depth estimation from a
 
 \bibitem{Heide:2018}
 Heide, F., Diamond, S., Lindell, D.B., Wetzstein, G.: Sub-picosecond
-  photon-efficient 3d imaging using single-photon sensors. Scientific Reports
+  photon-efficient {3D} imaging using single-photon sensors. Sci. Rep.
   \textbf{8}(17726) (2018)
 
 \bibitem{Hoiem2005}
@@ -101,7 +108,7 @@ Laina, I., Rupprecht, C., Belagiannis, V., Tombari, F., Navab, N.: Deeper depth
   (2016)
 
 \bibitem{Lamb2010}
-Lamb, R., Buller, G.: Single-pixel imaging using 3d scanning time-of-flight
+Lamb, R., Buller, G.: Single-pixel imaging using {3D} scanning time-of-flight
   photon counting. SPIE Newsroom  (2010)
 
 \bibitem{Lasinger:2019}
@@ -111,19 +118,34 @@ Lasinger, K., Ranftl, R., Schindler, K., Koltun, V.: Towards robust monocular
 
 \bibitem{Li:2019}
 Li, Z.P., Huang, X., Cao, Y., Wang, B., Li, Y.H., Jin, W., Yu, C., Zhang, J.,
-  Zhang, Q., Peng, C.Z., et~al.: Single-photon computational 3d imaging at 45
+  Zhang, Q., Peng, C.Z., et~al.: Single-photon computational {3D} imaging at 45
   km. arXiv preprint arXiv:1904.10341  (2019)
 
 \bibitem{lin2013holistic}
-Lin, D., Fidler, S., Urtasun, R.: Holistic scene understanding for 3d object
-  detection with rgbd cameras. In: Proc. ICCV (2013)
+Lin, D., Fidler, S., Urtasun, R.: Holistic scene understanding for {3D} object
+  detection with {RGBD} cameras. In: Proc. ICCV (2013)
 
 \bibitem{Lindell2018}
 Lindell, D.B., O'Toole, M., Wetzstein, G.: Single-photon {3D} imaging with deep
   sensor fusion. ACM Trans. Graph. (SIGGRAPH)  \textbf{37}(4), ~113 (2018)
 
+\bibitem{lindell2019wave}
+Lindell, D.B., Wetzstein, G., O'Toole, M.: Wave-based non-line-of-sight imaging
+  using fast f--k migration. ACM Trans. Graph.  \textbf{38}(4),  1--13 (2019)
+
+\bibitem{liu2020phasor}
+Liu, X., Bauer, S., Velten, A.: Phasor field diffraction based reconstruction
+  for fast non-line-of-sight imaging systems. Nat. Commun.  \textbf{11}(1),
+  1--13 (2020)
+
+\bibitem{liu2019non}
+Liu, X., Guill{\'e}n, I., La~Manna, M., Nam, J.H., Reza, S.A., Le, T.H.,
+  Jarabo, A., Gutierrez, D., Velten, A.: Non-line-of-sight imaging using
+  phasor-field virtual wave optics. Nature  \textbf{572}(7771),  620--623
+  (2019)
+
 \bibitem{maturana2015voxnet}
-Maturana, D., Scherer, S.: Voxnet: {A} 3d convolutional neural network for
+Maturana, D., Scherer, S.: Voxnet: {A} {3D} convolutional neural network for
   real-time object recognition. In: Proc. IROS (2015)
 
 \bibitem{mcmanamon2012ladar}
@@ -132,13 +154,13 @@ McManamon, P.: Review of ladar: a historic, yet emerging, sensor technology
 
 \bibitem{Morovic2002}
 Morovic, J., Shaw, J., Sun, P.L.: A fast, non-iterative and exact histogram
-  matching algorithm. Pattern Recognition Letters  \textbf{23}(1-3),  127–135
+  matching algorithm. Pattern Recognit. Lett.  \textbf{23}(1-3),  127–135
   (2002)
 
 \bibitem{Niclass2005}
 Niclass, C., Rochas, A., Besse, P.A., Charbon, E.: Design and characterization
-  of a cmos 3-d image sensor based on single photon avalanche diodes. IEEE
-  Journal of Solid-State Circuits  \textbf{40}(9),  1847–1854 (2005)
+  of a {CMOS 3-D} image sensor based on single photon avalanche diodes. IEEE J.
+  Solid-State Circuits  \textbf{40}(9),  1847–1854 (2005)
 
 \bibitem{Nikolova2013}
 Nikolova, M., Wen, Y.W., Chan, R.: Exact histogram specification for digital
@@ -154,20 +176,24 @@ O’Toole, M., Heide, F., Lindell, D.B., Zang, K., Diamond, S., Wetzstein, G.:
   Reconstructing transient images from single-photon sensors. In: Proc. CVPR
   (2017)
 
+\bibitem{o2018confocal}
+O’Toole, M., Lindell, D.B., Wetzstein, G.: Confocal non-line-of-sight imaging
+  based on the light-cone transform. Nature  \textbf{555}(7696),  338--341
+  (2018)
+
 \bibitem{pawlikowska2017single}
 Pawlikowska, A.M., Halimi, A., Lamb, R.A., Buller, G.S.: Single-photon
-  three-dimensional imaging at up to 10 kilometers range. Optics express
+  three-dimensional imaging at up to 10 kilometers range. Opt. Express
   \textbf{25}(10),  11919--11931 (2017)
 
 \bibitem{qi2016volumetric}
 Qi, C.R., Su, H., Nie{\ss}ner, M., Dai, A., Yan, M., Guibas, L.J.: Volumetric
-  and multi-view cnns for object classification on 3d data. In: Proc. CVPR
+  and multi-view {CNNs} for object classification on {3D} data. In: Proc. CVPR
   (2016)
 
 \bibitem{Rapp:2019}
 {Rapp}, J., {Ma}, Y., {Dawson}, R.M.A., {Goyal}, V.K.: Dead time compensation
-  for high-flux depth imaging. In: IEEE International Conference on Acoustics,
-  Speech and Signal Processing (ICASSP). pp. 7805--7809 (2019)
+  for high-flux depth imaging. In: Proc. ICASSP (2019)
 
 \bibitem{ren2012rgb}
 Ren, X., Bo, L., Fox, D.: Rgb-(d) scene labeling: Features and algorithms. In:
@@ -175,63 +201,67 @@ Ren, X., Bo, L., Fox, D.: Rgb-(d) scene labeling: Features and algorithms. In:
 
 \bibitem{Rother2006}
 Rother, C., Minka, T., Blake, A., Kolmogorov, V.: Cosegmentation of image pairs
-  by histogram matching-incorporating a global constraint into mrfs. In: Proc.
-  CVPR. IEEE (2006)
+  by histogram matching-incorporating a global constraint into {MRFs}. In:
+  Proc. CVPR (2006)
 
 \bibitem{Saxena2006}
 Saxena, A., Chung, S.H., Ng, A.Y.: Learning depth from single monocular images.
-  In: Advances in neural information processing systems (2006)
+  In: Proc. NeurIPS (2006)
 
 \bibitem{Shin2015}
 Shin, D., Kirmani, A., Goyal, V.K., Shapiro, J.H.: Photon-efficient
-  computational 3-d and reflectivity imaging with single-photon detectors. IEEE
-  Trans. Computat. Imag.  \textbf{1}(2),  112–125 (2015)
+  computational {3-D} and reflectivity imaging with single-photon detectors.
+  IEEE Trans. Computat. Imag.  \textbf{1}(2),  112–125 (2015)
 
 \bibitem{Shin2016}
 Shin, D., Xu, F., Venkatraman, D., Lussana, R., Villa, F., Zappa, F., Goyal,
   V., Wong, F., Shapiro, J.: Photon-efficient imaging with a single-photon
-  camera. Nature Communications  \textbf{7},  12046 (2016)
+  camera. Nat. Commun.  \textbf{7},  12046 (2016)
 
 \bibitem{shrivastava2013building}
-Shrivastava, A., Gupta, A.: Building part-based object detectors via 3d
+Shrivastava, A., Gupta, A.: Building part-based object detectors via {3D}
   geometry. In: Proc. ICCV (2013)
 
 \bibitem{silberman2012indoor}
 Silberman, N., Hoiem, D., Kohli, P., Fergus, R.: Indoor segmentation and
-  support inference from rgbd images. In: Proc. ECCV (2012)
+  support inference from {RGBD} images. In: Proc. ECCV (2012)
 
 \bibitem{song2014sliding}
-Song, S., Xiao, J.: Sliding shapes for 3d object detection in depth images. In:
-  Proc. ECCV (2014)
+Song, S., Xiao, J.: Sliding shapes for {3D} object detection in depth images.
+  In: Proc. ECCV (2014)
 
 \bibitem{song2016deep}
-Song, S., Xiao, J.: Deep sliding shapes for amodal 3d object detection in rgb-d
-  images. In: Proc. CVPR (2016)
+Song, S., Xiao, J.: Deep sliding shapes for amodal {3D} object detection in
+  {RGB-D} images. In: Proc. CVPR (2016)
 
 \bibitem{Stoppa2007}
 Stoppa, D., Pancheri, L., Scandiuzzo, M., Gonzo, L., Dalla~Betta, G.F., Simoni,
-  A.: A cmos 3-d imager based on single photon avalanche diode. IEEE Trans.
+  A.: A {CMOS 3-D} imager based on single photon avalanche diode. IEEE Trans.
   Circuits Syst. I, Reg. Papers  \textbf{54}(1),  4–12 (2007)
+
+\bibitem{sun2020spadnet}
+Sun, Z., Lindell, D.B., Solgaard, O., Wetzstein, G.: Spadnet: {Deep RGB-SPAD}
+  sensor fusion assisted by monocular depth estimation. Opt. Express
+  \textbf{28}(10),  14948--14962 (2020)
 
 \bibitem{Swoboda2013}
 Swoboda, P., Schnörr, C.: Convex variational image restoration with histogram
-  priors. SIAM Journal of Imaging Sciences  \textbf{6}(3),  1719–1735 (2013)
+  priors. SIAM J. Imaging Sci.  \textbf{6}(3),  1719–1735 (2013)
 
 \bibitem{szeliski2010computer}
-Szeliski, R.: Computer vision: algorithms and applications. Springer Science \&
-  Business Media (2010)
+Szeliski, R.: Computer vision: {Algorithms} and applications. Springer Science
+  \& Business Media (2010)
 
 \bibitem{Veerappan2011}
 Veerappan, C., Richardson, J., Walker, R., Li, D.U., Fishburn, M.W., Maruyama,
   Y., Stoppa, D., Borghetti, F., Gersbach, M., Henderson, R.K.: A $160 \times
   128$ single-photon image sensor with on-pixel 55ps 10b time-to-digital
-  converter. In: 2011 IEEE International Solid-State Circuits Conference. p.
-  312–314 (2011)
+  converter. In: Proc. ISSCC (2011)
 
 \bibitem{Wu:2019}
 Wu, Y., Boominathan, V., Chen, H., Sankaranarayanan, A., Veeraraghavan, A.:
-  Phasecam3d---learning phase masks for passive single view depth estimation.
-  In: Proc. ICCP (2019)
+  {PhaseCam3D}---{Learning} phase masks for passive single view depth
+  estimation. In: Proc. ICCP (2019)
 
 \bibitem{wu20153d}
 Wu, Z., Song, S., Khosla, A., Yu, F., Zhang, L., Tang, X., Xiao, J.: {3D}
@@ -240,13 +270,13 @@ Wu, Z., Song, S., Khosla, A., Yu, F., Zhang, L., Tang, X., Xiao, J.: {3D}
 
 \bibitem{Xin2019}
 Xin, S., Nousias, S., Kutulakos, K.N., Sankaranarayanan, A.C., Narasimhan,
-  S.G., Gkioulekas, I.: A theory of fermat paths for non-line-of-sight shape
+  S.G., Gkioulekas, I.: A theory of {Fermat} paths for non-line-of-sight shape
   reconstruction. In: Proc. CVPR (2019)
 
 \bibitem{Xu2017}
-Xu, D., Ricci, E., Ouyang, W., Wang, X., Sebe, N.: Multi-scale continuous crfs
-  as sequential deep networks for monocular depth estimation. In: Proc. CVPR
-  (2017)
+Xu, D., Ricci, E., Ouyang, W., Wang, X., Sebe, N.: Multi-scale continuous
+  {CRFs} as sequential deep networks for monocular depth estimation. In: Proc.
+  CVPR (2017)
 
 \bibitem{Xu2018}
 Xu, D., Wang, W., Tang, H., Liu, H., Sebe, N., Ricci, E.: Structured attention
@@ -254,9 +284,9 @@ Xu, D., Wang, W., Tang, H., Liu, H., Sebe, N., Ricci, E.: Structured attention
   CVPR (2018)
 
 \bibitem{Zhang2018}
-Zhang, C., Lindner, S., Antolovic, I., Wolf, M., Charbon, E.: A cmos spad
-  imager with collision detection and 128 dynamically reallocating tdcs for
-  single-photon counting and 3d time-of-flight imaging. Sensors (Basel)
+Zhang, C., Lindner, S., Antolovic, I., Wolf, M., Charbon, E.: A {CMOS SPAD}
+  imager with collision detection and 128 dynamically reallocating {TDCs} for
+  single-photon counting and {3D} time-of-flight imaging. Sensors
   \textbf{18}(11) (2018)
 
 \bibitem{Zhang2017}
